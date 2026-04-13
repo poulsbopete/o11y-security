@@ -56,7 +56,7 @@ This repository’s **Agent Builder A2A** lab is one concrete pattern on that pa
 | Path | What it is |
 | ---- | ----------- |
 | [`elastic-agent-builder-a2a-workshop/`](elastic-agent-builder-a2a-workshop/) | **Instruqt** track: `track.yml`, `config.yml`, challenges (`01-`…`06-`), index templates, sample NDJSON/JSON, lifecycle scripts (`setup-workstation`, `check-workstation`, `solve-workstation`), agent scaffolds. |
-| [`elastic-agent-builder-a2a-cloud-path/`](elastic-agent-builder-a2a-cloud-path/) | **Cloud bootstrap** (no Instruqt): bash + `curl` to create both serverless projects, mint Elasticsearch API keys, apply workshop templates, bulk-load synth data. See its `README.md` and `AGENT_BUILDER.md`. |
+| [`elastic-agent-builder-a2a-cloud-path/`](elastic-agent-builder-a2a-cloud-path/) | **Cloud path** (no Instruqt): **[elastic/agent-skills](https://github.com/elastic/agent-skills)** is the recommended prerequisite; use **`SKILLS-FIRST-WORKFLOW.md`** for provisioning + keys + Agent Builder via skills. Bash `scripts/` remain for CI/headless. See `README.md` and `AGENT_BUILDER.md`. |
 | [`docs/`](docs/) | Short **GitHub Pages** slide deck (`index.html`) for the value prop; optional marketing aid, not the main lab. |
 
 ## Two ways to run the lab
@@ -69,21 +69,15 @@ This repository’s **Agent Builder A2A** lab is one concrete pattern on that pa
 
 Start at: [`elastic-agent-builder-a2a-workshop/track.yml`](elastic-agent-builder-a2a-workshop/track.yml).
 
-### B) Elastic Cloud scripts (faster iteration)
+### B) Elastic Cloud + Agent Skills (outside Instruqt)
 
-1. Elastic Cloud **organization API key** with permission to create serverless projects (`EC_API_KEY` — see Elastic **cloud-setup** / Cloud console API keys; do not commit secrets).
-2. From [`elastic-agent-builder-a2a-cloud-path/`](elastic-agent-builder-a2a-cloud-path/):
+**Prerequisite:** install **[Elastic Agent Skills](https://github.com/elastic/agent-skills)** (official library for Cursor, Claude Code, Copilot, etc.). Use it to run **cloud-setup**, **cloud-create-project** (Observability + Security), **cloud-manage-project**, **elasticsearch-authn**, and **kibana-agent-builder** instead of hand-rolling Cloud/ES steps.
 
-   ```bash
-   cd elastic-agent-builder-a2a-cloud-path
-   cp env.example .env   # edit: set EC_API_KEY, optional EC_REGION / A2A_NAME_PREFIX
-   bash scripts/00-check-prereqs.sh
-   bash scripts/run-all.sh
-   ```
+1. Follow **[`elastic-agent-builder-a2a-cloud-path/SKILLS-FIRST-WORKFLOW.md`](elastic-agent-builder-a2a-cloud-path/SKILLS-FIRST-WORKFLOW.md)** with your AI agent.
+2. Optionally run bash helpers for **index templates + bulk** only (see workflow doc), or stay entirely in skills for ingest.
+3. Use **[`elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md`](elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md)** plus **[`kibana-agent-builder`](https://github.com/elastic/agent-skills/blob/main/skills/kibana/agent-builder/SKILL.md)** for Agent Builder steps.
 
-3. Follow [`elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md`](elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md) to build agents in each **Kibana** (no stable public “create agent from JSON” API in this repo).
-
-Details: [`elastic-agent-builder-a2a-cloud-path/README.md`](elastic-agent-builder-a2a-cloud-path/README.md).
+**Headless / CI fallback:** same folder’s `scripts/run-all.sh` + `.env` — see [`elastic-agent-builder-a2a-cloud-path/README.md`](elastic-agent-builder-a2a-cloud-path/README.md).
 
 ## Agent Builder (manual in Kibana)
 
@@ -112,12 +106,9 @@ Setup notes: [`docs/README.md`](docs/README.md).
 - Never commit **`.env`**, **`state/`** under the cloud path, **`.elastic-credentials`**, or API keys. This repo’s `.gitignore` excludes common secret paths.
 - Narrow the role in [`elastic-agent-builder-a2a-cloud-path/scripts/api-key-body.json`](elastic-agent-builder-a2a-cloud-path/scripts/api-key-body.json) before customer-facing demos (it is intentionally broad for lab speed).
 
-## Related Elastic skills (optional)
+## Elastic Agent Skills (official)
 
-If you use Claude / agent skills from Elastic, these align with the cloud path:
-
-- **cloud-setup** — `EC_API_KEY`, region, validate Cloud API.
-- **cloud-create-project** / **cloud-manage-project** — same outcomes as `01-provision-serverless.sh` and follow-on operations.
+All skills referenced above live in **[elastic/agent-skills](https://github.com/elastic/agent-skills)** (install per that repo). They are the **preferred** way to provision Cloud Serverless projects and operate Elasticsearch/Kibana from an AI agent; the bash scripts in `elastic-agent-builder-a2a-cloud-path/scripts/` are a **fallback** for automation without an agent runtime.
 
 ## License / status
 

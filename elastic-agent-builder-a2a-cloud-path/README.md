@@ -4,7 +4,22 @@ This folder is a **second path** to stand up the workshop on real **Elastic Clou
 
 Use it when you want a fast loop on real stacks before porting flows into Instruqt.
 
-## What gets automated
+## Prerequisite (recommended): Elastic Agent Skills
+
+**Install the official skills library first:** **[elastic/agent-skills](https://github.com/elastic/agent-skills)**.
+
+That repo is the supported way to teach your AI agent (Cursor, Claude Code, Copilot, etc.) to run **cloud-setup**, **cloud-create-project**, **cloud-manage-project**, **elasticsearch-authn**, **kibana-agent-builder**, and related tasks correctly. Follow its [Getting started](https://github.com/elastic/agent-skills#getting-started) and security guidance.
+
+**Primary workflow:** use the skills with your agent to provision both Serverless projects, create scoped API keys, then either:
+
+- continue in skills for ingest / Agent Builder, **or**
+- run the small bash helpers in `scripts/` only for **templates + bulk** (see below).
+
+Step-by-step checklist: **[`SKILLS-FIRST-WORKFLOW.md`](./SKILLS-FIRST-WORKFLOW.md)**.
+
+## Bash scripts (optional / CI / headless)
+
+These mirror the same Cloud + Elasticsearch operations when you **do not** have an agent, or you want a deterministic pipeline:
 
 | Step | Script |
 | ---- | ------ |
@@ -15,29 +30,20 @@ Use it when you want a fast loop on real stacks before porting flows into Instru
 | Print Kibana URLs + next steps | `scripts/04-print-next-steps.sh` |
 | All of the above | `scripts/run-all.sh` |
 
-## What stays manual (for now)
+Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.example`).
 
-**Agent Builder** agents are authored in **Kibana** in each project. There is no stable, documented “create this agent from JSON” API in this repo. After the stack is live, follow the scaffolds under `../elastic-agent-builder-a2a-workshop/agent-scaffolds/` and the checklist in `AGENT_BUILDER.md` in this folder.
+## What stays manual (unless you use a skill)
 
-Later you can port the same story into Instruqt once the Kibana steps are stable.
-
-## Prerequisites
-
-- `curl`, `jq`, `bash`
-- An Elastic Cloud **organization API key** with permission to create serverless projects (**Project Admin** / **Org owner** tier — see Elastic docs for your org).
-- Do **not** paste secrets into chat; keep them in a local `.env` file.
-
-### Aligning with Elastic agent skills
-
-These skills describe the same operations this path automates via REST:
-
-- **cloud-setup** — `EC_API_KEY`, `EC_BASE_URL`, `EC_REGION`, validate with `/api/v1/serverless/regions`
-- **cloud-create-project** — equivalent to `01-provision-serverless.sh` (this repo uses `POST /api/v1/serverless/projects/{observability|security}`)
-- **cloud-manage-project** — day-2 after projects exist (list/get/update/delete)
-
-If your environment includes optional **`create-project.py`** / **`manage-project.py`** helpers that ship with some Elastic internal skill packs, you can create the two projects with those CLIs instead, then assemble `state/bootstrap.json` (endpoints + bootstrap credentials) yourself and start at **`02-create-es-api-keys.sh`**.
+**Agent Builder** authoring is covered by the **[kibana-agent-builder](https://github.com/elastic/agent-skills/blob/main/skills/kibana/agent-builder/SKILL.md)** skill when you drive everything through Agent Skills. This repo still provides narrative and payload shapes under [`../elastic-agent-builder-a2a-workshop/agent-scaffolds/`](../elastic-agent-builder-a2a-workshop/agent-scaffolds/) and [`AGENT_BUILDER.md`](./AGENT_BUILDER.md).
 
 ## Quick start
+
+### Path 1 — Agent Skills (recommended)
+
+1. Install **[elastic/agent-skills](https://github.com/elastic/agent-skills)**.
+2. Open **`SKILLS-FIRST-WORKFLOW.md`** and execute each step with your agent (cloud-setup → two × cloud-create-project → elasticsearch-authn → kibana-agent-builder, etc.).
+
+### Path 2 — Bash only
 
 ```bash
 cd elastic-agent-builder-a2a-cloud-path
@@ -59,5 +65,5 @@ Outputs (gitignored / sensitive):
 
 ## Troubleshooting
 
-- **Security create returns 422** — the Cloud API may require extra fields over time. Compare your payload with the latest [Create security project](https://www.elastic.co/docs/api/doc/elastic-cloud-serverless/operation/operation-createsecurityproject) docs and extend `01-provision-serverless.sh`.
+- **Security create returns 422** — the Cloud API may require extra fields over time. Compare your payload with the latest [Create security project](https://www.elastic.co/docs/api/doc/elastic-cloud-serverless/operation/operation-createsecurityproject) docs and extend `01-provision-serverless.sh`, or rely on **cloud-create-project** from Agent Skills (updated upstream).
 - **Elasticsearch `403` on `_security/api_key`** — confirm bootstrap `credentials` exist in `state/bootstrap.json` and that you are calling the **Elasticsearch** endpoint from that file, not Kibana.

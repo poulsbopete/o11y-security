@@ -1,6 +1,6 @@
 # Agent Builder checklist (post-bootstrap)
 
-After `scripts/run-all.sh`, you have live Elasticsearch + Kibana in **two** projects. Build agents in this order:
+After your environment is live (via **[Elastic Agent Skills](https://github.com/elastic/agent-skills)** — **kibana-agent-builder** — or after `scripts/run-all.sh`), you have Elasticsearch + Kibana in **two** projects. Build agents in this order:
 
 ## 1. Security project (detection)
 
