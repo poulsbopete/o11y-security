@@ -28,7 +28,7 @@ This agent is the **brain**: it turns noisy endpoint activity into a crisp secur
 
 ```bash
 source /root/elastic-workshop/.env
-curl -sS -H "Authorization: Bearer $SECURITY_API_KEY" \
+curl -sS -H "Authorization: ApiKey $SECURITY_API_KEY" \
   "$SECURITY_ES_URL/.elastic-agents-security-detections/_search?pretty" \
   -H 'Content-Type: application/json' \
   -d '{"size":1,"sort":[{"@timestamp":"desc"}]}'

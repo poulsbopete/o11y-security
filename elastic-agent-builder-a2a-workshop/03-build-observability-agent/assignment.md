@@ -35,7 +35,7 @@ Create `/root/elastic-workshop/artifacts/o11y-agent-contract.md` summarizing:
 ```bash
 source /root/elastic-workshop/.env
 curl -sS -X POST "$O11Y_AGENT_ENDPOINT" \
-  -H "Authorization: Bearer $O11Y_API_KEY" \
+  -H "Authorization: ApiKey $O11Y_API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{"host":"prod-db-01","time_range":"1m"}' | jq .
 ```

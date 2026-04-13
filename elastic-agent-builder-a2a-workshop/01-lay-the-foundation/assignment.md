@@ -33,11 +33,11 @@ bash /root/elastic-workshop/scripts/apply-index-templates.sh
 bash /root/elastic-workshop/scripts/load-sample-bulk.sh
 ```
 
-5. Verify both clusters with `curl` (Bearer token is the API key string):
+5. Verify both clusters with `curl` (use the `ApiKey` scheme with the base64 API key string):
 
 ```bash
-curl -sS -H "Authorization: Bearer $O11Y_API_KEY" "$O11Y_ES_URL/_cluster/health" | jq .
-curl -sS -H "Authorization: Bearer $SECURITY_API_KEY" "$SECURITY_ES_URL/_cluster/health" | jq .
+curl -sS -H "Authorization: ApiKey $O11Y_API_KEY" "$O11Y_ES_URL/_cluster/health" | jq .
+curl -sS -H "Authorization: ApiKey $SECURITY_API_KEY" "$SECURITY_ES_URL/_cluster/health" | jq .
 ```
 
 === Context

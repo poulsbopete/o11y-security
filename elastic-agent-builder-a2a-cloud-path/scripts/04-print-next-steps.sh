@@ -36,7 +36,7 @@ After you publish the Observability agent URL, append to ${ROOT}/state/workshop.
 
 Quick checks (loads keys from workshop.env):
   set -a; source ${ROOT}/state/workshop.env; set +a
-  curl -sS -H "Authorization: Bearer \${SECURITY_API_KEY}" "\${SECURITY_ES_URL}/_cluster/health" | jq .
-  curl -sS -H "Authorization: Bearer \${O11Y_API_KEY}" "\${O11Y_ES_URL}/_cluster/health" | jq .
+  curl -sS -H "Authorization: ApiKey \${SECURITY_API_KEY}" "\${SECURITY_ES_URL}/_cluster/health" | jq .
+  curl -sS -H "Authorization: ApiKey \${O11Y_API_KEY}" "\${O11Y_ES_URL}/_cluster/health" | jq .
 
 EOF

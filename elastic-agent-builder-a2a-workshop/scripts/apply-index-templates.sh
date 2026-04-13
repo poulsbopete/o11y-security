@@ -23,7 +23,7 @@ apply() {
     exit 1
   fi
   curl -sS -X PUT "${base_url}/_index_template/${name}" \
-    -H "Authorization: Bearer ${api_key}" \
+    -H "Authorization: ApiKey ${api_key}" \
     -H "Content-Type: application/json" \
     --data-binary "@${file}"
 }

@@ -12,7 +12,7 @@ cat >"$ROOT/artifacts/o11y-agent-contract.md" <<'EOF'
 # Observability context agent — lab contract (solved stub)
 
 - **Method:** POST
-- **Auth:** `Authorization: Bearer $O11Y_API_KEY`
+- **Auth:** `Authorization: ApiKey $O11Y_API_KEY`
 - **Body:** `{"host":"<string>","time_range":"1m|5m|15m"}`
 - **Response:** JSON per `sample-data/o11y-context-example.json`
 

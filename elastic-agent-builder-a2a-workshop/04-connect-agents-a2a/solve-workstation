@@ -19,6 +19,6 @@ set +a
 bash "$ROOT/scripts/apply-index-templates.sh" || true
 
 curl -sS -X POST "${SECURITY_ES_URL}/.elastic-agents-security-a2a-enriched/_doc?refresh=wait_for" \
-  -H "Authorization: Bearer ${SECURITY_API_KEY}" \
+  -H "Authorization: ApiKey ${SECURITY_API_KEY}" \
   -H 'Content-Type: application/json' \
   --data-binary @"$ROOT/sample-data/security-enriched-example.json" >/dev/null

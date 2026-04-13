@@ -13,7 +13,7 @@ bulk() {
   local key="$2"
   local file="$3"
   curl -sS -X POST "${url}/_bulk" \
-    -H "Authorization: Bearer ${key}" \
+    -H "Authorization: ApiKey ${key}" \
     -H "Content-Type: application/x-ndjson" \
     --data-binary "@${file}" | jq -e '.errors == false' >/dev/null
 }

@@ -23,7 +23,7 @@ fi
 
 code="$(
   curl -sS -o /tmp/o11y-agent-response.json -w "%{http_code}" -X POST "$O11Y_AGENT_ENDPOINT" \
-    -H "Authorization: Bearer ${O11Y_API_KEY}" \
+    -H "Authorization: ApiKey ${O11Y_API_KEY}" \
     -H 'Content-Type: application/json' \
     -d '{"host":"prod-db-01","time_range":"1m"}' || true
 )"
