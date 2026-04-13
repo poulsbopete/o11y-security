@@ -56,7 +56,7 @@ Target indices (examples used in the workshop):
 
 ## Slides (GitHub Pages)
 
-A **4-slide** value deck lives in [`docs/index.html`](docs/index.html). After enabling **Pages** from the **`/docs`** folder on `main`, it is served at:
+A **4-slide** value deck lives in [`docs/index.html`](docs/index.html), with an animated **CSS “FallingPattern”** background ([`docs/pattern.css`](docs/pattern.css))—static Pages, no React build. After enabling **Pages** from the **`/docs`** folder on `main`, it is served at:
 
 **https://poulsbopete.github.io/o11y-security/**
 

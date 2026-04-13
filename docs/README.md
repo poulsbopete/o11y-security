@@ -12,3 +12,23 @@ This folder powers the **short HTML slide deck** served by GitHub Pages (`index.
 Site URL: **https://poulsbopete.github.io/o11y-security/**
 
 The deck has four slides with **Prev / Next**, dots, a counter, and keyboard support (**←** **→**, **Space**).
+
+## Background (FallingPattern)
+
+GitHub Pages here is **static HTML + CSS** only—there is **no** React, **no** npm build, and **no** shadcn/Tailwind toolchain on this path.
+
+The animated “falling lines” look is a **CSS port** of the `FallingPattern` + `framer-motion` idea:
+
+- Styles: [`pattern.css`](pattern.css) (multi-layer `radial-gradient`, `@keyframes` on `background-position`, blur + dot overlay, radial `mask-image`).
+- Tune colors and motion via CSS variables in `:root`: `--pattern-stripe`, `--pattern-bg`, `--pattern-duration`, `--pattern-blur`, `--pattern-density`.
+- **`prefers-reduced-motion: reduce`** disables the animation.
+
+### If you want the real React + shadcn component instead
+
+Use a **Next.js (or Vite) + TypeScript** app with [shadcn/ui](https://ui.shadcn.com/) and Tailwind:
+
+1. `npx shadcn@latest init` (pick TypeScript + Tailwind).
+2. Ensure **`src/components/ui/`** exists (shadcn’s default for `add`); if your template uses another folder, create `components/ui` anyway so `npx shadcn add …` and imports like `@/components/ui/...` stay consistent.
+3. `npm i framer-motion` and add `cn()` in `src/lib/utils.ts` per shadcn.
+4. Paste the original **`falling-pattern.tsx`** into `src/components/ui/falling-pattern.tsx` and wrap your layout as in the demo.
+5. Deploy that app (Vercel, Cloudflare Pages, etc.). GitHub Pages **can** host a built static export (`next export` / `output: 'export'`) if you add a CI build step—otherwise keep using this CSS version for zero-build Pages.
