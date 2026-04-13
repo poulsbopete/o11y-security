@@ -12,25 +12,36 @@
       --muted: #8b949e;
       --accent: #58a6ff;
       --accent2: #3fb950;
-      --warn: #d29922;
       --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); }
     .deck {
       height: 100vh;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      scroll-behavior: smooth;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .viewport {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .strip {
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
     }
     .slide {
-      min-height: 100vh;
-      scroll-snap-align: start;
+      flex-shrink: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: clamp(1.5rem, 5vw, 4rem);
-      border-bottom: 1px solid #30363d;
+      padding: clamp(1.25rem, 4vw, 3rem);
+      border-bottom: none;
       background: radial-gradient(1200px 600px at 80% -10%, rgba(88, 166, 255, 0.08), transparent 55%),
                   radial-gradient(900px 500px at -10% 110%, rgba(63, 185, 80, 0.06), transparent 50%),
                   var(--bg);
@@ -49,20 +60,20 @@
       margin-bottom: 0.75rem;
     }
     h1 {
-      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-size: clamp(1.65rem, 3.8vw, 2.65rem);
       font-weight: 650;
       line-height: 1.15;
       margin: 0 0 1rem;
       letter-spacing: -0.02em;
     }
     h2 {
-      font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+      font-size: clamp(1.45rem, 3vw, 2rem);
       font-weight: 600;
       line-height: 1.2;
       margin: 0 0 1rem;
     }
     p.lead {
-      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      font-size: clamp(1rem, 1.9vw, 1.2rem);
       line-height: 1.55;
       color: var(--muted);
       margin: 0 0 1.25rem;
@@ -71,7 +82,7 @@
       margin: 0;
       padding-left: 1.15rem;
       color: var(--text);
-      font-size: clamp(1rem, 1.8vw, 1.15rem);
+      font-size: clamp(0.98rem, 1.7vw, 1.12rem);
       line-height: 1.55;
     }
     li { margin-bottom: 0.5rem; }
@@ -92,8 +103,8 @@
     }
     .cta:hover { background: rgba(88, 166, 255, 0.2); }
     .hint {
-      margin-top: 1.5rem;
-      font-size: 0.9rem;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
       color: var(--muted);
     }
     kbd {
@@ -105,97 +116,227 @@
       background: #21262d;
       color: var(--text);
     }
-    footer.nav {
-      position: fixed;
-      bottom: 0.75rem;
-      right: 1rem;
-      font-size: 0.75rem;
+    .controls {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom, 0));
+      border-top: 1px solid #30363d;
+      background: rgba(13, 17, 23, 0.92);
+      backdrop-filter: blur(8px);
+      z-index: 3;
+    }
+    .controls-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      appearance: none;
+      border: 1px solid #30363d;
+      background: #21262d;
+      color: var(--text);
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .counter {
+      font-size: 0.9rem;
       color: var(--muted);
-      z-index: 2;
+      min-width: 5.5rem;
+      text-align: center;
+    }
+    .counter strong { color: var(--text); font-weight: 600; }
+    .dots {
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: none;
+      padding: 0;
+      background: #30363d;
+      cursor: pointer;
+    }
+    .dot[aria-current="true"] {
+      background: var(--accent);
+      transform: scale(1.15);
+    }
+    .brand {
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    @media (max-width: 520px) {
+      .brand { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="deck" id="deck" tabindex="0" aria-label="Slide deck — scroll or use arrow keys">
-    <section class="slide" id="s1">
-      <div class="inner">
-        <p class="kicker">Why this matters</p>
-        <h1>Security sees an alert. Observability holds the truth about impact.</h1>
-        <p class="lead">
-          In real deployments, Security and Observability often live in separate serverless projects and clusters.
-          That separation is healthy for ownership—but it becomes a liability when analysts must guess whether an incident is noisy or business-critical.
-        </p>
-      </div>
-    </section>
+  <div class="deck" id="deck">
+    <div class="viewport" id="viewport">
+      <div class="strip" id="strip" role="region" aria-roledescription="carousel" aria-label="Value proposition slides">
+        <section class="slide" id="s1" aria-label="Slide 1 of 4">
+          <div class="inner">
+            <p class="kicker">Why this matters</p>
+            <h1>Security sees an alert. Observability holds the truth about impact.</h1>
+            <p class="lead">
+              In real deployments, Security and Observability often live in separate serverless projects and clusters.
+              That separation is healthy for ownership—but it becomes a liability when analysts must guess whether an incident is noisy or business-critical.
+            </p>
+          </div>
+        </section>
 
-    <section class="slide" id="s2">
-      <div class="inner">
-        <p class="kicker">The pattern</p>
-        <h2>Agent Builder A2A: let each domain keep its expertise</h2>
-        <p class="lead">
-          Build a <strong style="color: var(--accent);">Security agent</strong> that detects risky behavior, then call an <strong style="color: var(--accent2);">Observability agent</strong> over HTTPS for host context (CPU, memory, errors, latency) in the same window of time.
-        </p>
-        <ul>
-          <li><strong>No duplicated analytics</strong> — each agent stays in its lane.</li>
-          <li><strong>API-first wiring</strong> — works across clusters and teams.</li>
-          <li><strong>One enriched story</strong> — security event + operational context in one document.</li>
-        </ul>
-      </div>
-    </section>
+        <section class="slide" id="s2" aria-label="Slide 2 of 4">
+          <div class="inner">
+            <p class="kicker">The pattern</p>
+            <h2>Agent Builder A2A: let each domain keep its expertise</h2>
+            <p class="lead">
+              Build a <strong style="color: var(--accent);">Security agent</strong> that detects risky behavior, then call an <strong style="color: var(--accent2);">Observability agent</strong> over HTTPS for host context (CPU, memory, errors, latency) in the same window of time.
+            </p>
+            <ul>
+              <li><strong>No duplicated analytics</strong> — each agent stays in its lane.</li>
+              <li><strong>API-first wiring</strong> — works across clusters and teams.</li>
+              <li><strong>One enriched story</strong> — security event + operational context in one document.</li>
+            </ul>
+          </div>
+        </section>
 
-    <section class="slide" id="s3">
-      <div class="inner">
-        <p class="kicker">Value for sellers &amp; customers</p>
-        <h2>Faster decisions, clearer ROI, a path to response</h2>
-        <ul>
-          <li><strong>Shrink MTTR</strong> — fewer round-trips between siloed tools and experts.</li>
-          <li><strong>Executive-ready narrative</strong> — “attack signal” plus “customer-visible pain” in one view.</li>
-          <li><strong>Automation without blind spots</strong> — trigger Slack, ticketing, or runbooks with context, not guesswork.</li>
-        </ul>
-        <p class="lead" style="margin-top:1.25rem;">
-          Positioning line: <em>Detect attacks <strong>with</strong> application impact—not instead of it.</em>
-        </p>
-      </div>
-    </section>
+        <section class="slide" id="s3" aria-label="Slide 3 of 4">
+          <div class="inner">
+            <p class="kicker">Value for sellers &amp; customers</p>
+            <h2>Faster decisions, clearer ROI, a path to response</h2>
+            <ul>
+              <li><strong>Shrink MTTR</strong> — fewer round-trips between siloed tools and experts.</li>
+              <li><strong>Executive-ready narrative</strong> — “attack signal” plus “customer-visible pain” in one view.</li>
+              <li><strong>Automation without blind spots</strong> — trigger Slack, ticketing, or runbooks with context, not guesswork.</li>
+            </ul>
+            <p class="lead" style="margin-top:1.25rem;">
+              Positioning line: <em>Detect attacks <strong>with</strong> application impact—not instead of it.</em>
+            </p>
+          </div>
+        </section>
 
-    <section class="slide" id="s4">
-      <div class="inner">
-        <p class="kicker">Hands-on</p>
-        <h2>Workshop: two serverless projects, one correlation story</h2>
-        <p class="lead">
-          The companion Instruqt track walks through standing up both agents, calling Observability from Security, indexing enriched events, and visualizing correlation in Kibana.
-        </p>
-        <a class="cta" href="https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-workshop">
-          Open the workshop in GitHub →
-        </a>
-        <p class="hint">Scroll vertically for slides. Optional: click the page, then use <kbd>↓</kbd> / <kbd>↑</kbd> or <kbd>PageDown</kbd> / <kbd>PageUp</kbd>.</p>
+        <section class="slide" id="s4" aria-label="Slide 4 of 4">
+          <div class="inner">
+            <p class="kicker">Hands-on</p>
+            <h2>Workshop: two serverless projects, one correlation story</h2>
+            <p class="lead">
+              The companion Instruqt track walks through standing up both agents, calling Observability from Security, indexing enriched events, and visualizing correlation in Kibana.
+            </p>
+            <a class="cta" href="https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-workshop">
+              Open the workshop in GitHub →
+            </a>
+            <p class="hint">Use <strong>Next</strong> / <strong>Prev</strong> below, dot buttons, or <kbd>←</kbd> <kbd>→</kbd> / <kbd>Space</kbd>.</p>
+          </div>
+        </section>
       </div>
-    </section>
+    </div>
+
+    <nav class="controls" aria-label="Slide navigation">
+      <div class="controls-left">
+        <button type="button" class="btn" id="prev" aria-label="Previous slide">← Prev</button>
+        <button type="button" class="btn" id="next" aria-label="Next slide">Next →</button>
+        <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 4</span>
+      </div>
+      <div class="dots" id="dots" aria-label="Jump to slide"></div>
+      <span class="brand">Agent Builder A2A</span>
+    </nav>
   </div>
-  <footer class="nav">Agent Builder A2A · o11y-security</footer>
+
   <script>
     (function () {
-      var deck = document.getElementById("deck");
-      if (!deck) return;
-      deck.focus({ preventScroll: true });
+      var strip = document.getElementById("strip");
+      var viewport = document.getElementById("viewport");
+      var prev = document.getElementById("prev");
+      var next = document.getElementById("next");
+      var counter = document.getElementById("counter");
+      var dotsHost = document.getElementById("dots");
       var slides = [].slice.call(document.querySelectorAll(".slide"));
-      function idx() {
-        var top = deck.scrollTop + deck.clientHeight / 3;
-        for (var i = 0; i < slides.length; i++) {
-          var s = slides[i];
-          if (s.offsetTop + s.offsetHeight > top) return i;
+      var total = slides.length;
+      var i = 0;
+
+      function slideHeight() {
+        return viewport ? viewport.clientHeight : window.innerHeight;
+      }
+
+      function layout() {
+        var h = slideHeight();
+        strip.style.height = h * total + "px";
+        for (var s = 0; s < slides.length; s++) {
+          slides[s].style.height = h + "px";
         }
-        return slides.length - 1;
+        strip.style.transform = "translateY(" + (-i * h) + "px)";
       }
-      function go(i) {
-        i = Math.max(0, Math.min(slides.length - 1, i));
-        slides[i].scrollIntoView({ behavior: "smooth", block: "start" });
+
+      function renderDots() {
+        dotsHost.innerHTML = "";
+        for (var d = 0; d < total; d++) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "dot";
+          b.setAttribute("aria-label", "Go to slide " + (d + 1));
+          if (d === i) b.setAttribute("aria-current", "true");
+          (function (idx) {
+            b.addEventListener("click", function () { go(idx); });
+          })(d);
+          dotsHost.appendChild(b);
+        }
       }
-      deck.addEventListener("keydown", function (e) {
-        if (e.key === "ArrowDown" || e.key === "PageDown") { e.preventDefault(); go(idx() + 1); }
-        else if (e.key === "ArrowUp" || e.key === "PageUp") { e.preventDefault(); go(idx() - 1); }
-        else if (e.key === "Home") { e.preventDefault(); go(0); }
-        else if (e.key === "End") { e.preventDefault(); go(slides.length - 1); }
+
+      function apply() {
+        layout();
+        counter.innerHTML = "<strong>" + (i + 1) + "</strong> / " + total;
+        prev.disabled = i <= 0;
+        next.disabled = i >= total - 1;
+        var dots = dotsHost.querySelectorAll(".dot");
+        for (var d = 0; d < dots.length; d++) {
+          if (d === i) dots[d].setAttribute("aria-current", "true");
+          else dots[d].removeAttribute("aria-current");
+        }
+      }
+
+      function go(n) {
+        i = Math.max(0, Math.min(total - 1, n));
+        apply();
+      }
+
+      prev.addEventListener("click", function () { go(i - 1); });
+      next.addEventListener("click", function () { go(i + 1); });
+
+      window.addEventListener("resize", function () { apply(); });
+      window.addEventListener("load", function () { apply(); });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          if (i < total - 1) go(i + 1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          if (i > 0) go(i - 1);
+        } else if (e.key === "Home") {
+          e.preventDefault();
+          go(0);
+        } else if (e.key === "End") {
+          e.preventDefault();
+          go(total - 1);
+        }
+      });
+
+      renderDots();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { apply(); });
       });
     })();
   </script>

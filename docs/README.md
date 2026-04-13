@@ -12,4 +12,4 @@ The site URL will be:
 
 `https://poulsbopete.github.io/o11y-security/`
 
-After the first deploy, open that URL to view the slides (scroll vertically; arrow keys work when the deck has focus).
+After the first deploy, open that URL. The deck has **four slides** with **Prev / Next**, dot shortcuts, a **slide counter** (e.g. `2 / 4`), and keyboard support (**←** **→**, **Space**, **Page Up/Down**).
