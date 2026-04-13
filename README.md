@@ -75,7 +75,7 @@ Start at: [`elastic-agent-builder-a2a-workshop/track.yml`](elastic-agent-builder
 
 1. Follow **[`elastic-agent-builder-a2a-cloud-path/SKILLS-FIRST-WORKFLOW.md`](elastic-agent-builder-a2a-cloud-path/SKILLS-FIRST-WORKFLOW.md)** with your AI agent.
 2. Optionally run bash helpers for **index templates + bulk** only (see workflow doc), or stay entirely in skills for ingest.
-3. Use **[`elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md`](elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md)** plus **[`kibana-agent-builder`](https://github.com/elastic/agent-skills/blob/main/skills/kibana/agent-builder/SKILL.md)** for Agent Builder steps.
+3. Use **[`elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md`](elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md)** plus the **[agent-builder](https://github.com/elastic/agent-skills/blob/main/skills/kibana/agent-builder/SKILL.md)** skill for Agent Builder steps.
 
 **Headless / CI fallback:** same folder’s `scripts/run-all.sh` + `.env` — see [`elastic-agent-builder-a2a-cloud-path/README.md`](elastic-agent-builder-a2a-cloud-path/README.md).
 

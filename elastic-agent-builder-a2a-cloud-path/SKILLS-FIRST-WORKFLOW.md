@@ -66,9 +66,9 @@ Align agent behavior with [`../elastic-agent-builder-a2a-workshop/agent-scaffold
 
 | Area | Skill |
 | ---- | ----- |
-| Sample security data | [security-generate-security-sample-data](https://github.com/elastic/agent-skills/blob/main/skills/security/generate-security-sample-data/SKILL.md) |
-| Log investigation | [observability-logs-search](https://github.com/elastic/agent-skills/blob/main/skills/observability/logs-search/SKILL.md) |
-| Dashboards | [kibana-dashboards](https://github.com/elastic/agent-skills/blob/main/skills/kibana/dashboards/SKILL.md) |
+| Sample security data | [generate-security-sample-data](https://github.com/elastic/agent-skills/blob/main/skills/security/generate-security-sample-data/SKILL.md) |
+| Log investigation | [logs-search](https://github.com/elastic/agent-skills/blob/main/skills/observability/logs-search/SKILL.md) |
+| Dashboards | [kibana-dashboards](https://github.com/elastic/agent-skills/blob/main/skills/kibana/kibana-dashboards/SKILL.md) |
 
 ## When to use bash `scripts/` in this folder
 
