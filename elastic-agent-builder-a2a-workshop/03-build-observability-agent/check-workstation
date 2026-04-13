@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="/root/elastic-workshop"
+CONTRACT="$ROOT/artifacts/o11y-agent-contract.md"
+if [ ! -s "$CONTRACT" ]; then
+  fail-message "Create /root/elastic-workshop/artifacts/o11y-agent-contract.md with your HTTP contract (see scaffold in agent-scaffolds/)."
+fi
+
+ENV_FILE="$ROOT/.env"
+if [ ! -f "$ENV_FILE" ]; then
+  fail-message "Missing /root/elastic-workshop/.env"
+fi
+
+# shellcheck disable=SC1090
+set -a
+source "$ENV_FILE"
+set +a
+
+if [ -z "${O11Y_AGENT_ENDPOINT:-}" ]; then
+  fail-message "Add O11Y_AGENT_ENDPOINT to .env after you publish the Observability agent URL."
+fi
+
+code="$(
+  curl -sS -o /tmp/o11y-agent-response.json -w "%{http_code}" -X POST "$O11Y_AGENT_ENDPOINT" \
+    -H "Authorization: Bearer ${O11Y_API_KEY}" \
+    -H 'Content-Type: application/json' \
+    -d '{"host":"prod-db-01","time_range":"1m"}' || true
+)"
+
+if ! [[ "$code" =~ ^2[0-9][0-9]$ ]]; then
+  fail-message "Observability agent endpoint returned HTTP ${code}. Expected 2xx. Body (if any) is in /tmp/o11y-agent-response.json on the workstation."
+fi
+
+if ! jq -e '.host' /tmp/o11y-agent-response.json >/dev/null 2>&1; then
+  fail-message "Response JSON missing expected fields (at least host). Adjust agent output to match the workshop contract."
+fi
+
+echo "Observability agent endpoint returned 2xx JSON."

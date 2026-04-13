@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="/root/elastic-workshop"
+TRACK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1090
+source "$TRACK_ROOT/scripts/workshop-common.sh"
+sync_track_assets "${BASH_SOURCE[0]}"
+mkdir -p "$ROOT/artifacts"
+echo "workshop-security-o11y-dashboard" >"$ROOT/artifacts/security-o11y-dashboard-id.txt"

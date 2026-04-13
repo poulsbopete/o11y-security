@@ -1,0 +1,24 @@
+{
+  "index_patterns": [".elastic-agents-security-a2a-enriched-*", ".elastic-agents-security-a2a-enriched"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "dynamic": "true",
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "event_id": { "type": "keyword" },
+        "severity": { "type": "keyword" },
+        "host_name": { "type": "keyword" },
+        "correlation_token": { "type": "keyword" },
+        "correlated_anomalies": { "type": "keyword" },
+        "requires_investigation": { "type": "boolean" },
+        "a2a_response_time_ms": { "type": "long" },
+        "o11y_context": { "type": "object", "enabled": true }
+      }
+    }
+  },
+  "priority": 500
+}

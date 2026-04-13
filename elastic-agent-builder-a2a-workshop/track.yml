@@ -1,0 +1,42 @@
+slug: elastic-agent-builder-a2a-workshop
+type: track
+title: "Agent Builder A2A: Serverless Observability + Security Communication"
+teaser: Deploy Agent Builder agents across serverless Observability and Security, then wire API-to-API enrichment.
+description: |
+  Interactive workshop for Elastic sellers and solutions architects. Attendees deploy two Agent Builder
+  agents in separate serverless projects (Observability and Security), configure cross-cluster API calls,
+  enrich security detections with observability context, and visualize correlated outcomes in Kibana.
+
+  **Duration:** 30–45 minutes (six challenges, last optional)
+
+  **Prerequisites:** Elastic Cloud organization access, ability to create Serverless Observability and
+  Serverless Security projects, and familiarity with Kibana Agent Builder at an intermediate level.
+
+  **Base reference:** Elastic Autonomous Observability track patterns (dual environment, API-first wiring).
+
+icon: https://www.elastic.co/favicon.ico
+tags:
+  - elastic
+  - observability
+  - security
+  - agent-builder
+  - serverless
+  - a2a
+owner: elastic-field
+developers: []
+maintenance: false
+show_timer: true
+skipping_enabled: true
+idle_timeout: 600
+timelimit: 3600
+lab_config:
+  extend_ttl: 1800
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: true
+  loadingMessages: true
+  theme:
+    name: modern-dark
+  default_layout: AssignmentRight
+  default_layout_sidebar_size: 35
+  override_challenge_layout: false

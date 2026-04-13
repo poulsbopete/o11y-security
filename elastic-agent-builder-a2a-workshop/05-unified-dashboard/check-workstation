@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="/root/elastic-workshop"
+FILE="$ROOT/artifacts/security-o11y-dashboard-id.txt"
+if [ ! -s "$FILE" ]; then
+  fail-message "Create /root/elastic-workshop/artifacts/security-o11y-dashboard-id.txt with your dashboard id from the Kibana URL."
+fi
+
+echo "Dashboard artifact present."

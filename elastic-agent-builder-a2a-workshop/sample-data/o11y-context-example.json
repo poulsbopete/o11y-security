@@ -1,0 +1,16 @@
+{
+  "host": "prod-db-01",
+  "time_range": "1m",
+  "metrics": {
+    "cpu_percent": 85,
+    "memory_percent": 72,
+    "disk_io_read_mb_sec": 450
+  },
+  "traces": {
+    "error_rate_percent": 12,
+    "latency_p95_ms": 2400,
+    "error_rate_spike_detected": true
+  },
+  "anomaly_detected": true,
+  "context_summary": "High CPU + memory usage correlates with elevated error rate. Possible resource bottleneck."
+}

@@ -1,0 +1,47 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="/root/elastic-workshop"
+ENV_FILE="$ROOT/.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+  fail-message "Create /root/elastic-workshop/.env from env.template with your two Elasticsearch URLs and API keys."
+fi
+
+# shellcheck disable=SC1090
+set -a
+# shellcheck disable=SC1090
+source "$ENV_FILE"
+set +a
+
+for var in O11Y_ES_URL O11Y_API_KEY SECURITY_ES_URL SECURITY_API_KEY; do
+  if [ -z "${!var:-}" ]; then
+    fail-message "Missing ${var} in /root/elastic-workshop/.env"
+  fi
+done
+
+check_health() {
+  local url="$1"
+  local key="$2"
+  local label="$3"
+  local body
+  if ! body="$(curl -sS --fail -H "Authorization: Bearer ${key}" "${url}/_cluster/health")"; then
+    fail-message "${label}: HTTP request to _cluster/health failed. Confirm URL and API key."
+  fi
+  if ! echo "$body" | jq -e '.status' >/dev/null 2>&1; then
+    fail-message "${label}: unexpected JSON from _cluster/health."
+  fi
+  local status
+  status="$(echo "$body" | jq -r '.status')"
+  case "$status" in
+    green|yellow) ;;
+    *)
+      fail-message "${label}: cluster status is ${status} (expected green or yellow)."
+      ;;
+  esac
+}
+
+check_health "$O11Y_ES_URL" "$O11Y_API_KEY" "Observability"
+check_health "$SECURITY_ES_URL" "$SECURITY_API_KEY" "Security"
+
+echo "Both clusters reachable with healthy status."

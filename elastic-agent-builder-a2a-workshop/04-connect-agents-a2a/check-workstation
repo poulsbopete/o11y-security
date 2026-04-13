@@ -1,0 +1,27 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="/root/elastic-workshop"
+ENV_FILE="$ROOT/.env"
+if [ ! -f "$ENV_FILE" ]; then
+  fail-message "Missing /root/elastic-workshop/.env"
+fi
+
+# shellcheck disable=SC1090
+set -a
+source "$ENV_FILE"
+set +a
+
+body="$(curl -sS --fail -H "Authorization: Bearer ${SECURITY_API_KEY}" \
+  -H 'Content-Type: application/json' \
+  "${SECURITY_ES_URL}/.elastic-agents-security-a2a-enriched/_search" \
+  -d '{"query":{"match":{"correlated_anomalies":"high_cpu"}},"size":1,"track_total_hits":true}')" || {
+  fail-message "Search against .elastic-agents-security-a2a-enriched failed. Confirm index + privileges."
+}
+
+total="$(echo "$body" | jq 'if (.hits.total|type)=="object" then .hits.total.value else .hits.total end')"
+if ! [[ "${total:-0}" =~ ^[0-9]+$ ]] || [ "${total:-0}" -lt 1 ]; then
+  fail-message "No enriched documents with correlated_anomalies containing high_cpu. Finish the A2A merge or use Skip to insert the sample document."
+fi
+
+echo "A2A enriched index contains a correlated high_cpu document."

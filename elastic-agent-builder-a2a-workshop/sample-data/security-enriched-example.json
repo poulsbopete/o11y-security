@@ -1,0 +1,17 @@
+{
+  "event_id": "suspicious-login-attempt-12345",
+  "severity": "high",
+  "host_name": "prod-db-01",
+  "@timestamp": "2026-04-13T15:22:05Z",
+  "correlation_token": "a2a-7f3c2b1e-4d5a-6b7c-8d9e0f1a2b3c",
+  "correlated_anomalies": ["high_cpu", "high_memory", "elevated_errors"],
+  "requires_investigation": true,
+  "a2a_response_time_ms": 420,
+  "o11y_context": {
+    "host": "prod-db-01",
+    "time_range": "1m",
+    "metrics": { "cpu_percent": 85, "memory_percent": 72 },
+    "traces": { "error_rate_percent": 12, "latency_p95_ms": 2400 },
+    "anomaly_detected": true
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "event_id": "suspicious-login-attempt-12345",
+  "severity": "high",
+  "event_type": "authentication_failure",
+  "host_name": "prod-db-01",
+  "failure_count": 6,
+  "time_window_minutes": 1,
+  "@timestamp": "2026-04-13T15:22:00Z",
+  "correlation_token": "a2a-7f3c2b1e-4d5a-6b7c-8d9e0f1a2b3c"
+}

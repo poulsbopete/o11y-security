@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="/root/elastic-workshop"
+TRACK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1090
+source "$TRACK_ROOT/scripts/workshop-common.sh"
+sync_track_assets "${BASH_SOURCE[0]}"
+
+if [ ! -f "$ROOT/.env" ]; then
+  exit 0
+fi
+
+# shellcheck disable=SC1090
+set -a
+source "$ROOT/.env"
+set +a
+
+bash "$ROOT/scripts/apply-index-templates.sh" || true
+
+curl -sS -X POST "${SECURITY_ES_URL}/.elastic-agents-security-detections/_doc?refresh=wait_for" \
+  -H "Authorization: Bearer ${SECURITY_API_KEY}" \
+  -H 'Content-Type: application/json' \
+  --data-binary @"$ROOT/sample-data/security-detection-example.json" >/dev/null

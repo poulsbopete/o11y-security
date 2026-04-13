@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+  sleep 1
+done
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -y
+apt-get install -y --no-install-recommends curl ca-certificates jq python3
+
+mkdir -p /root/elastic-workshop/{assets,agent-scaffolds,scripts,sample-data,indices}
+
+# Optional: pre-seed .env when Instruqt/org secrets are injected as host env vars (organizer-only).
+if [ -n "${O11Y_ES_URL:-}" ] && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_ES_URL:-}" ] && [ -n "${SECURITY_API_KEY:-}" ]; then
+  umask 077
+  cat >/root/elastic-workshop/.env <<EOF
+O11Y_ES_URL=${O11Y_ES_URL}
+O11Y_API_KEY=${O11Y_API_KEY}
+SECURITY_ES_URL=${SECURITY_ES_URL}
+SECURITY_API_KEY=${SECURITY_API_KEY}
+EOF
+fi
+
+touch /root/elastic-workshop/.workshop-bootstrap-complete

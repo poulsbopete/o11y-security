@@ -1,0 +1,4 @@
+{"index":{"_index":"workshop-synth-metrics"}}
+{"@timestamp":"2026-04-13T15:22:00Z","host.name":"prod-db-01","system.cpu.total.norm.pct":0.85,"system.memory.actual.used.pct":0.72,"system.diskio.read.bytes":471859200}
+{"index":{"_index":"workshop-synth-metrics"}}
+{"@timestamp":"2026-04-13T15:21:00Z","host.name":"prod-db-01","system.cpu.total.norm.pct":0.42,"system.memory.actual.used.pct":0.55,"system.diskio.read.bytes":104857600}

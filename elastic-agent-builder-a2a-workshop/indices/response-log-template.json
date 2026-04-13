@@ -1,0 +1,20 @@
+{
+  "index_patterns": [".elastic-agents-response-log-*", ".elastic-agents-response-log"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "dynamic": "true",
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "action": { "type": "keyword" },
+        "target": { "type": "keyword" },
+        "actor": { "type": "keyword" },
+        "result": { "type": "keyword" }
+      }
+    }
+  },
+  "priority": 400
+}

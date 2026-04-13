@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="/root/elastic-workshop"
+FILE="$ROOT/artifacts/response-track-choice.txt"
+if [ ! -s "$FILE" ]; then
+  fail-message "Create /root/elastic-workshop/artifacts/response-track-choice.txt with your option keyword and summary line."
+fi
+
+choice="$(head -n1 "$FILE" | tr '[:upper:]' '[:lower:]')"
+case "$choice" in
+  integration|automation|investigation) ;;
+  *)
+    fail-message "First line must be one of: integration, automation, investigation."
+    ;;
+esac
+
+echo "Optional response challenge recorded."

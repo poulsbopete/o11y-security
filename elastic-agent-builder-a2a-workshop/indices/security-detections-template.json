@@ -1,0 +1,23 @@
+{
+  "index_patterns": [".elastic-agents-security-detections-*", ".elastic-agents-security-detections"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "dynamic": "true",
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "event_id": { "type": "keyword" },
+        "severity": { "type": "keyword" },
+        "event_type": { "type": "keyword" },
+        "host_name": { "type": "keyword" },
+        "failure_count": { "type": "integer" },
+        "time_window_minutes": { "type": "integer" },
+        "correlation_token": { "type": "keyword" }
+      }
+    }
+  },
+  "priority": 500
+}
