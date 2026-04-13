@@ -11,6 +11,7 @@
       --text: #e6edf3;
       --muted: #8b949e;
       --accent: #58a6ff;
+      --persona: #3fb950;
       --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     * { box-sizing: border-box; }
@@ -43,6 +44,31 @@
     ul.cards p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.45; }
     ul.cards a.get { color: var(--accent); font-size: 0.88rem; font-weight: 600; margin-top: 0.5rem; display: inline-block; }
     kbd { font-family: ui-monospace, monospace; font-size: 0.78em; border: 1px solid #30363d; padding: 0.1rem 0.35rem; border-radius: 4px; background: #21262d; }
+    h2.section { font-size: 1.1rem; margin: 0 0 0.65rem; font-weight: 650; }
+    p.section-note { color: var(--muted); font-size: 0.88rem; margin: 0 0 0.75rem; line-height: 1.45; }
+    .table-wrap { overflow-x: auto; border: 1px solid #30363d; border-radius: 10px; margin-bottom: 1.5rem; background: rgba(22, 27, 34, 0.75); }
+    table.persona { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    table.persona th, table.persona td { padding: 0.65rem 0.75rem; text-align: left; vertical-align: top; border-bottom: 1px solid #30363d; }
+    table.persona tr:last-child td { border-bottom: none; }
+    table.persona th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    table.persona td.persona-name { color: var(--persona); font-weight: 650; white-space: nowrap; }
+    table.persona td.hint { color: var(--muted); max-width: 22rem; line-height: 1.4; }
+    table.persona td.action { width: 1%; white-space: nowrap; }
+    button.copy-prompt {
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 0.35rem 0.65rem;
+      background: #21262d;
+      color: var(--accent);
+    }
+    button.copy-prompt:hover { border-color: var(--accent); background: #30363d; }
+    button.copy-prompt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    #copy-status { position: fixed; bottom: 1rem; right: 1rem; padding: 0.5rem 0.85rem; border-radius: 8px; background: #238636; color: #fff; font-size: 0.85rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; }
+    #copy-status.on { opacity: 1; }
   </style>
 </head>
 <body>
@@ -56,6 +82,48 @@
     <p class="lead">
       Copy the Markdown below into <strong>Claude</strong>, <strong>ChatGPT</strong>, or any chat tool. Use them to coach AEs on Agent Builder <strong>A2A</strong> positioning, discovery, and personas.
     </p>
+    <h2 class="section">Copy by persona</h2>
+    <p class="section-note">
+      One-click prompts prime the model for a single buyer. They complement the full coach Markdown below.
+    </p>
+    <div class="table-wrap">
+      <table class="persona">
+        <thead>
+          <tr>
+            <th scope="col">Persona</th>
+            <th scope="col">Focus</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="persona-name">CISO</td>
+            <td class="hint">Breach MTTR, consolidation, board narrative, attack + app impact.</td>
+            <td class="action"><button type="button" class="copy-prompt" data-persona="ciso">Copy prompt</button></td>
+          </tr>
+          <tr>
+            <td class="persona-name">SRE / Infra</td>
+            <td class="hint">K8s, cost vs Datadog, fewer consoles, faster troubleshooting.</td>
+            <td class="action"><button type="button" class="copy-prompt" data-persona="sre">Copy prompt</button></td>
+          </tr>
+          <tr>
+            <td class="persona-name">Platform</td>
+            <td class="hint">IDP, agent APIs, standardization, first three agents workshop.</td>
+            <td class="action"><button type="button" class="copy-prompt" data-persona="platform">Copy prompt</button></td>
+          </tr>
+          <tr>
+            <td class="persona-name">Customer Success</td>
+            <td class="hint">Tickets, escalations, proactive health, NPS.</td>
+            <td class="action"><button type="button" class="copy-prompt" data-persona="cs">Copy prompt</button></td>
+          </tr>
+          <tr>
+            <td class="persona-name">CFO / Finance</td>
+            <td class="hint">TCO, payback, consolidation savings—keep jargon light.</td>
+            <td class="action"><button type="button" class="copy-prompt" data-persona="cfo">Copy prompt</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <ul class="cards">
       <li>
         <a class="title" href="./ae-a2a-selling-coach.md">Selling Agent Builder A2A (full coach)</a>
@@ -73,5 +141,72 @@
       <a href="https://github.com/poulsbopete/o11y-security/tree/main/docs/prompts" style="color:var(--accent);">GitHub</a>.
     </p>
   </main>
+  <div id="copy-status" role="status" aria-live="polite"></div>
+  <script>
+(function () {
+  var prompts = {
+    ciso: "You are an expert sales coach for Elastic Account Executives. The angle is Elastic Agent Builder with agent-to-agent (A2A) communication: Security agents call Observability agents over HTTPS/APIs so incidents show attack signal and customer-visible impact together—no swivel chair.\n\nFocus only on the CISO / Chief Security Officer persona. I am the AE. Either (a) ask me tough CISO questions and critique my answers, or (b) help me write a 90-second talk track.\n\nUse these anchors: breach detection and response time, vendor and data consolidation, board-ready narrative, correlating security alerts with application impact, reducing alert fatigue. Stay concise and field-ready.",
+    sre: "You are an expert sales coach for Elastic AEs selling Agent Builder A2A: agents calling agents via API for unified incident context across Security and Observability.\n\nFocus on the VP of Infrastructure / SRE leader persona: Kubernetes and services at scale, metrics and logs cost vs incumbents, too many consoles (metrics, logs, traces, SIEM), MTTR and on-call toil.\n\nI am the AE. Give me: five discovery questions, a tight value pitch in plain ops language, and one objection handler for \"we already have solid Kubernetes monitoring.\"",
+    platform: "You are a sales coach for Elastic AEs positioning Agent Builder A2A to a VP of Platform / platform engineering lead.\n\nEmphasize internal developer platforms: exposing safe agent APIs, standard patterns across security/ops/app teams, versioning and deployment, governance—not asking every developer to master Elasticsearch.\n\nI am the AE. Help with discovery questions, a short talk track, and how to land a workshop on their \"first three agents.\"",
+    cs: "You are a sales coach for Elastic AEs selling Agent Builder A2A to a VP of Customer Success or VP of Customer Support.\n\nEmphasize fewer escalations, faster answers to \"is it us or the customer?\", proactive health signals, and tying product issues to internal observability—optional angle on customer-facing health agents.\n\nI am the AE. Role-play as the buyer or help me script discovery plus one concrete success story outline.",
+    cfo: "You are a sales coach for Elastic AEs speaking with an economic buyer: CFO or VP Finance.\n\nEmphasize TCO, consolidation of overlapping monitoring and security analytics spend, predictable Elastic Serverless-style pricing where relevant, payback period, and efficiency from automation—use placeholder dollar amounts unless I paste real figures. Avoid deep security jargon.\n\nI am the AE. Help me structure a one-page ROI narrative and handle \"prove the savings.\""
+  };
+  var statusEl = document.getElementById("copy-status");
+  var defaultLabel = "Copy prompt";
+  document.querySelectorAll("button.copy-prompt").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var key = btn.getAttribute("data-persona");
+      var text = prompts[key];
+      if (!text) return;
+      function flash(msg) {
+        statusEl.textContent = msg;
+        statusEl.classList.add("on");
+        setTimeout(function () { statusEl.classList.remove("on"); }, 2200);
+      }
+      function setBtnLabel(label) {
+        btn.textContent = label;
+        if (label !== defaultLabel) {
+          setTimeout(function () { btn.textContent = defaultLabel; }, 2000);
+        }
+      }
+      function copyViaExec(text) {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          return document.execCommand("copy");
+        } catch (e) {
+          return false;
+        } finally {
+          document.body.removeChild(ta);
+        }
+      }
+      function doneOk() {
+        setBtnLabel("Copied!");
+        flash("Copied to clipboard");
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(doneOk).catch(function () {
+          if (copyViaExec(text)) {
+            doneOk();
+          } else {
+            setBtnLabel("Copy failed");
+            flash("Copy blocked—try another browser");
+          }
+        });
+      } else if (copyViaExec(text)) {
+        doneOk();
+      } else {
+        setBtnLabel("Copy failed");
+        flash("Clipboard not available");
+      }
+    });
+  });
+})();
+  </script>
 </body>
 </html>
