@@ -2,6 +2,49 @@
 
 Workshop and lab assets for **Agent Builder agent-to-agent (A2A)** patterns across **Elastic Cloud Serverless Observability** and **Elastic Cloud Serverless Security**: separate clusters, API-first wiring, and enriched security events with observability context.
 
+## Why this matters: silos, AI, and MCP
+
+Companies historically operated with **separate stacks** for platform and end users, which makes it hard to solve **AI and analytics use cases** that need unified context.
+
+### Current state: data analytics platforms
+
+Typical flow: **Ingest → Store → Query**
+
+- **Observability (O11y)** telemetry is siloed per team or per cluster.
+- **Business data** is often not correlated or not ingested into the same analytical plane.
+- **Security** teams frequently duplicate or re-copy security logs into yet another store.
+- **Data quality and retention** strategy is unclear or inconsistent across domains.
+- **Cost and ownership** models become overcomplicated for platform teams.
+
+### Downstream impact: systems of action
+
+What organizations feel when those silos persist:
+
+- A large **shadow IT** estate of ad hoc tools and exports.
+- A **best-in-class patchwork** of point solutions instead of one coherent story.
+- **Security and O11y teams** still operating in parallel, not in joint workflows.
+- **Missed correlation** between signals that only make sense together (attack vs. customer impact).
+- **Wrong outcomes** and **dropped data** when decisions are made without full context.
+
+### The bridge: MCP unifies Security and Observability
+
+Elastic uses **MCP** (Model Context Protocol) to connect **security** and **observability** telemetry into **one analytical platform**, reducing silos and enabling cross-domain workflows—from triage to GenAI-assisted investigation.
+
+```mermaid
+flowchart LR
+  subgraph sec [Security data]
+    S["Endpoint, EDR, firewalls"]
+  end
+  subgraph o11y [Observability data]
+    O["APM, infra, app logs"]
+  end
+  MCP["MCP"]
+  S --> MCP
+  O --> MCP
+```
+
+This repository’s **Agent Builder A2A** lab is one concrete pattern on that path: **Security** agents ask **Observability** for live context over APIs, so enriched incidents answer *“was this attack coupled with real user or service pain?”* without duplicating the entire analytics stack.
+
 ## Goals
 
 - Stand up **two** serverless projects (Observability + Security) the way many customers run them: **split ownership**, shared narrative.
