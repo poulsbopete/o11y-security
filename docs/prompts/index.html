@@ -4,7 +4,26 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AE training — AI prompt library</title>
-  <link rel="stylesheet" href="../pattern.css" />
+  <script>
+  (function () {
+    var href;
+    var segs = location.pathname.split("/").filter(Boolean);
+    if (location.hostname.endsWith("github.io") && segs.length) {
+      href = location.origin + "/" + segs[0] + "/pattern.css";
+    } else {
+      try {
+        var inPrompts = /\/prompts(?:\/|$)/.test(location.pathname);
+        href = inPrompts ? new URL("../pattern.css", location.href).href : new URL("./pattern.css", location.href).href;
+      } catch (e) {
+        href = "../pattern.css";
+      }
+    }
+    var l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = href;
+    document.head.appendChild(l);
+  })();
+  </script>
   <style>
     :root {
       --bg: #0d1117;

@@ -4,7 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Agent Builder A2A — Value in four beats</title>
-  <link rel="stylesheet" href="./pattern.css" />
+  <!-- Resolve pattern.css for GitHub Pages project sites (/repo/…) and for file:// previews -->
+  <script>
+  (function () {
+    var href;
+    var segs = location.pathname.split("/").filter(Boolean);
+    if (location.hostname.endsWith("github.io") && segs.length) {
+      href = location.origin + "/" + segs[0] + "/pattern.css";
+    } else {
+      try {
+        var inPrompts = /\/prompts(?:\/|$)/.test(location.pathname);
+        href = inPrompts ? new URL("../pattern.css", location.href).href : new URL("./pattern.css", location.href).href;
+      } catch (e) {
+        href = "./pattern.css";
+      }
+    }
+    var l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = href;
+    document.head.appendChild(l);
+  })();
+  </script>
   <style>
     :root {
       --bg: #0d1117;
@@ -48,7 +68,7 @@
       background:
         radial-gradient(1200px 600px at 80% -10%, rgba(88, 166, 255, 0.12), transparent 55%),
         radial-gradient(900px 500px at -10% 110%, rgba(63, 185, 80, 0.08), transparent 50%),
-        rgba(13, 17, 23, 0.68);
+        rgba(13, 17, 23, 0.42);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
@@ -56,7 +76,7 @@
       background:
         radial-gradient(1000px 500px at 10% -20%, rgba(63, 185, 80, 0.1), transparent 50%),
         radial-gradient(800px 400px at 100% 100%, rgba(210, 153, 34, 0.08), transparent 45%),
-        rgba(22, 27, 34, 0.68);
+        rgba(22, 27, 34, 0.42);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }

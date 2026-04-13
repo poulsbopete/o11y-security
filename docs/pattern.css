@@ -4,10 +4,11 @@
  * Tune --pattern-stripe, --pattern-duration, --pattern-blur, --pattern-density.
  */
 :root {
-  --pattern-stripe: rgba(0, 255, 136, 0.42);
+  /* Stronger default stripes so the motion reads on GitHub Pages through semi-transparent slides */
+  --pattern-stripe: rgba(0, 255, 136, 0.62);
   --pattern-bg: #0d1117;
   --pattern-duration: 90s;
-  --pattern-blur: 0.5rem;
+  --pattern-blur: 0.35rem;
   --pattern-density: 2;
 }
 
@@ -103,7 +104,8 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  opacity: 0.55;
+  /* Lower opacity so stripes stay visible (was easy to read as “no background” on some displays) */
+  opacity: 0.32;
   backdrop-filter: blur(var(--pattern-blur));
   -webkit-backdrop-filter: blur(var(--pattern-blur));
   background-image: radial-gradient(circle at 50% 50%, transparent 0, transparent 2px, var(--pattern-bg) 2px);
