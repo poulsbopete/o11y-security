@@ -103,6 +103,8 @@ A **4-slide** value deck lives in [`docs/index.html`](docs/index.html), with an 
 
 **https://poulsbopete.github.io/o11y-security/**
 
+**AE enablement:** copy-ready **AI prompts** for seller coaching (personas, discovery, objections) live under [`docs/prompts/`](docs/prompts/) and are linked from slides 3–4 and the footer.
+
 Setup notes: [`docs/README.md`](docs/README.md).
 
 ## Security notes

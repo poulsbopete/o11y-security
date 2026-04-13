@@ -15,6 +15,12 @@ Site URL: **https://poulsbopete.github.io/o11y-security/**
 
 The deck has four slides with **Prev / Next**, dots, a counter, and keyboard support (**←** **→**, **Space**).
 
+## AE training prompts
+
+- Hub page: [`prompts/index.html`](prompts/index.html) (also linked from the slide deck).
+- Full **AE selling coach** prompt: [`prompts/ae-a2a-selling-coach.md`](prompts/ae-a2a-selling-coach.md)
+- Shorter **discovery cheat sheet**: [`prompts/discovery-call-cheat-sheet.md`](prompts/discovery-call-cheat-sheet.md)
+
 ## Background (FallingPattern)
 
 GitHub Pages here is **static HTML + CSS** only—there is **no** React, **no** npm build, and **no** shadcn/Tailwind toolchain on this path.

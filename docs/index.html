@@ -187,6 +187,13 @@
       color: var(--muted);
       white-space: nowrap;
     }
+    a.prompt-lib {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    a.prompt-lib:hover { text-decoration: underline; }
     @media (max-width: 520px) {
       .brand { display: none; }
     }
@@ -239,6 +246,10 @@
             <p class="lead" style="margin-top:1.25rem;">
               Positioning line: <em>Detect attacks <strong>with</strong> application impact—not instead of it.</em>
             </p>
+            <p class="hint" style="margin-top:1rem;">
+              <a class="prompt-lib" href="./prompts/">AE training: AI prompt library →</a>
+              <span style="color:var(--muted); font-weight:400;"> — copy-ready prompts for Claude / ChatGPT</span>
+            </p>
           </div>
         </section>
 
@@ -252,6 +263,10 @@
             <a class="cta" href="https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-workshop">
               Open the workshop in GitHub →
             </a>
+            <p class="hint" style="margin-top:1rem;">
+              <a class="prompt-lib" href="./prompts/">AE training: AI prompt library →</a>
+              <span style="color:var(--muted); font-weight:400;"> — personas, objections, emails, discovery</span>
+            </p>
             <p class="hint">Use <strong>Next</strong> / <strong>Prev</strong> below, dot buttons, or <kbd>←</kbd> <kbd>→</kbd> / <kbd>Space</kbd>.</p>
           </div>
         </section>
@@ -265,7 +280,7 @@
         <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 4</span>
       </div>
       <div class="dots" id="dots" aria-label="Jump to slide"></div>
-      <span class="brand">Agent Builder A2A</span>
+      <span class="brand"><a class="prompt-lib" href="./prompts/">AE prompts</a> · Agent Builder A2A</span>
     </nav>
   </div>
 

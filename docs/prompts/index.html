@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AE training — AI prompt library</title>
+  <link rel="stylesheet" href="../pattern.css" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); }
+    .falling-pattern-wrap { z-index: 0; }
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 44rem;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 4vw, 2.5rem);
+      background: rgba(13, 17, 23, 0.82);
+      backdrop-filter: blur(12px);
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.65rem; margin: 0 0 0.5rem; }
+    p.lead { color: var(--muted); margin: 0 0 1.5rem; line-height: 1.5; }
+    a.back { color: var(--accent); text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 1.25rem; }
+    a.back:hover { text-decoration: underline; }
+    ul.cards { list-style: none; padding: 0; margin: 0; }
+    ul.cards li {
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 0.75rem;
+      background: rgba(22, 27, 34, 0.9);
+    }
+    ul.cards a.title { color: var(--text); font-weight: 650; text-decoration: none; font-size: 1.05rem; }
+    ul.cards a.title:hover { color: var(--accent); }
+    ul.cards p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.45; }
+    ul.cards a.get { color: var(--accent); font-size: 0.88rem; font-weight: 600; margin-top: 0.5rem; display: inline-block; }
+    kbd { font-family: ui-monospace, monospace; font-size: 0.78em; border: 1px solid #30363d; padding: 0.1rem 0.35rem; border-radius: 4px; background: #21262d; }
+  </style>
+</head>
+<body>
+  <div class="falling-pattern-wrap" aria-hidden="true">
+    <div class="falling-pattern-motion"></div>
+    <div class="falling-pattern-overlay"></div>
+  </div>
+  <main>
+    <a class="back" href="../index.html">← Back to slides</a>
+    <h1>AE training: AI prompt library</h1>
+    <p class="lead">
+      Copy the Markdown below into <strong>Claude</strong>, <strong>ChatGPT</strong>, or any chat tool. Use them to coach AEs on Agent Builder <strong>A2A</strong> positioning, discovery, and personas.
+    </p>
+    <ul class="cards">
+      <li>
+        <a class="title" href="./ae-a2a-selling-coach.md">Selling Agent Builder A2A (full coach)</a>
+        <p>Personas (CISO, SRE, Platform, CS, CFO), discovery questions, competitive framing, objections, deal stages, and email stubs.</p>
+        <a class="get" href="./ae-a2a-selling-coach.md">Open prompt (.md) →</a>
+      </li>
+      <li>
+        <a class="title" href="./discovery-call-cheat-sheet.md">Discovery call cheat sheet</a>
+        <p>Shorter prompt for a 30-minute discovery: five questions, what to listen for, and how to close to a next step.</p>
+        <a class="get" href="./discovery-call-cheat-sheet.md">Open prompt (.md) →</a>
+      </li>
+    </ul>
+    <p class="lead" style="margin-top:2rem;font-size:0.9rem;">
+      Tip: after opening a <kbd>.md</kbd> file in the browser, use <strong>Select all → Copy</strong>. For a raw text URL (e.g. for tools that ingest URLs), use the file on
+      <a href="https://github.com/poulsbopete/o11y-security/tree/main/docs/prompts" style="color:var(--accent);">GitHub</a>.
+    </p>
+  </main>
+</body>
+</html>
