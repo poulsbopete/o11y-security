@@ -45,7 +45,11 @@ Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.
 
 ### Path 2 — Bash only
 
-Work from the **repository root** (the folder that **contains** `elastic-agent-builder-a2a-cloud-path/`). Do **not** paste prose or Markdown comments into the shell; only paste the command lines below.
+Check where you are with **`pwd`**. The commands differ depending on that directory.
+
+#### A) Repository root (clone contains `elastic-agent-builder-a2a-cloud-path/`)
+
+Do **not** paste prose into the shell; only the commands below.
 
 1. Create `.env` once (skip if you already have one):
 
@@ -53,16 +57,31 @@ Work from the **repository root** (the folder that **contains** `elastic-agent-b
 cp elastic-agent-builder-a2a-cloud-path/env.example elastic-agent-builder-a2a-cloud-path/.env
 ```
 
-2. In an editor, open `elastic-agent-builder-a2a-cloud-path/.env` and set **`EC_API_KEY`** to your Elastic Cloud API key from [cloud.elastic.co/account/keys](https://cloud.elastic.co/account/keys). If the key ends with `=`, wrap the whole value in **single quotes**. Remove or replace the empty `EC_API_KEY=` line from the template—do not leave it blank.
+2. Edit **`elastic-agent-builder-a2a-cloud-path/.env`**: set **`EC_API_KEY`** from [cloud.elastic.co/account/keys](https://cloud.elastic.co/account/keys). If the key ends with `=`, wrap the value in **single quotes**. Do not leave `EC_API_KEY` blank.
 
-3. Run checks and the full pipeline (these work from repo root; no `cd` required):
+3. Run scripts (paths are relative to repo root):
 
 ```bash
 bash elastic-agent-builder-a2a-cloud-path/scripts/00-check-prereqs.sh
 bash elastic-agent-builder-a2a-cloud-path/scripts/run-all.sh
 ```
 
-If you prefer to `cd` into the folder first, use **`cd elastic-agent-builder-a2a-cloud-path`** only from the parent directory. If your prompt already shows `elastic-agent-builder-a2a-cloud-path`, you are already there—run `bash scripts/00-check-prereqs.sh` instead of `cd` again.
+#### B) Already inside `elastic-agent-builder-a2a-cloud-path` (prompt ends with that folder name)
+
+Use **short** paths—there is no `elastic-agent-builder-a2a-cloud-path/` subfolder from here.
+
+```bash
+cp env.example .env
+```
+
+Edit **`.env`** in this folder with **`EC_API_KEY`** as above, then:
+
+```bash
+bash scripts/00-check-prereqs.sh
+bash scripts/run-all.sh
+```
+
+From the parent folder only, run **`cd elastic-agent-builder-a2a-cloud-path`** once to enter this directory. If your prompt already shows `elastic-agent-builder-a2a-cloud-path`, do not `cd` into that name again.
 
 **Zsh gotchas:** Lines that contain parentheses, e.g. explanatory text with `(use …)`, are **not** comments unless they start with `#`. Zsh may try to glob them and print `no matches found`. Comment lines in docs are for humans only—do not paste them into zsh unless the line begins with `#` at column one.
 
@@ -77,6 +96,7 @@ Outputs (gitignored / sensitive):
 
 ## Troubleshooting
 
+- **`cp: elastic-agent-builder-a2a-cloud-path/env.example: No such file or directory`** — Your shell is **already inside** `elastic-agent-builder-a2a-cloud-path`. Use **`cp env.example .env`** (section **B** above), not the long paths from section **A**.
 - **`cd: no such file or directory: elastic-agent-builder-a2a-cloud-path`** — You are already inside that directory, or your current directory is not the repo root. Use `pwd` and `ls`, or run the `bash elastic-agent-builder-a2a-cloud-path/scripts/…` paths from the clone root instead of nesting `cd`.
 - **`zsh: no matches found: (...)`** — A line with parentheses was executed as a command. In zsh, `(word)` is special; use **only** the bare `bash …` / `cp …` lines from the quick start, or run scripts under **`bash`** so behavior matches the shebang.
 - **`Set EC_API_KEY in …/.env`** — The key is missing or empty after loading `.env`. Edit the file with a real key; quote with single quotes if the key ends with `=`.
