@@ -1,15 +1,14 @@
-# GitHub Pages — slide deck
+# GitHub Pages (slides only)
 
-This folder hosts a short **HTML slide deck** (`index.html`) that explains the value proposition of the Agent Builder A2A workshop.
+This folder powers the **short HTML slide deck** served by GitHub Pages (`index.html`). It is **not** the main project documentation.
+
+**→ Read the real overview in the [repository root README](../README.md).**
 
 ## Enable Pages
 
-1. In the GitHub repo, go to **Settings → Pages**.
-2. Under **Build and deployment**, set **Source** to **Deploy from a branch**.
-3. Choose branch **main** and folder **`/docs`**, then save.
+1. Repository **Settings → Pages**.
+2. **Source**: Deploy from branch **`main`**, folder **`/docs`**.
 
-The site URL will be:
+Site URL: **https://poulsbopete.github.io/o11y-security/**
 
-`https://poulsbopete.github.io/o11y-security/`
-
-After the first deploy, open that URL. The deck has **four slides** with **Prev / Next**, dot shortcuts, a **slide counter** (e.g. `2 / 4`), and keyboard support (**←** **→**, **Space**, **Page Up/Down**).
+The deck has four slides with **Prev / Next**, dots, a counter, and keyboard support (**←** **→**, **Space**).
