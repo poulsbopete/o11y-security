@@ -9,6 +9,8 @@ This folder powers the **short HTML slide deck** served by GitHub Pages (`index.
 1. Repository **Settings → Pages**.
 2. **Source**: Deploy from branch **`main`**, folder **`/docs`**.
 
+This folder includes an empty **`.nojekyll`** file so GitHub Pages serves **static files as-is** (otherwise Jekyll can interfere with assets like `pattern.css`).
+
 Site URL: **https://poulsbopete.github.io/o11y-security/**
 
 The deck has four slides with **Prev / Next**, dots, a counter, and keyboard support (**←** **→**, **Space**).

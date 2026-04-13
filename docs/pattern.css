@@ -4,7 +4,7 @@
  * Tune --pattern-stripe, --pattern-duration, --pattern-blur, --pattern-density.
  */
 :root {
-  --pattern-stripe: rgba(0, 255, 136, 0.26);
+  --pattern-stripe: rgba(0, 255, 136, 0.42);
   --pattern-bg: #0d1117;
   --pattern-duration: 90s;
   --pattern-blur: 0.5rem;
@@ -26,8 +26,6 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 42%, transparent 0%, #000 72%);
-  mask-image: radial-gradient(ellipse 85% 75% at 50% 42%, transparent 0%, #000 72%);
 }
 
 .falling-pattern-motion {
@@ -105,6 +103,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+  opacity: 0.55;
   backdrop-filter: blur(var(--pattern-blur));
   -webkit-backdrop-filter: blur(var(--pattern-blur));
   background-image: radial-gradient(circle at 50% 50%, transparent 0, transparent 2px, var(--pattern-bg) 2px);
