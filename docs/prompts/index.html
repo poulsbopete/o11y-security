@@ -58,10 +58,23 @@
       margin-bottom: 0.75rem;
       background: rgba(22, 27, 34, 0.9);
     }
-    ul.cards a.title { color: var(--text); font-weight: 650; text-decoration: none; font-size: 1.05rem; }
-    ul.cards a.title:hover { color: var(--accent); }
+    ul.cards .title { color: var(--text); font-weight: 650; font-size: 1.05rem; display: block; }
     ul.cards p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.45; }
-    ul.cards a.get { color: var(--accent); font-size: 0.88rem; font-weight: 600; margin-top: 0.5rem; display: inline-block; }
+    ul.cards .card-actions { margin-top: 0.75rem; }
+    button.copy-full {
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 650;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 0.45rem 0.9rem;
+      background: var(--persona);
+      color: #0d1117;
+    }
+    button.copy-full:hover:not(:disabled) { filter: brightness(1.08); }
+    button.copy-full:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    button.copy-full:disabled { opacity: 0.65; cursor: wait; }
     kbd { font-family: ui-monospace, monospace; font-size: 0.78em; border: 1px solid #30363d; padding: 0.1rem 0.35rem; border-radius: 4px; background: #21262d; }
     h2.section { font-size: 1.1rem; margin: 0 0 0.65rem; font-weight: 650; }
     p.section-note { color: var(--muted); font-size: 0.88rem; margin: 0 0 0.75rem; line-height: 1.45; }
@@ -86,7 +99,7 @@
     }
     button.copy-prompt:hover { border-color: var(--accent); background: #30363d; }
     button.copy-prompt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    #copy-status { position: fixed; bottom: 1rem; right: 1rem; padding: 0.5rem 0.85rem; border-radius: 8px; background: #238636; color: #fff; font-size: 0.85rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; }
+    #copy-status { position: fixed; bottom: 1rem; right: 1rem; padding: 0.5rem 0.85rem; border-radius: 8px; background: #238636; color: #fff; font-size: 0.85rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; max-width: min(90vw, 20rem); line-height: 1.3; }
     #copy-status.on { opacity: 1; }
   </style>
 </head>
@@ -99,11 +112,29 @@
     <a class="back" href="../index.html">← Back to slides</a>
     <h1>AE training: AI prompt library</h1>
     <p class="lead">
-      Copy the Markdown below into <strong>Claude</strong>, <strong>ChatGPT</strong>, or any chat tool. Use them to coach AEs on Agent Builder <strong>A2A</strong> positioning, discovery, and personas.
+      Use <strong>Copy full prompt</strong> to load the entire Markdown into your clipboard—paste straight into <strong>Gemini</strong>, <strong>Claude</strong>, <strong>ChatGPT</strong>, or similar. No GitHub links required.
     </p>
+    <h2 class="section">Full prompts</h2>
+    <p class="section-note">One click fetches the prompt from this site and copies it. Works on GitHub Pages and local preview.</p>
+    <ul class="cards">
+      <li>
+        <span class="title">Selling Agent Builder A2A (full coach)</span>
+        <p>Personas (CISO, SRE, Platform, CS, CFO), discovery questions, competitive framing, objections, deal stages, and email stubs.</p>
+        <div class="card-actions">
+          <button type="button" class="copy-full" data-md="ae-a2a-selling-coach.md">Copy full prompt</button>
+        </div>
+      </li>
+      <li>
+        <span class="title">Discovery call cheat sheet</span>
+        <p>Shorter prompt for a 30-minute discovery: five questions, what to listen for, and how to close to a next step.</p>
+        <div class="card-actions">
+          <button type="button" class="copy-full" data-md="discovery-call-cheat-sheet.md">Copy full prompt</button>
+        </div>
+      </li>
+    </ul>
     <h2 class="section">Copy by persona</h2>
     <p class="section-note">
-      One-click prompts prime the model for a single buyer. They complement the full coach Markdown below.
+      Short primers for a single buyer persona. Pair with the full coach above when you want depth.
     </p>
     <div class="table-wrap">
       <table class="persona">
@@ -143,21 +174,8 @@
         </tbody>
       </table>
     </div>
-    <ul class="cards">
-      <li>
-        <a class="title" href="./ae-a2a-selling-coach.md">Selling Agent Builder A2A (full coach)</a>
-        <p>Personas (CISO, SRE, Platform, CS, CFO), discovery questions, competitive framing, objections, deal stages, and email stubs.</p>
-        <a class="get" href="./ae-a2a-selling-coach.md">Open prompt (.md) →</a>
-      </li>
-      <li>
-        <a class="title" href="./discovery-call-cheat-sheet.md">Discovery call cheat sheet</a>
-        <p>Shorter prompt for a 30-minute discovery: five questions, what to listen for, and how to close to a next step.</p>
-        <a class="get" href="./discovery-call-cheat-sheet.md">Open prompt (.md) →</a>
-      </li>
-    </ul>
     <p class="lead" style="margin-top:2rem;font-size:0.9rem;">
-      Tip: after opening a <kbd>.md</kbd> file in the browser, use <strong>Select all → Copy</strong>. For a raw text URL (e.g. for tools that ingest URLs), use the file on
-      <a href="https://github.com/poulsbopete/o11y-security/tree/main/docs/prompts" style="color:var(--accent);">GitHub</a>.
+      Tip: full prompts are plain <kbd>.md</kbd> files on this same site; the button fetches them and copies to your clipboard. Persona buttons embed short text only (no network).
     </p>
   </main>
   <div id="copy-status" role="status" aria-live="polite"></div>
@@ -171,24 +189,26 @@
     cfo: "You are a sales coach for Elastic AEs speaking with an economic buyer: CFO or VP Finance.\n\nEmphasize TCO, consolidation of overlapping monitoring and security analytics spend, predictable Elastic Serverless-style pricing where relevant, payback period, and efficiency from automation—use placeholder dollar amounts unless I paste real figures. Avoid deep security jargon.\n\nI am the AE. Help me structure a one-page ROI narrative and handle \"prove the savings.\""
   };
   var statusEl = document.getElementById("copy-status");
-  var defaultLabel = "Copy prompt";
-  document.querySelectorAll("button.copy-prompt").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var key = btn.getAttribute("data-persona");
-      var text = prompts[key];
-      if (!text) return;
-      function flash(msg) {
-        statusEl.textContent = msg;
-        statusEl.classList.add("on");
-        setTimeout(function () { statusEl.classList.remove("on"); }, 2200);
-      }
-      function setBtnLabel(label) {
-        btn.textContent = label;
-        if (label !== defaultLabel) {
-          setTimeout(function () { btn.textContent = defaultLabel; }, 2000);
-        }
-      }
-      function copyViaExec(text) {
+  var mdCache = {};
+
+  function flash(msg, isError) {
+    statusEl.textContent = msg;
+    statusEl.style.background = isError ? "#da3633" : "#238636";
+    statusEl.classList.add("on");
+    setTimeout(function () { statusEl.classList.remove("on"); }, 2400);
+  }
+
+  function promptMdUrl(filename) {
+    var segs = location.pathname.split("/").filter(Boolean);
+    if (location.hostname.endsWith("github.io") && segs.length) {
+      return location.origin + "/" + segs[0] + "/prompts/" + filename;
+    }
+    return new URL(filename, location.href).href;
+  }
+
+  function copyText(text, onOk, onFail) {
+    function execFallback() {
+      try {
         var ta = document.createElement("textarea");
         ta.value = text;
         ta.setAttribute("readonly", "");
@@ -196,33 +216,98 @@
         ta.style.left = "-9999px";
         document.body.appendChild(ta);
         ta.select();
-        try {
-          return document.execCommand("copy");
-        } catch (e) {
-          return false;
-        } finally {
-          document.body.removeChild(ta);
+        var ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        return ok;
+      } catch (e) {
+        return false;
+      }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(onOk).catch(function () {
+        if (execFallback()) onOk(); else onFail();
+      });
+    } else if (execFallback()) {
+      onOk();
+    } else {
+      onFail();
+    }
+  }
+
+  document.querySelectorAll("button.copy-full").forEach(function (btn) {
+    var filename = btn.getAttribute("data-md");
+    var defaultLabel = btn.textContent.trim();
+    btn.addEventListener("click", function () {
+      function afterCopy() {
+        btn.textContent = "Copied!";
+        flash("Full prompt copied — paste in Gemini (or any chat)");
+        setTimeout(function () { btn.textContent = defaultLabel; }, 2000);
+      }
+      function failCopy() {
+        flash("Copy blocked — use HTTPS or allow clipboard", true);
+      }
+      function runBody(text) {
+        btn.disabled = true;
+        copyText(
+          text,
+          function () {
+            btn.disabled = false;
+            afterCopy();
+          },
+          function () {
+            btn.disabled = false;
+            failCopy();
+          }
+        );
+      }
+      if (mdCache[filename]) {
+        runBody(mdCache[filename]);
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = "Loading…";
+      fetch(promptMdUrl(filename), { cache: "force-cache" })
+        .then(function (r) {
+          if (!r.ok) throw new Error("fetch");
+          return r.text();
+        })
+        .then(function (t) {
+          mdCache[filename] = t;
+          btn.textContent = defaultLabel;
+          btn.disabled = false;
+          runBody(t);
+        })
+        .catch(function () {
+          btn.textContent = defaultLabel;
+          btn.disabled = false;
+          flash("Could not load prompt (open this page from the site, not a saved file)", true);
+        });
+    });
+  });
+
+  var personaDefault = "Copy prompt";
+  document.querySelectorAll("button.copy-prompt").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var key = btn.getAttribute("data-persona");
+      var text = prompts[key];
+      if (!text) return;
+      function setBtnLabel(label) {
+        btn.textContent = label;
+        if (label !== personaDefault) {
+          setTimeout(function () { btn.textContent = personaDefault; }, 2000);
         }
       }
-      function doneOk() {
-        setBtnLabel("Copied!");
-        flash("Copied to clipboard");
-      }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(doneOk).catch(function () {
-          if (copyViaExec(text)) {
-            doneOk();
-          } else {
-            setBtnLabel("Copy failed");
-            flash("Copy blocked—try another browser");
-          }
-        });
-      } else if (copyViaExec(text)) {
-        doneOk();
-      } else {
-        setBtnLabel("Copy failed");
-        flash("Clipboard not available");
-      }
+      copyText(
+        text,
+        function () {
+          setBtnLabel("Copied!");
+          flash("Copied to clipboard");
+        },
+        function () {
+          setBtnLabel("Copy failed");
+          flash("Copy blocked—try another browser", true);
+        }
+      );
     });
   });
 })();
