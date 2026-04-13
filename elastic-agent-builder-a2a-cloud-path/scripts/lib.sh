@@ -18,26 +18,43 @@ require_cmds() {
 load_dotenv() {
   local f="${1:-}"
   if [ -n "$f" ] && [ -f "$f" ]; then
+    # If .env still has EC_API_KEY= (empty), do not wipe a key already exported in the shell.
+    local saved_ec="${EC_API_KEY-}"
     set -a
     # shellcheck disable=SC1090
     source "$f"
     set +a
+    if [ -z "${EC_API_KEY:-}" ] && [ -n "${saved_ec}" ]; then
+      EC_API_KEY="${saved_ec}"
+      export EC_API_KEY
+    fi
+  fi
+}
+
+require_ec_api_key() {
+  if [ -z "${EC_API_KEY:-}" ]; then
+    echo "EC_API_KEY is not set (or is empty in .env)." >&2
+    echo "  • Edit elastic-agent-builder-a2a-cloud-path/.env and set EC_API_KEY to your Cloud API key." >&2
+    echo "  • Create a key: https://cloud.elastic.co/account/keys (Project Admin or Org Owner)." >&2
+    echo "  • If the key ends with = or has special characters, wrap it in single quotes in .env." >&2
+    exit 1
   fi
 }
 
 ec_api() {
+  require_ec_api_key
   local method="$1"
   local path="$2"
   local body="${3:-}"
   local url="${EC_BASE_URL:-https://api.elastic-cloud.com}${path}"
   if [ -n "$body" ]; then
     curl -sS -X "$method" "$url" \
-      -H "Authorization: ApiKey ${EC_API_KEY:?EC_API_KEY not set}" \
+      -H "Authorization: ApiKey ${EC_API_KEY}" \
       -H "Content-Type: application/json" \
       --data-binary "$body"
   else
     curl -sS -X "$method" "$url" \
-      -H "Authorization: ApiKey ${EC_API_KEY:?EC_API_KEY not set}"
+      -H "Authorization: ApiKey ${EC_API_KEY}"
   fi
 }
 

@@ -48,11 +48,14 @@ Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.
 ```bash
 cd elastic-agent-builder-a2a-cloud-path
 cp env.example .env
-# edit .env — set EC_API_KEY (and optionally EC_REGION, A2A_NAME_PREFIX)
+# Edit .env: set EC_API_KEY to your Cloud API key (use single quotes if the key ends with =).
+# An empty EC_API_KEY= line will override a key you only exported in the shell.
 
-bash scripts/00-check-prereqs.sh
+bash scripts/00-check-prereqs.sh   # optional; run-all runs this first anyway
 bash scripts/run-all.sh
 ```
+
+If you see **`zsh: number expected`**, you likely pasted a snippet into the shell that was not a comment (e.g. a line starting with `<`). Run only the `cd`, `cp`, and `bash` lines, and put the API key inside `.env`, not on the command line.
 
 Outputs (gitignored / sensitive):
 
