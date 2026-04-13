@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="/root/elastic-workshop"
-ENV_FILE="$ROOT/.env"
+ROOT="${ELASTIC_WORKSHOP_ROOT:-/root/elastic-workshop}"
+ENV_FILE="${ELASTIC_WORKSHOP_ENV_FILE:-$ROOT/.env}"
 if [ ! -f "$ENV_FILE" ]; then
   echo "Missing $ENV_FILE — copy assets/env.template first."
   exit 1

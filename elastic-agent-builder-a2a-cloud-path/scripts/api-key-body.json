@@ -1,0 +1,15 @@
+{
+  "name": "a2a-workshop-lab",
+  "metadata": { "purpose": "agent-builder-a2a-cloud-path" },
+  "role_descriptors": {
+    "a2a_workshop": {
+      "cluster": ["monitor", "manage_index_templates"],
+      "indices": [
+        {
+          "names": ["*", ".*"],
+          "privileges": ["all"]
+        }
+      ]
+    }
+  }
+}
