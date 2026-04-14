@@ -35,7 +35,7 @@ Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.
 
 ## What stays manual (unless you use a skill)
 
-**`05-agent-builder-lab-agents.sh`** creates **starter** agents and index-search tools from [`agent-instructions/`](./agent-instructions); tune or extend them with the **[kibana-agent-builder](https://github.com/elastic/agent-skills/blob/main/skills/kibana/agent-builder/SKILL.md)** skill. **A2A enrichment** (HTTP call to Observability, write to `.elastic-agents-security-a2a-enriched`) and **public Observability URLs** still require Kibana/product steps—see [`AGENT_BUILDER.md`](./AGENT_BUILDER.md) and [`../elastic-agent-builder-a2a-workshop/agent-scaffolds/`](../elastic-agent-builder-a2a-workshop/agent-scaffolds/).
+**`05-agent-builder-lab-agents.sh`** creates **starter** agents and index-search tools on **both** Kibanas from [`agent-instructions/`](./agent-instructions) (Security: detection + enrichment; Observability: context). Tune them with the **[kibana-agent-builder](https://github.com/elastic/agent-skills/blob/main/skills/kibana/agent-builder/SKILL.md)** skill. **Publishing** the Observability agent URL (`O11Y_AGENT_ENDPOINT` in `workshop.env`) and **writing** to `.elastic-agents-security-a2a-enriched` still follow Kibana / workflow product steps—see [`AGENT_BUILDER.md`](./AGENT_BUILDER.md) and [`../elastic-agent-builder-a2a-workshop/agent-scaffolds/`](../elastic-agent-builder-a2a-workshop/agent-scaffolds/).
 
 ## Quick start
 
