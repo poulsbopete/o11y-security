@@ -1,6 +1,10 @@
 # Agent Builder checklist (post-bootstrap)
 
-After your environment is live (via **[Elastic Agent Skills](https://github.com/elastic/agent-skills)** — **kibana-agent-builder** — or after `scripts/run-all.sh`), you have Elasticsearch + Kibana in **two** projects. Build agents in this order:
+After your environment is live (via **[Elastic Agent Skills](https://github.com/elastic/agent-skills)** — **kibana-agent-builder** — or after `scripts/run-all.sh`), you have Elasticsearch + Kibana in **two** projects.
+
+If **`scripts/05-agent-builder-lab-agents.sh`** ran (Node + `agent-builder.js` available; not skipped with `A2A_SKIP_AGENT_BUILDER=1`), starter agents **`a2a-lab-security-detection`** and **`a2a-lab-observability-context`** may already exist—see **`state/agent-builder-lab.json`**. Refine them in Kibana or with **kibana-agent-builder** as needed.
+
+Build out the full story in this order:
 
 ## 1. Security project (detection)
 

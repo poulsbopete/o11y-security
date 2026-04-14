@@ -1,6 +1,6 @@
 # Agent Builder A2A — Cloud bootstrap path (no Instruqt)
 
-This folder is a **second path** to stand up the workshop on real **Elastic Cloud Serverless** projects: one **Observability** and one **Security** project, then mint **Elasticsearch API keys**, apply the workshop **index templates**, and **bulk-load** synthetic data.
+This folder is a **second path** to stand up the workshop on real **Elastic Cloud Serverless** projects: one **Observability** and one **Security** project, then mint **Elasticsearch API keys**, apply the workshop **index templates**, **bulk-load** synthetic data, and (when Node and the **kibana-agent-builder** CLI are available) create **starter Agent Builder agents** on both Kibanas.
 
 Use it when you want a fast loop on real stacks before porting flows into Instruqt.
 
@@ -27,14 +27,15 @@ These mirror the same Cloud + Elasticsearch operations when you **do not** have 
 | Create both serverless projects + wait for `initialized` | `scripts/01-provision-serverless.sh` |
 | Create scoped **Elasticsearch** API keys (admin bootstrap only) | `scripts/02-create-es-api-keys.sh` |
 | Apply templates + load `workshop-synth-*` data | `scripts/03-populate-indices.sh` |
+| Create lab Agent Builder agents (Security + Observability) | `scripts/05-agent-builder-lab-agents.sh` |
 | Print Kibana URLs + next steps | `scripts/04-print-next-steps.sh` |
 | All of the above | `scripts/run-all.sh` |
 
-Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.example`).
+Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.example`). Step **05** additionally needs **Node.js 18+** and the **`agent-builder.js`** file from the [kibana-agent-builder](https://github.com/elastic/agent-skills/tree/main/skills/kibana/agent-builder) skill (see `env.example` for overrides and skip flags).
 
 ## What stays manual (unless you use a skill)
 
-**Agent Builder** authoring is covered by the **[kibana-agent-builder](https://github.com/elastic/agent-skills/blob/main/skills/kibana/agent-builder/SKILL.md)** skill when you drive everything through Agent Skills. This repo still provides narrative and payload shapes under [`../elastic-agent-builder-a2a-workshop/agent-scaffolds/`](../elastic-agent-builder-a2a-workshop/agent-scaffolds/) and [`AGENT_BUILDER.md`](./AGENT_BUILDER.md).
+**`05-agent-builder-lab-agents.sh`** creates **starter** agents and index-search tools from [`agent-instructions/`](./agent-instructions); tune or extend them with the **[kibana-agent-builder](https://github.com/elastic/agent-skills/blob/main/skills/kibana/agent-builder/SKILL.md)** skill. **A2A enrichment** (HTTP call to Observability, write to `.elastic-agents-security-a2a-enriched`) and **public Observability URLs** still require Kibana/product steps—see [`AGENT_BUILDER.md`](./AGENT_BUILDER.md) and [`../elastic-agent-builder-a2a-workshop/agent-scaffolds/`](../elastic-agent-builder-a2a-workshop/agent-scaffolds/).
 
 ## Quick start
 
@@ -89,6 +90,7 @@ Outputs (gitignored / sensitive):
 
 - `state/bootstrap.json` — endpoints + **bootstrap credentials** (chmod `600`). Treat like `.elastic-credentials` in the skills: **do not commit**, do not use for routine ES traffic after API keys exist.
 - `state/workshop.env` — `O11Y_*` and `SECURITY_*` URLs + **Elasticsearch API keys** for the workshop scripts (chmod `600`).
+- `state/agent-builder-lab.json` — IDs of starter agents/tools from **`05-agent-builder-lab-agents.sh`** (chmod `600`, present only when step 05 succeeds).
 
 ## Tightening API key privileges
 

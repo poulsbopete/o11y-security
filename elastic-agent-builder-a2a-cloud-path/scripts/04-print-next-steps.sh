@@ -16,6 +16,7 @@ fi
 
 o11y_kb="$(jq -r '.observability.endpoints.kibana // empty' "$BOOT")"
 sec_kb="$(jq -r '.security.endpoints.kibana // empty' "$BOOT")"
+ab_lab="${ROOT}/state/agent-builder-lab.json"
 
 cat <<EOF
 
@@ -40,3 +41,10 @@ Quick checks (loads keys from workshop.env):
   curl -sS -H "Authorization: ApiKey \${O11Y_API_KEY}" "\${O11Y_ES_URL}/_cluster/health" | jq .
 
 EOF
+
+if [ -f "$ab_lab" ]; then
+  echo "Lab Agent Builder automation (if 05 ran successfully):"
+  echo "  ${ab_lab}"
+  jq . "$ab_lab" 2>/dev/null || cat "$ab_lab"
+  echo ""
+fi

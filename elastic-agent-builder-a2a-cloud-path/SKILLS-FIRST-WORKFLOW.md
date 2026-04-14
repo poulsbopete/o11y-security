@@ -52,7 +52,10 @@ export ELASTIC_WORKSHOP_ROOT="$(pwd)/elastic-agent-builder-a2a-workshop"
 export ELASTIC_WORKSHOP_ENV_FILE="$(pwd)/elastic-agent-builder-a2a-cloud-path/state/workshop.env"
 bash "$ELASTIC_WORKSHOP_ROOT/scripts/apply-index-templates.sh"
 bash "$ELASTIC_WORKSHOP_ROOT/scripts/load-sample-bulk.sh"
+bash "$(pwd)/elastic-agent-builder-a2a-cloud-path/scripts/05-agent-builder-lab-agents.sh"
 ```
+
+The last line creates starter Agent Builder agents when **Node** and **`agent-builder.js`** (kibana-agent-builder skill) are available; otherwise it prints a skip warning. Same behavior is included in **`scripts/run-all.sh`** after populate.
 
 ## 6. Agent Builder (Security + Observability)
 
