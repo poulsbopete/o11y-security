@@ -240,6 +240,15 @@
       line-height: 1.4;
     }
     .inner.wide { max-width: 48rem; }
+    .slide--lab-shots .slide-figure img {
+      max-width: min(100%, 44rem);
+    }
+    .slide--lab-shots .slide-figures-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      margin-top: 0.85rem;
+    }
   </style>
 </head>
 <body>
@@ -251,7 +260,7 @@
   <div class="deck" id="deck">
     <div class="viewport" id="viewport">
       <div class="strip" id="strip" role="region" aria-roledescription="carousel" aria-label="Value proposition slides">
-        <section class="slide" id="s1" aria-label="Slide 1 of 5">
+        <section class="slide" id="s1" aria-label="Slide 1 of 6">
           <div class="inner">
             <p class="kicker">Why this matters</p>
             <h1>Security sees an alert. Observability holds the truth about impact.</h1>
@@ -262,7 +271,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s2" aria-label="Slide 2 of 5">
+        <section class="slide" id="s2" aria-label="Slide 2 of 6">
           <div class="inner">
             <p class="kicker">The pattern</p>
             <h2>Agent Builder A2A: let each domain keep its expertise</h2>
@@ -277,7 +286,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s3" aria-label="Slide 3 of 5">
+        <section class="slide" id="s3" aria-label="Slide 3 of 6">
           <div class="inner wide">
             <p class="kicker">Reference workflow</p>
             <h2>Two data planes, one place to decide</h2>
@@ -299,7 +308,28 @@
           </div>
         </section>
 
-        <section class="slide" id="s4" aria-label="Slide 4 of 5">
+        <section class="slide slide--lab-shots" id="s4" aria-label="Slide 4 of 6">
+          <div class="inner wide">
+            <p class="kicker">From the cloud-path lab</p>
+            <h2>Kibana Workflows and Cases</h2>
+            <p class="lead" style="margin-bottom: 0.5rem;">
+              Scripted lab assets push <strong>A2A Lab</strong> workflows (synth inject, alert → console + case) to each Serverless Kibana.
+              Alert-driven runs open cases with triage copy—including <strong>randomized drill scenarios</strong>—so workshops feel like real ops without manual paste-up.
+            </p>
+            <div class="slide-figures-stack">
+              <figure class="slide-figure">
+                <img src="./images/a2a-lab-workflows-list.jpg" width="1024" height="312" alt="Kibana Workflows list showing A2A Lab workflows: O11y synth inject manual and scheduled, O11y alert to Case, O11y alert log" loading="lazy" decoding="async" />
+                <figcaption>Observability project — lab workflows (manual inject, schedule, alert → case / alert log).</figcaption>
+              </figure>
+              <figure class="slide-figure">
+                <img src="./images/a2a-lab-cases-list.jpg" width="1024" height="334" alt="Elastic Security Cases list with open A2A Lab cases showing credential access pattern drill titles" loading="lazy" decoding="async" />
+                <figcaption>Security project — cases opened from alert workflows (example drill: credential access pattern).</figcaption>
+              </figure>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" id="s5" aria-label="Slide 5 of 6">
           <div class="inner">
             <p class="kicker">Value for sellers &amp; customers</p>
             <h2>Faster decisions, clearer ROI, a path to response</h2>
@@ -318,7 +348,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s5" aria-label="Slide 5 of 5">
+        <section class="slide" id="s6" aria-label="Slide 6 of 6">
           <div class="inner">
             <p class="kicker">Hands-on</p>
             <h2>Workshop: two serverless projects, one correlation story</h2>
@@ -342,7 +372,7 @@
       <div class="controls-left">
         <button type="button" class="btn" id="prev" aria-label="Previous slide">← Prev</button>
         <button type="button" class="btn" id="next" aria-label="Next slide">Next →</button>
-        <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 5</span>
+        <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 6</span>
       </div>
       <div class="dots" id="dots" aria-label="Jump to slide"></div>
       <span class="brand"><a class="prompt-lib" href="./prompts/">AE prompts</a> · Agent Builder A2A</span>
