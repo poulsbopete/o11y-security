@@ -143,14 +143,14 @@ Use these steps after projects exist, credentials are in **`state/workshop.env`*
 
 5. **Stress** — run the **`simulate-cross-domain-load.sh`** block from Path 1 step 6.
 
-6. **Validate in Dev Tools** (Security project) — sample queries (indices may differ if templates were rejected on Serverless):
+6. **Validate in Kibana Dev Tools (Console)** — **not** in your terminal: open **Security** Kibana → **Dev Tools** (or **Management → Dev Tools**), then paste the two-line request below. Pasting `GET …` + `{ … }` into **zsh** will error (`parse error near '}'`) because `{` is shell syntax.
 
    ```text
    GET workshop-synth-endpoint-alerts/_search
    { "size": 5, "sort": [{ "@timestamp": "desc" }], "query": { "term": { "host.name": "prod-db-01" } } }
    ```
 
-   Observability project: same pattern on `workshop-synth-metrics` / `workshop-synth-traces`.
+   Repeat on **Observability** Kibana for `workshop-synth-metrics` / `workshop-synth-traces` (indices may differ if templates were rejected on Serverless).
 
 7. **True A2A** — same as Path 1 step 7.
 
@@ -169,3 +169,4 @@ Use these steps after projects exist, credentials are in **`state/workshop.env`*
 - **Security create returns 422** — the Cloud API may require extra fields over time. Compare your payload with the latest [Create security project](https://www.elastic.co/docs/api/doc/elastic-cloud-serverless/operation/operation-createsecurityproject) docs and extend `01-provision-serverless.sh`, or rely on **cloud-create-project** from Agent Skills (updated upstream).
 - **Elasticsearch `403` on `_security/api_key`** — confirm bootstrap `credentials` exist in `state/bootstrap.json` and that you are calling the **Elasticsearch** endpoint from that file, not Kibana.
 - **`401` with `oauth2 token: invalid token` on `_index_template` or `_bulk`** — workshop scripts must send native ES API keys as **`Authorization: ApiKey …`**, not `Bearer`. If you hit this on an older clone, pull the latest workshop `scripts/apply-index-templates.sh` and `scripts/load-sample-bulk.sh`, then re-run **`bash scripts/03-populate-indices.sh`** (your existing `state/workshop.env` is fine).
+- **`zsh: parse error near '}'`** after pasting **`GET index/_search`** and a JSON body — that snippet is for **Kibana Dev Tools**, not the shell. Open Kibana → **Dev Tools** and paste there; or wrap a one-line search in **`curl`** to Elasticsearch with **`Authorization: ApiKey …`** (see Path 1 step 1).

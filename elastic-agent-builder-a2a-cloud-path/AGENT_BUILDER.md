@@ -11,6 +11,8 @@ Set **`O11Y_AGENT_ENDPOINT`** in **`state/workshop.env`** to your published Obse
 
 Build out the full story in this order:
 
+> **Note:** `GET …` / JSON snippets in this file are for **Kibana Dev Tools (Console)**. Pasting them into **zsh** or **bash** will cause parse errors (`{` / `}` are shell syntax).
+
 ## 1. Security project (detection)
 
 1. Open **Security** Kibana URL from `scripts/04-print-next-steps.sh` output.
