@@ -92,6 +92,19 @@ Outputs (gitignored / sensitive):
 - `state/workshop.env` — `O11Y_*` and `SECURITY_*` URLs + **Elasticsearch API keys** for the workshop scripts (chmod `600`).
 - `state/agent-builder-lab.json` — IDs of starter agents/tools from **`05-agent-builder-lab-agents.sh`** (chmod `600`, present only when step 05 succeeds).
 
+### Cross-domain load test (workshop indices)
+
+After `workshop.env` exists, generate **parallel** bursts of Security auth failures and Observability metrics/traces for the same host (simulates a noisy incident both teams would investigate):
+
+```bash
+export ELASTIC_WORKSHOP_ROOT="$(pwd)/elastic-agent-builder-a2a-workshop"
+export ELASTIC_WORKSHOP_ENV_FILE="$(pwd)/elastic-agent-builder-a2a-cloud-path/state/workshop.env"
+SIMULATE_ROUNDS=20 SIMULATE_BURST_SIZE=15 SIMULATE_SLEEP_SEC=1 \
+  bash elastic-agent-builder-a2a-workshop/scripts/simulate-cross-domain-load.sh
+```
+
+See `SIMULATE_*` variables in the script header. Use `SIMULATE_DRY_RUN=1` to validate NDJSON sizes without ingesting.
+
 ## Tightening API key privileges
 
 `scripts/api-key-body.json` grants a **lab-wide** role for speed. Narrow `indices.names` and `privileges` before customer-facing demos.
