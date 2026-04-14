@@ -13,7 +13,7 @@ This folder includes an empty **`.nojekyll`** file so GitHub Pages serves **stat
 
 Site URL: **https://poulsbopete.github.io/o11y-security/**
 
-The deck has four slides with **Prev / Next**, dots, a counter, and keyboard support (**←** **→**, **Space**).
+The deck has **five** slides with **Prev / Next**, dots, a counter, and keyboard support (**←** **→**, **Space**). Slide 3 is the **reference workflow** (Security + Observability → MCP) and uses the diagram asset in [`images/a2a-mcp-architecture.jpg`](images/a2a-mcp-architecture.jpg).
 
 ## AE training prompts
 

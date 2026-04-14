@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agent Builder A2A — Value in four beats</title>
+  <title>Agent Builder A2A — Security, Observability &amp; MCP</title>
   <!-- Resolve pattern.css for GitHub Pages project sites (/repo/…) and for file:// previews -->
   <script>
   (function () {
@@ -63,6 +63,8 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: clamp(1.25rem, 4vw, 3rem);
       border-bottom: none;
       background:
@@ -217,6 +219,27 @@
     @media (max-width: 520px) {
       .brand { display: none; }
     }
+    .slide-figure {
+      margin: 1rem auto 0;
+      text-align: center;
+    }
+    .slide-figure img {
+      display: block;
+      margin: 0 auto;
+      max-width: min(100%, 32rem);
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 1px solid #30363d;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+    .slide-figure figcaption {
+      margin-top: 0.65rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .inner.wide { max-width: 48rem; }
   </style>
 </head>
 <body>
@@ -228,7 +251,7 @@
   <div class="deck" id="deck">
     <div class="viewport" id="viewport">
       <div class="strip" id="strip" role="region" aria-roledescription="carousel" aria-label="Value proposition slides">
-        <section class="slide" id="s1" aria-label="Slide 1 of 4">
+        <section class="slide" id="s1" aria-label="Slide 1 of 5">
           <div class="inner">
             <p class="kicker">Why this matters</p>
             <h1>Security sees an alert. Observability holds the truth about impact.</h1>
@@ -239,7 +262,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s2" aria-label="Slide 2 of 4">
+        <section class="slide" id="s2" aria-label="Slide 2 of 5">
           <div class="inner">
             <p class="kicker">The pattern</p>
             <h2>Agent Builder A2A: let each domain keep its expertise</h2>
@@ -254,7 +277,29 @@
           </div>
         </section>
 
-        <section class="slide" id="s3" aria-label="Slide 3 of 4">
+        <section class="slide" id="s3" aria-label="Slide 3 of 5">
+          <div class="inner wide">
+            <p class="kicker">Reference workflow</p>
+            <h2>Two data planes, one place to decide</h2>
+            <p class="lead" style="margin-bottom: 0.75rem;">
+              <strong style="color: var(--accent);">Security</strong> telemetry (endpoint, EDR, firewalls) and
+              <strong style="color: var(--accent2);">Observability</strong> signals (APM, infrastructure, application logs)
+              both land in Elastic—where rules, workflows, cases, and dashboards give analysts a single narrative.
+              Agent Builder A2A adds cross-project reasoning when those streams live in separate serverless projects.
+            </p>
+            <figure class="slide-figure">
+              <img src="./images/a2a-mcp-architecture.jpg" width="1024" height="632" alt="Diagram: Security data and Observability data flowing into MCP" loading="lazy" decoding="async" />
+              <figcaption>Conceptual flow: domain telemetry → management / correlation plane (MCP) in Kibana.</figcaption>
+            </figure>
+            <ul style="margin-top: 1rem;">
+              <li><strong>Left lanes</strong> — keep collection specialized; avoid duplicating analytics in both stacks.</li>
+              <li><strong>MCP</strong> — detections, triage, workflow automation, and the enriched case document analysts ship.</li>
+              <li><strong>A2A</strong> — Security agent calls the Observability agent over HTTPS when impact context lives in the other project.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="slide" id="s4" aria-label="Slide 4 of 5">
           <div class="inner">
             <p class="kicker">Value for sellers &amp; customers</p>
             <h2>Faster decisions, clearer ROI, a path to response</h2>
@@ -273,7 +318,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s4" aria-label="Slide 4 of 4">
+        <section class="slide" id="s5" aria-label="Slide 5 of 5">
           <div class="inner">
             <p class="kicker">Hands-on</p>
             <h2>Workshop: two serverless projects, one correlation story</h2>
@@ -297,7 +342,7 @@
       <div class="controls-left">
         <button type="button" class="btn" id="prev" aria-label="Previous slide">← Prev</button>
         <button type="button" class="btn" id="next" aria-label="Next slide">Next →</button>
-        <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 4</span>
+        <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 5</span>
       </div>
       <div class="dots" id="dots" aria-label="Jump to slide"></div>
       <span class="brand"><a class="prompt-lib" href="./prompts/">AE prompts</a> · Agent Builder A2A</span>
