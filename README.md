@@ -55,8 +55,8 @@ This repository’s **Agent Builder A2A** lab is one concrete pattern on that pa
 
 | Path | What it is |
 | ---- | ----------- |
-| [`elastic-agent-builder-a2a-workshop/`](elastic-agent-builder-a2a-workshop/) | **Instruqt** track: `track.yml`, `config.yml`, challenges (`01-`…`06-`), index templates, sample NDJSON/JSON, lifecycle scripts (`setup-workstation`, `check-workstation`, `solve-workstation`), agent scaffolds. |
-| [`elastic-agent-builder-a2a-cloud-path/`](elastic-agent-builder-a2a-cloud-path/) | **Cloud path** (no Instruqt): **[elastic/agent-skills](https://github.com/elastic/agent-skills)** is the recommended prerequisite; use **`SKILLS-FIRST-WORKFLOW.md`** for provisioning + keys + Agent Builder via skills. Bash `scripts/` remain for CI/headless. See `README.md` and `AGENT_BUILDER.md`. |
+| [`elastic-agent-builder-a2a-workshop/`](elastic-agent-builder-a2a-workshop/) | **Instruqt** track: `track.yml`, `config.yml`, challenges (`01-`…`06-`), index templates, sample NDJSON/JSON, lifecycle scripts (`setup-workstation`, `check-workstation`, `solve-workstation`), agent scaffolds. **How to run and exercise the track:** [`elastic-agent-builder-a2a-workshop/README.md`](elastic-agent-builder-a2a-workshop/README.md). |
+| [`elastic-agent-builder-a2a-cloud-path/`](elastic-agent-builder-a2a-cloud-path/) | **Cloud path** (no Instruqt): **[elastic/agent-skills](https://github.com/elastic/agent-skills)** is the recommended prerequisite; use **`SKILLS-FIRST-WORKFLOW.md`** for provisioning + keys + Agent Builder via skills. Bash `scripts/` remain for CI/headless. See **`README.md`** (includes **Exercise the setup** for Skills + bash paths), **`AGENT_BUILDER.md`**. |
 | [`docs/`](docs/) | Short **GitHub Pages** slide deck (`index.html`) for the value prop; optional marketing aid, not the main lab. |
 
 ## Two ways to run the lab
@@ -78,6 +78,11 @@ Start at: [`elastic-agent-builder-a2a-workshop/track.yml`](elastic-agent-builder
 3. Use **[`elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md`](elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md)** plus the **[agent-builder](https://github.com/elastic/agent-skills/blob/main/skills/kibana/agent-builder/SKILL.md)** skill for Agent Builder steps.
 
 **Headless / CI fallback:** same folder’s `scripts/run-all.sh` + `.env` — see [`elastic-agent-builder-a2a-cloud-path/README.md`](elastic-agent-builder-a2a-cloud-path/README.md).
+
+## Exercise the lab (after setup)
+
+- **Elastic Cloud + Agent Skills or `run-all.sh`:** follow **Exercise the setup** in [`elastic-agent-builder-a2a-cloud-path/README.md`](https://github.com/poulsbopete/o11y-security/blob/main/elastic-agent-builder-a2a-cloud-path/README.md) — two sub-paths (**Path 1 — Agent Skills**, **Path 2 — Bash**), then Kibana checks, optional [`simulate-cross-domain-load.sh`](elastic-agent-builder-a2a-workshop/scripts/simulate-cross-domain-load.sh), and A2A HTTP / workflow pointers.
+- **Instruqt or workshop-only scripts:** follow **Exercise the setup** in [`elastic-agent-builder-a2a-workshop/README.md`](https://github.com/poulsbopete/o11y-security/blob/main/elastic-agent-builder-a2a-workshop/README.md) — challenge order, `Check` steps, and BYO-cluster script flow.
 
 ## Agent Builder (manual in Kibana)
 

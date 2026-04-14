@@ -92,18 +92,69 @@ Outputs (gitignored / sensitive):
 - `state/workshop.env` — `O11Y_*` and `SECURITY_*` URLs + **Elasticsearch API keys** for the workshop scripts (chmod `600`).
 - `state/agent-builder-lab.json` — IDs of starter agents/tools from **`05-agent-builder-lab-agents.sh`** (chmod `600`, present only when step 05 succeeds).
 
-### Cross-domain load test (workshop indices)
+## Exercise the setup (both paths)
 
-After `workshop.env` exists, generate **parallel** bursts of Security auth failures and Observability metrics/traces for the same host (simulates a noisy incident both teams would investigate):
+Use these steps after projects exist, credentials are in **`state/workshop.env`**, and (for Path 2) **`run-all.sh`** has finished—or after you complete the equivalent steps via Agent Skills (**Path 1**). Repo root paths below assume you cloned **[o11y-security](https://github.com/poulsbopete/o11y-security)**.
 
-```bash
-export ELASTIC_WORKSHOP_ROOT="$(pwd)/elastic-agent-builder-a2a-workshop"
-export ELASTIC_WORKSHOP_ENV_FILE="$(pwd)/elastic-agent-builder-a2a-cloud-path/state/workshop.env"
-SIMULATE_ROUNDS=20 SIMULATE_BURST_SIZE=15 SIMULATE_SLEEP_SEC=1 \
-  bash elastic-agent-builder-a2a-workshop/scripts/simulate-cross-domain-load.sh
-```
+### Path 1 — Agent Skills (outside Instruqt)
 
-See `SIMULATE_*` variables in the script header. Use `SIMULATE_DRY_RUN=1` to validate NDJSON sizes without ingesting.
+1. **Confirm Elasticsearch** — load API keys from `workshop.env` (create the file via **elasticsearch-authn** / **cloud-manage-project** if you did not use bash `02`/`03`):
+
+   ```bash
+   set -a; source elastic-agent-builder-a2a-cloud-path/state/workshop.env; set +a
+   curl -sS -H "Authorization: ApiKey ${SECURITY_API_KEY}" "${SECURITY_ES_URL}/_cluster/health" | jq .
+   curl -sS -H "Authorization: ApiKey ${O11Y_API_KEY}" "${O11Y_ES_URL}/_cluster/health" | jq .
+   ```
+
+2. **Templates + sample data** — if you skipped bash `03`, run **Option B** in [`SKILLS-FIRST-WORKFLOW.md`](./SKILLS-FIRST-WORKFLOW.md) (`apply-index-templates.sh` + `load-sample-bulk.sh`) so `workshop-synth-*` indices exist.
+
+3. **Agent Builder** — use **[kibana-agent-builder](https://github.com/elastic/agent-skills/tree/main/skills/kibana/agent-builder)** to mirror [`../elastic-agent-builder-a2a-workshop/agent-scaffolds/`](../elastic-agent-builder-a2a-workshop/agent-scaffolds/) on each Kibana, **or** run **`scripts/05-agent-builder-lab-agents.sh`** once Node and `agent-builder.js` are available.
+
+4. **Kibana** — open both Kibana URLs (from **`scripts/04-print-next-steps.sh`** or `state/bootstrap.json`). In **Agent Builder → Agents**, confirm lab agents (e.g. **A2A Lab …**) or your skill-created equivalents.
+
+5. **Chat smoke tests** — **Observability**: open **A2A Lab Observability Context** (or your context agent) and ask for `prod-db-01` over the last minute using metrics/traces. **Security**: open **A2A Lab Security Detection** / **A2A Lab Security A2A Enrichment** and ask about auth failures on `prod-db-01`.
+
+6. **Stress both clusters** (optional, same as Path 2 step 6):
+
+   ```bash
+   export ELASTIC_WORKSHOP_ROOT="$(pwd)/elastic-agent-builder-a2a-workshop"
+   export ELASTIC_WORKSHOP_ENV_FILE="$(pwd)/elastic-agent-builder-a2a-cloud-path/state/workshop.env"
+   SIMULATE_ROUNDS=20 SIMULATE_BURST_SIZE=15 SIMULATE_SLEEP_SEC=1 \
+     bash elastic-agent-builder-a2a-workshop/scripts/simulate-cross-domain-load.sh
+   ```
+
+   Tune with `SIMULATE_*` env vars in that script; `SIMULATE_DRY_RUN=1` skips `_bulk`.
+
+7. **True A2A (HTTP)** — publish the Observability agent URL, set **`O11Y_AGENT_ENDPOINT`** in `state/workshop.env`, re-run **`05`** (or **update-agent** via the skill), then add the **HTTP** step in a **Security** workflow per [`../elastic-agent-builder-a2a-workshop/04-connect-agents-a2a/assignment.md`](../elastic-agent-builder-a2a-workshop/04-connect-agents-a2a/assignment.md). Details: [`AGENT_BUILDER.md`](./AGENT_BUILDER.md).
+
+### Path 2 — Bash `run-all.sh`
+
+1. **Print URLs and reminders**
+
+   ```bash
+   bash elastic-agent-builder-a2a-cloud-path/scripts/04-print-next-steps.sh
+   ```
+
+2. **Cluster health** (same as Path 1 step 1).
+
+3. **Agent Builder** — if **`05`** was skipped, install **[kibana-agent-builder](https://github.com/elastic/agent-skills/tree/main/skills/kibana/agent-builder)** and run **`bash elastic-agent-builder-a2a-cloud-path/scripts/05-agent-builder-lab-agents.sh`**.
+
+4. **Kibana smoke** — same as Path 1 steps 4–5.
+
+5. **Stress** — run the **`simulate-cross-domain-load.sh`** block from Path 1 step 6.
+
+6. **Validate in Dev Tools** (Security project) — sample queries (indices may differ if templates were rejected on Serverless):
+
+   ```text
+   GET workshop-synth-endpoint-alerts/_search
+   { "size": 5, "sort": [{ "@timestamp": "desc" }], "query": { "term": { "host.name": "prod-db-01" } } }
+   ```
+
+   Observability project: same pattern on `workshop-synth-metrics` / `workshop-synth-traces`.
+
+7. **True A2A** — same as Path 1 step 7.
+
+**Workshop-only exercises** (Instruqt track, challenge order, `Check` scripts): see **[`../elastic-agent-builder-a2a-workshop/README.md`](../elastic-agent-builder-a2a-workshop/README.md)**.
 
 ## Tightening API key privileges
 
