@@ -27,7 +27,7 @@ These mirror the same Cloud + Elasticsearch operations when you **do not** have 
 | Create both serverless projects + wait for `initialized` | `scripts/01-provision-serverless.sh` |
 | Create scoped **Elasticsearch** API keys (admin bootstrap only) | `scripts/02-create-es-api-keys.sh` |
 | Apply templates + load `workshop-synth-*` data | `scripts/03-populate-indices.sh` |
-| Create lab Agent Builder agents (Security + Observability) | `scripts/05-agent-builder-lab-agents.sh` |
+| Create lab Agent Builder agents (both Kibanas: Security detection + A2A enrichment + Observability context) | `scripts/05-agent-builder-lab-agents.sh` |
 | Print Kibana URLs + next steps | `scripts/04-print-next-steps.sh` |
 | All of the above | `scripts/run-all.sh` |
 

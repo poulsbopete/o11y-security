@@ -55,7 +55,7 @@ bash "$ELASTIC_WORKSHOP_ROOT/scripts/load-sample-bulk.sh"
 bash "$(pwd)/elastic-agent-builder-a2a-cloud-path/scripts/05-agent-builder-lab-agents.sh"
 ```
 
-The last line creates starter Agent Builder agents when **Node** and **`agent-builder.js`** (kibana-agent-builder skill) are available; otherwise it prints a skip warning. Same behavior is included in **`scripts/run-all.sh`** after populate.
+The last line creates starter Agent Builder agents on **both** Kibanas (Security: detection + A2A enrichment; Observability: context) when **Node** and **`agent-builder.js`** are available; otherwise it prints a skip warning. Set **`O11Y_AGENT_ENDPOINT`** in `state/workshop.env` and re-run the script to embed the live Observability URL in enrichment instructions. Same behavior is included in **`scripts/run-all.sh`** after populate.
 
 ## 6. Agent Builder (Security + Observability)
 

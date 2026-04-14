@@ -20,7 +20,7 @@ ab_lab="${ROOT}/state/agent-builder-lab.json"
 
 cat <<EOF
 
---- Agent Builder (manual in each Kibana) ---
+--- Agent Builder (Kibana URLs; run scripts/05-agent-builder-lab-agents.sh to create lab agents) ---
 Observability Kibana: ${o11y_kb}
 Security Kibana:      ${sec_kb}
 

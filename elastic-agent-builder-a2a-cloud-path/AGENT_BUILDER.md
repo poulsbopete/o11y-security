@@ -2,7 +2,12 @@
 
 After your environment is live (via **[Elastic Agent Skills](https://github.com/elastic/agent-skills)** — **kibana-agent-builder** — or after `scripts/run-all.sh`), you have Elasticsearch + Kibana in **two** projects.
 
-If **`scripts/05-agent-builder-lab-agents.sh`** ran (Node + `agent-builder.js` available; not skipped with `A2A_SKIP_AGENT_BUILDER=1`), starter agents **`a2a-lab-security-detection`** and **`a2a-lab-observability-context`** may already exist—see **`state/agent-builder-lab.json`**. Refine them in Kibana or with **kibana-agent-builder** as needed.
+If **`scripts/05-agent-builder-lab-agents.sh`** ran (Node + `agent-builder.js` available; not skipped with `A2A_SKIP_AGENT_BUILDER=1`), starter agents may already exist on **both** Serverless Kibanas—see **`state/agent-builder-lab.json`**:
+
+- **`a2a-lab-security-detection`** and **`a2a-lab-security-a2a-enrichment`** (Security)
+- **`a2a-lab-observability-context`** (Observability)
+
+Set **`O11Y_AGENT_ENDPOINT`** in **`state/workshop.env`** to your published Observability agent URL, then re-run **`05`** so enrichment instructions embed the live endpoint (or update the enrichment agent in Kibana). Refine agents with **kibana-agent-builder** as needed.
 
 Build out the full story in this order:
 

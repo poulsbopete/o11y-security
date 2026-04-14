@@ -31,6 +31,11 @@ if [ ! -f "$WS_ENV" ]; then
   exit 1
 fi
 
+# shellcheck disable=SC1090
+set -a
+source "$WS_ENV"
+set +a
+
 require_cmds curl jq
 
 if ! command -v node >/dev/null 2>&1; then
@@ -158,6 +163,20 @@ upsert_agent() {
   run_ab create-agent --name "$name" --description "$desc" --tool-ids "$tools_csv" --instructions "$instr"
 }
 
+# Substitute __O11Y_ENDPOINT__ in enrichment template (URL may contain sed-special chars).
+render_enrichment_instructions() {
+  local out="$1"
+  local ep="${O11Y_AGENT_ENDPOINT:-not configured — set O11Y_AGENT_ENDPOINT in state/workshop.env}"
+  if command -v python3 >/dev/null 2>&1; then
+    ROOT="$ROOT" EP="$ep" python3 -c "import os, pathlib; r=os.environ['ROOT']; ep=os.environ['EP']; p=pathlib.Path(r)/'agent-instructions/security-a2a-enrichment.txt'; print(p.read_text().replace('__O11Y_ENDPOINT__', ep))" >"$out"
+  else
+    local esc
+    esc="$(printf '%s' "$ep" | sed 's/[\\/&|]/\\&/g')"
+    sed "s/__O11Y_ENDPOINT__/${esc}/g" "$ROOT/agent-instructions/security-a2a-enrichment.txt" >"$out"
+  fi
+  chmod 600 "$out"
+}
+
 # --- Security Kibana ---
 sec_kb="$(jq -r '.security.endpoints.kibana // empty' "$BOOT")"
 sec_user="$(jq -r '.security.credentials.username // empty' "$BOOT")"
@@ -195,7 +214,13 @@ upsert_agent "a2a-lab-security-detection" "A2A Lab Security Detection" \
   "$ROOT/state/.ab-tools-security.tmp" \
   "$ROOT/agent-instructions/security-detection.txt"
 
-rm -f "$ROOT/state/.ab-tools-security.tmp"
+render_enrichment_instructions "$ROOT/state/.ab-enrich-instr.tmp"
+upsert_agent "a2a-lab-security-a2a-enrichment" "A2A Lab Security A2A Enrichment" \
+  "Workshop Security agent: correlate endpoint alerts with Observability context (A2A)" \
+  "$ROOT/state/.ab-tools-security.tmp" \
+  "$ROOT/state/.ab-enrich-instr.tmp"
+
+rm -f "$ROOT/state/.ab-tools-security.tmp" "$ROOT/state/.ab-enrich-instr.tmp"
 
 # --- Observability Kibana ---
 o11y_kb="$(jq -r '.observability.endpoints.kibana // empty' "$BOOT")"
@@ -237,15 +262,46 @@ upsert_agent "a2a-lab-observability-context" "A2A Lab Observability Context" \
 
 rm -f "$ROOT/state/.ab-tools-o11y.tmp"
 
+# If Observability URL was added after the first run, patch enrichment instructions on Security Kibana.
+echo "== Optional: sync Security enrichment agent with O11Y_AGENT_ENDPOINT =="
+export KIBANA_URL="${sec_kb}"
+export KIBANA_USERNAME="${sec_user}"
+export KIBANA_PASSWORD="${sec_pass}"
+unset KIBANA_API_KEY 2>/dev/null || true
+if [ -n "${O11Y_AGENT_ENDPOINT:-}" ] && agent_exists "a2a-lab-security-a2a-enrichment"; then
+  render_enrichment_instructions "$ROOT/state/.ab-enrich-instr.tmp"
+  instr="$(cat "$ROOT/state/.ab-enrich-instr.tmp")"
+  echo "  Updating a2a-lab-security-a2a-enrichment instructions…"
+  run_ab update-agent --id "a2a-lab-security-a2a-enrichment" --instructions "$instr"
+  rm -f "$ROOT/state/.ab-enrich-instr.tmp"
+fi
+
 umask 077
+ep_set="false"
+if [ -n "${O11Y_AGENT_ENDPOINT:-}" ]; then
+  ep_set="true"
+fi
 jq -n \
   --arg sec_agent "a2a-lab-security-detection" \
+  --arg sec_enrich "a2a-lab-security-a2a-enrichment" \
   --arg o11y_agent "a2a-lab-observability-context" \
   --arg sec_tool "$TOOL_SEC_SEARCH" \
   --arg o11y_tools "${TOOL_MET},${TOOL_TR}" \
-  '{security_agent_id:$sec_agent, observability_agent_id:$o11y_agent, security_tool_id:$sec_tool, observability_tool_ids:$o11y_tools}' \
-  >"$ROOT/state/agent-builder-lab.json"
+  --arg o11y_endpoint_set "$ep_set" \
+  --arg o11y_endpoint "${O11Y_AGENT_ENDPOINT:-}" \
+  '{
+    security_detection_agent_id:$sec_agent,
+    security_a2a_enrichment_agent_id:$sec_enrich,
+    observability_context_agent_id:$o11y_agent,
+    security_tool_id:$sec_tool,
+    observability_tool_ids:$o11y_tools,
+    o11y_agent_endpoint_configured: ($o11y_endpoint_set == "true"),
+    o11y_agent_endpoint: (if $o11y_endpoint == "" then null else $o11y_endpoint end)
+  }' >"$ROOT/state/agent-builder-lab.json"
 chmod 600 "$ROOT/state/agent-builder-lab.json"
 
 echo "Wrote ${ROOT}/state/agent-builder-lab.json"
-echo "Agent Builder lab agents ready (Security + Observability). Configure public A2A URL for Observability in Kibana and append O11Y_AGENT_ENDPOINT to workshop.env when available."
+echo "Agent Builder lab agents: Security (detection + A2A enrichment) + Observability (context)."
+if [ -z "${O11Y_AGENT_ENDPOINT:-}" ]; then
+  echo "Note: O11Y_AGENT_ENDPOINT is not set in workshop.env — enrichment agent instructions use a placeholder; set the URL and re-run this script to refresh wording (or edit the agent in Kibana)."
+fi
