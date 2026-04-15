@@ -151,6 +151,14 @@ function newMsgId(): string {
   return `m-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+async function drainResponseBody(res: Response): Promise<void> {
+  try {
+    await res.text();
+  } catch {
+    /* release socket */
+  }
+}
+
 function extractAssistantMessage(data: unknown): string {
   if (!data || typeof data !== "object") return "";
   const o = data as Record<string, unknown>;
@@ -479,7 +487,7 @@ export function AnimatedAIChat({
         setMessages((m) => [...m, { id: newMsgId(), role: "error", text: errText }]);
       };
 
-      const runSyncFallback = async (): Promise<boolean> => {
+      const runSyncFallback = async (signal?: AbortSignal): Promise<boolean> => {
         try {
           const r = await fetch(converseUrl, {
             method: "POST",
@@ -489,6 +497,7 @@ export function AnimatedAIChat({
             },
             body: JSON.stringify(body),
             credentials: "same-origin",
+            signal,
           });
 
           const raw = await r.text();
@@ -523,11 +532,22 @@ export function AnimatedAIChat({
           ]);
           return true;
         } catch (err) {
-          const msg = err instanceof Error ? err.message : "Network error";
+          const msg =
+            err instanceof DOMException && err.name === "AbortError"
+              ? "The agent took too long and the request was stopped. Try again with a shorter question, or check Kibana / connector health."
+              : err instanceof Error
+                ? err.message
+                : "Network error";
           appendError(msg);
           return false;
         }
       };
+
+      const ac = new AbortController();
+      const CONVERSE_TIMEOUT_MS = 118_000;
+      const timeoutId = window.setTimeout(() => ac.abort(), CONVERSE_TIMEOUT_MS);
+      /** Set when a streaming assistant bubble is added (for timeout cleanup). */
+      let streamingAssistantId: string | null = null;
 
       try {
         const streamUrl = converseStreamUrl(converseUrl);
@@ -540,59 +560,82 @@ export function AnimatedAIChat({
           },
           body: JSON.stringify(body),
           credentials: "same-origin",
+          signal: ac.signal,
         });
 
+        const ct = rs.headers.get("content-type") ?? "";
         const useStream =
           rs.ok &&
           rs.body &&
-          (rs.status === 200 || rs.status === 201) &&
-          (rs.headers.get("content-type")?.includes("text/event-stream") ||
-            rs.headers.get("content-type")?.includes("octet-stream") ||
-            rs.headers.get("content-type")?.includes("text/plain"));
+          (/\btext\/event-stream\b/i.test(ct) ||
+            /\bapplication\/octet-stream\b/i.test(ct) ||
+            (/\btext\/plain\b/i.test(ct) && !/\bhtml\b/i.test(ct)));
 
         if (!useStream) {
-          await runSyncFallback();
+          await drainResponseBody(rs);
+          await runSyncFallback(ac.signal);
           return;
         }
 
-        const streamMsgId = newMsgId();
-        setMessages((m) => [...m, { id: streamMsgId, role: "assistant", text: "" }]);
+        const streamId = newMsgId();
+        streamingAssistantId = streamId;
+        setMessages((m) => [...m, { id: streamId, role: "assistant", text: "" }]);
 
         let sawAssistantText = false;
         try {
-          await consumeAgentBuilderSse(rs.body, {
-            onConversationId: (id) => {
-              conversationIdRef.current = id;
+          await consumeAgentBuilderSse(
+            rs.body,
+            {
+              onConversationId: (id) => {
+                conversationIdRef.current = id;
+              },
+              onTextChunk: (chunk) => {
+                sawAssistantText = true;
+                setMessages((m) =>
+                  m.map((x) =>
+                    x.id === streamId ? { ...x, text: x.text + chunk } : x
+                  )
+                );
+              },
+              onCompleteMessage: (full) => {
+                sawAssistantText = true;
+                setMessages((m) =>
+                  m.map((x) => (x.id === streamId ? { ...x, text: full } : x))
+                );
+              },
             },
-            onTextChunk: (chunk) => {
-              sawAssistantText = true;
-              setMessages((m) =>
-                m.map((x) =>
-                  x.id === streamMsgId ? { ...x, text: x.text + chunk } : x
-                )
-              );
-            },
-            onCompleteMessage: (full) => {
-              sawAssistantText = true;
-              setMessages((m) =>
-                m.map((x) => (x.id === streamMsgId ? { ...x, text: full } : x))
-              );
-            },
-          });
-        } catch {
-          setMessages((m) => m.filter((x) => x.id !== streamMsgId));
+            ac.signal
+          );
+        } catch (e) {
+          setMessages((m) => m.filter((x) => x.id !== streamId));
+          if (e instanceof DOMException && e.name === "AbortError") {
+            appendError(
+              "The agent took too long and the stream was stopped. Try again with a shorter question, or check Kibana / connector health."
+            );
+            return;
+          }
           await runSyncFallback();
           return;
         }
 
         if (!sawAssistantText) {
-          setMessages((m) => m.filter((x) => x.id !== streamMsgId));
-          await runSyncFallback();
+          setMessages((m) => m.filter((x) => x.id !== streamId));
+          await runSyncFallback(ac.signal);
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Network error";
-        appendError(msg);
+        if (err instanceof DOMException && err.name === "AbortError") {
+          if (streamingAssistantId) {
+            setMessages((m) => m.filter((x) => x.id !== streamingAssistantId));
+          }
+          appendError(
+            "The agent took too long and the request was stopped. Try again with a shorter question, or check Kibana / connector health."
+          );
+        } else {
+          const msg = err instanceof Error ? err.message : "Network error";
+          appendError(msg);
+        }
       } finally {
+        window.clearTimeout(timeoutId);
         setIsSending(false);
       }
     },

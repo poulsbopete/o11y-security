@@ -31,13 +31,22 @@ export type StreamCallbacks = {
  */
 export async function consumeAgentBuilderSse(
   body: ReadableStream<Uint8Array> | null,
-  callbacks: StreamCallbacks
+  callbacks: StreamCallbacks,
+  signal?: AbortSignal
 ): Promise<void> {
   if (!body) throw new Error("No response body");
 
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let carry = "";
+
+  const onAbort = () => {
+    void reader.cancel("aborted");
+  };
+  if (signal) {
+    if (signal.aborted) onAbort();
+    else signal.addEventListener("abort", onAbort, { once: true });
+  }
 
   const dispatchFrame = (frame: string) => {
     const parsed = parseSseFrame(frame);
@@ -75,15 +84,30 @@ export async function consumeAgentBuilderSse(
     }
   };
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    carry += decoder.decode(value, { stream: true });
-    const parts = carry.split(/\r\n\r\n|\n\n/);
-    carry = parts.pop() ?? "";
-    for (const rawFrame of parts) {
-      if (rawFrame.trim()) dispatchFrame(rawFrame);
+  try {
+    while (true) {
+      let readResult: ReadableStreamReadResult<Uint8Array>;
+      try {
+        readResult = await reader.read();
+      } catch {
+        break;
+      }
+      const { done, value } = readResult;
+      if (done) break;
+      carry += decoder.decode(value, { stream: true });
+      const parts = carry.split(/\r\n\r\n|\n\n/);
+      carry = parts.pop() ?? "";
+      for (const rawFrame of parts) {
+        if (rawFrame.trim()) dispatchFrame(rawFrame);
+      }
+    }
+    if (carry.trim()) dispatchFrame(carry);
+  } finally {
+    if (signal) signal.removeEventListener("abort", onAbort);
+    try {
+      reader.releaseLock();
+    } catch {
+      /* already released */
     }
   }
-  if (carry.trim()) dispatchFrame(carry);
 }

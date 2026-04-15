@@ -46,6 +46,8 @@ Check:
 
 **Latency (wall clock):** streaming improves *perceived* wait time (first tokens sooner) but not total model + tool work. In **Kibana Agent Builder**, tighten instructions (fewer default tool hops), trim retrieval limits, or use a faster inference endpoint if you need shorter end-to-end runs.
 
+**Browser tab “still loading”:** long SSE `fetch` calls can keep some browsers busy; `/chat` uses a **118s client abort** and **drains** non-SSE responses so connections are not left hanging. The page backdrop avoids a third-party hero image so `load` is not blocked by blocked CDNs.
+
 ### If you see `404: NOT_FOUND`
 
 - Confirm **Root Directory** is **`web`**.
