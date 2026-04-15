@@ -92,7 +92,7 @@
   style.textContent = css;
   document.head.appendChild(style);
 
-  var fabLabel = SERVER_PROXY ? "Live · A2A" : "A2A help";
+  var fabLabel = SERVER_PROXY ? "Live · chat" : "Cross-sell help";
   var agentPlaceholder = SERVER_PROXY
     ? "Optional: override server default agent id"
     : "Leave blank for default agent";
@@ -151,7 +151,7 @@
     '" />' +
     '    <div id="o11y-ab-msgs" class="o11y-ab-msgs" aria-label="Messages"></div>' +
     '    <label class="o11y-ab-label" for="o11y-ab-user">Message</label>' +
-    '    <textarea id="o11y-ab-user" class="o11y-ab-textarea" placeholder="Ask about Agent Builder A2A, MCP, or the workshop…"></textarea>' +
+    '    <textarea id="o11y-ab-user" class="o11y-ab-textarea" placeholder="Ask about Observability ↔ Security cross-sell, MCP, or the workshop…"></textarea>' +
     '    <div class="o11y-ab-row">' +
     '      <button type="button" class="o11y-ab-btn primary" id="o11y-ab-send">Send</button>' +
     '      <button type="button" class="o11y-ab-btn" id="o11y-ab-clear">New conversation</button>' +

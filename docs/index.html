@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="o11y-converse-url" content="" />
-  <title>Agent Builder A2A — Security, Observability &amp; MCP</title>
+  <title>Cross-sell knowledge base — Observability ↔ Security &amp; MCP</title>
   <!-- Resolve pattern.css for GitHub Pages project sites (/repo/…) and for file:// previews -->
   <script>
   (function () {
@@ -275,7 +275,7 @@
         <section class="slide" id="s2" aria-label="Slide 2 of 6">
           <div class="inner">
             <p class="kicker">The pattern</p>
-            <h2>Agent Builder A2A: let each domain keep its expertise</h2>
+            <h2>Agent Builder: let each domain keep its expertise</h2>
             <p class="lead">
               Build a <strong style="color: var(--accent);">Security agent</strong> that detects risky behavior, then call an <strong style="color: var(--accent2);">Observability agent</strong> over HTTPS for host context (CPU, memory, errors, latency) in the same window of time.
             </p>
@@ -295,7 +295,7 @@
               <strong style="color: var(--accent);">Security</strong> telemetry (endpoint, EDR, firewalls) and
               <strong style="color: var(--accent2);">Observability</strong> signals (APM, infrastructure, application logs)
               both land in Elastic—where rules, workflows, cases, and dashboards give analysts a single narrative.
-              Agent Builder A2A adds cross-project reasoning when those streams live in separate serverless projects.
+              Linked Agent Builder agents add cross-project reasoning when those streams live in separate serverless projects.
             </p>
             <figure class="slide-figure">
               <img src="./images/a2a-mcp-architecture.jpg" width="1024" height="632" alt="Diagram: Security data and Observability data flowing into MCP" loading="lazy" decoding="async" />
@@ -304,7 +304,7 @@
             <ul style="margin-top: 1rem;">
               <li><strong>Left lanes</strong> — keep collection specialized; avoid duplicating analytics in both stacks.</li>
               <li><strong>MCP</strong> — detections, triage, workflow automation, and the enriched case document analysts ship.</li>
-              <li><strong>A2A</strong> — Security agent calls the Observability agent over HTTPS when impact context lives in the other project.</li>
+              <li><strong>Cross-project call</strong> — Security agent calls the Observability agent over HTTPS when impact context lives in the other project.</li>
             </ul>
           </div>
         </section>
@@ -314,16 +314,16 @@
             <p class="kicker">From the cloud-path lab</p>
             <h2>Kibana Workflows and Cases</h2>
             <p class="lead" style="margin-bottom: 0.5rem;">
-              Scripted lab assets push <strong>A2A Lab</strong> workflows (synth inject, alert → console + case) to each Serverless Kibana.
+              Scripted lab assets push <strong>workshop</strong> workflows (synth inject, alert → console + case) to each Serverless Kibana.
               Alert-driven runs open cases with triage copy—including <strong>randomized drill scenarios</strong>—so workshops feel like real ops without manual paste-up.
             </p>
             <div class="slide-figures-stack">
               <figure class="slide-figure">
-                <img src="./images/a2a-lab-workflows-list.jpg" width="1024" height="312" alt="Kibana Workflows list showing A2A Lab workflows: O11y synth inject manual and scheduled, O11y alert to Case, O11y alert log" loading="lazy" decoding="async" />
+                <img src="./images/a2a-lab-workflows-list.jpg" width="1024" height="312" alt="Kibana Workflows list showing lab workflows: O11y synth inject manual and scheduled, O11y alert to Case, O11y alert log" loading="lazy" decoding="async" />
                 <figcaption>Observability project — lab workflows (manual inject, schedule, alert → case / alert log).</figcaption>
               </figure>
               <figure class="slide-figure">
-                <img src="./images/a2a-lab-cases-list.jpg" width="1024" height="334" alt="Elastic Security Cases list with open A2A Lab cases showing credential access pattern drill titles" loading="lazy" decoding="async" />
+                <img src="./images/a2a-lab-cases-list.jpg" width="1024" height="334" alt="Elastic Security Cases list with open lab cases showing credential access pattern drill titles" loading="lazy" decoding="async" />
                 <figcaption>Security project — cases opened from alert workflows (example drill: credential access pattern).</figcaption>
               </figure>
             </div>
@@ -376,7 +376,7 @@
         <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 6</span>
       </div>
       <div class="dots" id="dots" aria-label="Jump to slide"></div>
-      <span class="brand"><a class="prompt-lib" href="./prompts/">AE prompts</a> · Agent Builder A2A</span>
+      <span class="brand"><a class="prompt-lib" href="./prompts/">AE prompts</a> · Observability ↔ Security</span>
     </nav>
   </div>
 

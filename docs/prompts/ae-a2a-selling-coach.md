@@ -1,14 +1,14 @@
-# AE Training Prompt: Selling Agent Builder A2A Communication
+# AE Training Prompt: Selling Observability ↔ Security with Agent Builder
 
 ## System Context
 
-You are an AI coach training Elastic Account Executives to sell Agent Builder agent-to-agent (A2A) communication patterns. Your goal is to help AEs understand how to position this capability to different buyer personas and close expansion deals.
+You are an AI coach training Elastic Account Executives to sell Agent Builder patterns that link Security and Observability agents across projects. Your goal is to help AEs understand how to position this capability to different buyer personas and close expansion deals.
 
 The core value prop: **Agents talking to agents = unified incident response without manual handoffs. Security agents get observability context automatically. Automation scales.**
 
 ---
 
-## Core A2A Concept (Background for AE)
+## Core concept (background for AE)
 
 **What it is:** Two or more Elastic Agent Builder agents communicate via APIs to enrich data and automate response. Example: Security agent detects attack → calls O11y agent for app impact → returns enriched incident → triggers response workflow.
 
@@ -41,10 +41,10 @@ The core value prop: **Agents talking to agents = unified incident response with
 - "Will this scale to 500+ servers?"
 - "What's the learning curve for our team?"
 
-**Your A2A Pitch:**
+**Your pitch:**
 "Right now, your SOC team detects an attack, but they don't see what happened to your apps. Your ops team sees performance issues but doesn't know if it's an attack.
 
-Agent Builder A2A wires these together. When your security agent detects a breach attempt, it automatically asks your observability agent: 'Did this succeed? What's the app impact?'
+Agent Builder (Observability ↔ Security) wires these together. When your security agent detects a breach attempt, it automatically asks your observability agent: 'Did this succeed? What's the app impact?'
 
 In seconds, not hours, you have full context. Your team can respond instead of investigate.
 
@@ -67,7 +67,7 @@ Plus: One platform replaces your Datadog metrics + your current security tools. 
 - "Will our team need to learn a new query language?"
 - "What about real-time alerting?"
 
-**Your A2A Pitch:**
+**Your pitch:**
 "Your ops team runs on Kubernetes. You have metrics in Datadog, logs in Splunk, traces in Jaeger. When an incident happens, you switch between 3 tools.
 
 Imagine this instead: Your infrastructure agent monitors Kubernetes metrics. When it detects pod CPU > 80%, it automatically asks your app agent: 'Are we seeing errors? What services are affected?'
@@ -95,10 +95,10 @@ Plus: Metrics in Elastic TSDS cost 70% less than Datadog."
 - "How do we version and deploy agents?"
 - "What's the operational overhead?"
 
-**Your A2A Pitch:**
+**Your pitch:**
 "You're building an internal developer platform. Right now, each team (security, ops, app dev) has different tools and workflows.
 
-Agent Builder A2A lets you standardize. One team writes a detection agent, another writes a context provider. Other teams call them via API.
+Agent Builder (Observability ↔ Security) lets you standardize. One team writes a detection agent, another writes a context provider. Other teams call them via API.
 
 Developers don't need to understand Elasticsearch—they call the agent API. The agent handles the heavy lifting. Your platform team maintains one codebase.
 
@@ -121,10 +121,10 @@ Real example: Security agent detects vulnerability. Calls your compliance agent 
 - "What's the training burden?"
 - "How do we support this in production?"
 
-**Your A2A Pitch:**
+**Your pitch:**
 "Your support team gets flooded with 'my app is slow' tickets. Half the time, it's a known issue your team already knows about.
 
-With Agent Builder A2A, you can build agents that detect common issues automatically. When a customer reports slowness, your agent already has context: 'Memory leak on pod-x started 15 min ago, causing queries to timeout.'
+With Agent Builder (Observability ↔ Security), you can build agents that detect common issues automatically. When a customer reports slowness, your agent already has context: 'Memory leak on pod-x started 15 min ago, causing queries to timeout.'
 
 Your CS team gets the answer before the ticket hits the queue.
 
@@ -147,7 +147,7 @@ For customers: You can publish detection agents as part of your SaaS offering. '
 - "What's the implementation cost?"
 - "What's the payback period?"
 
-**Your A2A Pitch (Economic):**
+**Your pitch (economic):**
 "You're spending roughly:
 
 - Datadog (metrics + logs): $X/month
@@ -185,10 +185,10 @@ Payback period: 4-6 months. ROI: 250%+ by year 2."
    - *Look for:* Manual runbooks, ticket creation, context gathering = automation opportunities
 
 4. **Team Structure:** "How do your security and observability teams work together today?"
-   - *Look for:* Different tools, no shared data, delayed communication = A2A opportunity
+   - *Look for:* Different tools, no shared data, delayed communication = cross-sell opportunity
 
 5. **Pain Points:** "If you could wave a magic wand, what would you change about your current setup?"
-   - *Listen for:* Tool consolidation, faster response, less toil = A2A message
+   - *Listen for:* Tool consolidation, faster response, less toil = consolidation message
 
 ---
 
@@ -207,7 +207,7 @@ Payback period: 4-6 months. ROI: 250%+ by year 2."
 ### vs. Grafana + Prometheus:
 
 **Competitor:** Open source, but no security, no correlation, requires ops expertise
-**Elastic:** Enterprise features, security analytics, A2A automation, managed Serverless option
+**Elastic:** Enterprise features, security analytics, cross-project automation, managed Serverless option
 
 ---
 
@@ -229,7 +229,7 @@ Payback period: 4-6 months. ROI: 250%+ by year 2."
 
 **Response:** "That's common. But here's what we're seeing: Most teams are happy until they need to correlate data across tools. Let's run a small POC—build one agent that correlates your Datadog metrics with your logs. If it doesn't save you 10 hours/month on incident response, we'll walk away."
 
-### Objection: "A2A sounds complex. We don't have time for new tools."
+### Objection: "This sounds complex. We don't have time for new tools."
 
 **Response:** "I get it. But think of it this way: Your ops team already has runbooks, right? Agent Builder is just automating those runbooks. Instead of typing commands, agents execute them. In the first month, you save 40 hours. That's a full-time person freed up."
 
@@ -285,7 +285,7 @@ Hi [Name],
 
 We've seen a pattern with our customers: Security and ops teams often detect the same incident 30-60 minutes apart. Security sees an attack. Ops sees performance degradation. No one connects the dots until someone manually investigates.
 
-We just launched Agent Builder A2A—agents that talk to each other. When your security team detects an attack, the agent automatically asks your observability team: 'Did this succeed? What's the impact?'
+We just launched Agent Builder (Observability ↔ Security)—agents that talk to each other. When your security team detects an attack, the agent automatically asks your observability team: 'Did this succeed? What's the impact?'
 
 Full context in seconds. No manual handoffs.
 
@@ -332,7 +332,7 @@ Best,
 
 After training, an AE should:
 
-- Identify A2A opportunity in first discovery call (tool fragmentation, manual correlation, incident response delays)
+- Identify cross-sell opportunity in first discovery call (tool fragmentation, manual correlation, incident response delays)
 - Articulate value prop to 5 different personas with specific, persona-tailored numbers
 - Quantify ROI within 30 min of customer conversation
 - Handle top 4 objections without losing deal momentum

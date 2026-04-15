@@ -361,7 +361,7 @@ export function AnimatedAIChat({
       {
         icon: <Megaphone className="h-4 w-4" />,
         label: "Elevator pitch",
-        description: "Short o11y-security A2A cross-sell opener",
+        description: "Short Observability ↔ Security cross-sell opener",
         prefix: "/pitch",
       },
       {
@@ -372,7 +372,7 @@ export function AnimatedAIChat({
       },
       {
         icon: <Link2 className="h-4 w-4" />,
-        label: "A2A bridge",
+        label: "Cross-project bridge",
         description: "Security calls Observability over HTTPS, no duplicated analytics",
         prefix: "/a2a",
       },
@@ -599,7 +599,7 @@ export function AnimatedAIChat({
               className="inline-block"
             >
               <h1 className="bg-gradient-to-r from-white/90 to-white/40 bg-clip-text pb-1 text-2xl font-medium tracking-tight text-transparent sm:text-3xl">
-                o11y-security · A2A cross-selling
+                o11y-security · Observability ↔ Security
               </h1>
               <motion.div
                 className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
@@ -615,9 +615,10 @@ export function AnimatedAIChat({
               transition={{ delay: 0.3 }}
             >
               Cross-sell <strong className="text-white/70">Elastic Observability</strong> with{" "}
-              <strong className="text-white/70">Elastic Security</strong> using Agent Builder{" "}
-              <strong className="text-white/70">agent-to-agent (A2A)</strong>—split serverless
-              projects, one buyer story. Pick a starter in the chat panel or type your own message.
+              <strong className="text-white/70">Elastic Security</strong> using{" "}
+              <strong className="text-white/70">Agent Builder</strong> and the cross-sell knowledge
+              base—split serverless projects, one buyer story. Pick a starter in the chat panel or
+              type your own message.
               Type <kbd className="rounded border border-white/15 bg-white/5 px-1 py-0.5 font-mono text-[0.7rem]">/</kbd>{" "}
               in the box to filter slash shortcuts.
             </motion.p>
@@ -777,7 +778,7 @@ export function AnimatedAIChat({
                   onKeyDown={handleKeyDown}
                   onFocus={() => setInputFocused(true)}
                   onBlur={() => setInputFocused(false)}
-                  placeholder="Ask about o11y-security A2A cross-selling: positioning, objections, enrichment agents, or the workshop lab…"
+                  placeholder="Ask about Observability ↔ Security cross-selling: positioning, objections, enrichment agents, or the workshop lab…"
                   containerClassName="w-full"
                   className={cn(
                     "w-full min-h-[60px] resize-none border-none bg-transparent px-1 py-2 text-sm text-white/90",
@@ -890,7 +891,7 @@ export function AnimatedAIChat({
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-white/70">
-                <span>A2A agent thinking</span>
+                <span>Cross-sell coach thinking</span>
                 <TypingDots />
               </div>
             </div>

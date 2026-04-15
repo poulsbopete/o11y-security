@@ -57,7 +57,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000` (redirects to `/index.html`). On the hosted build the launcher reads **Live · A2A** and the panel shows a **Hosted** pill plus a one-line hint for `KIBANA_AGENT_ID`. The slide deck itself matches GitHub Pages by design.
+Open `http://localhost:3000` (redirects to `/index.html`). On the hosted build the launcher reads **Live · chat** and the panel shows a **Hosted** pill plus a one-line hint for `KIBANA_AGENT_ID`. The slide deck itself matches GitHub Pages by design.
 
 ## GitHub Pages
 
