@@ -2,6 +2,8 @@
 
 Use this checklist when you want to **provision and run the A2A lab entirely through [Elastic Agent Skills](https://github.com/elastic/agent-skills)**—no Instruqt, minimal raw `curl`.
 
+**North star:** the lab proves **Security → Observability over HTTPS** (published Observability agent URL, **`O11Y_AGENT_ENDPOINT`**), not just two parallel projects. Workflows and synth injectors **seed and operationalize** each side; the **A2A** hop lives in **Agent Builder** enrichment—finish **`AGENT_BUILDER.md`** after agents exist.
+
 ## 0. Prerequisite: install Agent Skills
 
 1. Clone or install skills from **`https://github.com/elastic/agent-skills`** (official library, technical preview).
@@ -57,7 +59,7 @@ bash "$(pwd)/elastic-agent-builder-a2a-cloud-path/scripts/05-agent-builder-lab-a
 
 The last line creates starter Agent Builder agents on **both** Kibanas (Security: detection + A2A enrichment; Observability: context) when **Node** and **`agent-builder.js`** are available; otherwise it prints a skip warning. Set **`O11Y_AGENT_ENDPOINT`** in `state/workshop.env` and re-run the script to embed the live Observability URL in enrichment instructions. Same behavior is included in **`scripts/run-all.sh`** after populate.
 
-After projects and keys are ready, use **[`README.md` → Exercise the setup (both paths)](./README.md)** to validate clusters, run optional load simulation, exercise Agent Builder in Kibana, and wire true A2A (HTTP + workflow).
+After projects and keys are ready, use **[`README.md` → Exercise the setup (both paths)](./README.md)** to validate clusters, run optional load simulation, exercise Agent Builder in Kibana, and wire true A2A (HTTP + workflow). For **Kibana Workflows** (alert → **console + Case** in one workflow, optional Case-only, **scheduled** 15m injectors, and **manual** inject workflows you **Run** on demand) pushed to both Kibanas via API, run **`scripts/06-kibana-workflows-lab.sh`** (also included in **`run-all.sh`** after **`05`**). For **alerting rules** that match existing `workshop-synth-*` data, run **`scripts/07-lab-alert-rules.sh`** — it **attaches** the lab alert-console workflow to each rule when **`state/kibana-workflows-lab.json`** is present (run **06** before **07**); scheduled injectors from **06** need no rule action. Set **`A2A_SKIP_ATTACH_WORKFLOW_RULE_ACTIONS=1`** to skip attachment. For an immediate **alert** workflow run without waiting for rules, use **`scripts/08-synthetic-workflow-test.sh`**. For **Analytics dashboards** on each Kibana via **`POST /api/dashboards`**, run **`scripts/09-lab-dashboards-api.sh`** (included in **`run-all.sh`** after **`07`**). To **manually drive rule activity** with fresh ingest (not the workflow **Run** button), run **`scripts/10-lab-simulate-traffic.sh`** after **`02`**/**`03`** (uses `state/workshop.env`).
 
 ## 6. Agent Builder (Security + Observability)
 

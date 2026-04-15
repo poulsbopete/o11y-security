@@ -4,6 +4,13 @@ This folder is a **second path** to stand up the workshop on real **Elastic Clou
 
 Use it when you want a fast loop on real stacks before porting flows into Instruqt.
 
+## What actually bridges Security and Observability (A2A)
+
+The **exercise** is not “two silos that happen to share a repo”—it is **API-first correlation** when each domain keeps its own Serverless project:
+
+- **Bridge:** a **Security** Agent Builder agent (enrichment track) calls the **published Observability** agent over **HTTPS** using **`O11Y_AGENT_ENDPOINT`**, then merges Observability context into Security-side outcomes (e.g. enriched documents, cases, dashboards). That HTTP agent-to-agent hop is the lab’s **A2A**.
+- **Supporting pieces:** Kibana **alert → workflow → case** flows and **synth inject** workflows only **refresh workshop data** or **automate triage** inside each project. They do **not** replace the enrichment agent’s call to Observability—see [`AGENT_BUILDER.md`](./AGENT_BUILDER.md) and [`../elastic-agent-builder-a2a-workshop/agent-scaffolds/security-a2a-enrichment-workflow.md`](../elastic-agent-builder-a2a-workshop/agent-scaffolds/security-a2a-enrichment-workflow.md).
+
 ## Prerequisite (recommended): Elastic Agent Skills
 
 **Install the official skills library first:** **[elastic/agent-skills](https://github.com/elastic/agent-skills)**.
@@ -28,10 +35,15 @@ These mirror the same Cloud + Elasticsearch operations when you **do not** have 
 | Create scoped **Elasticsearch** API keys (admin bootstrap only) | `scripts/02-create-es-api-keys.sh` |
 | Apply templates + load `workshop-synth-*` data | `scripts/03-populate-indices.sh` |
 | Create lab Agent Builder agents (both Kibanas: Security detection + A2A enrichment + Observability context) | `scripts/05-agent-builder-lab-agents.sh` |
+| Create lab **Kibana Workflows** (alert → **console + Case** in one workflow; optional Case-only; **scheduled** 15m + **manual** synth inject per project) on **both** Kibanas | `scripts/06-kibana-workflows-lab.sh` |
+| Create **Elasticsearch query** lab rules (so you get **alerts** from `workshop-synth-*` without new ingest) | `scripts/07-lab-alert-rules.sh` |
+| **Optional:** run lab workflows once with a **synthetic** alert payload (`/api/workflows/test`) | `scripts/08-synthetic-workflow-test.sh` |
+| Create lab **Dashboards** via **Dashboards API** (`POST`/`PUT` `/api/dashboards` — no `?apiVersion=`) | `scripts/09-lab-dashboards-api.sh` |
+| **Optional:** simulate cross-domain **ingest** (fresh `workshop-synth-*` docs → lab rules/workflows) | `scripts/10-lab-simulate-traffic.sh` |
 | Print Kibana URLs + next steps | `scripts/04-print-next-steps.sh` |
 | All of the above | `scripts/run-all.sh` |
 
-Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.example`). Step **05** additionally needs **Node.js 18+** and the **`agent-builder.js`** file from the [kibana-agent-builder](https://github.com/elastic/agent-skills/tree/main/skills/kibana/agent-builder) skill (see `env.example` for overrides and skip flags).
+Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.example`). Step **05** additionally needs **Node.js 18+** and the **`agent-builder.js`** file from the [kibana-agent-builder](https://github.com/elastic/agent-skills/tree/main/skills/kibana/agent-builder) skill (see `env.example` for overrides and skip flags). Step **06** uses the same Kibana bootstrap credentials as **05**; YAML lives under [`kibana-workflows/yaml/`](./kibana-workflows/yaml/). Step **07** **auto-attaches** the lab **alert console** workflow to each `.es-query` rule when **`state/kibana-workflows-lab.json`** exists (after **06**), using the same system connector the UI uses (**`system-connector-.workflows`**). You can still add or change actions in the UI; avoid attaching the separate Case-only workflow on the same rule. Set **`A2A_SKIP_ATTACH_WORKFLOW_RULE_ACTIONS=1`** to skip API attachment. **Scheduled** inject workflows (default **15m**) plus **manual** inject workflows (**Run** in **Workflows**) push `workshop-synth-*` docs—no rule action needed; disable the schedule with **`A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS=1`**. Lab rules use **`A2A_LAB_RULE_INTERVAL`** (default **5m** in **07**) to reduce Case noise. **ES|QL** or Dev Tools queries **do not** create Kibana alerting alerts — use **07** for rules that fire on existing workshop data, **10** to bulk more workshop traffic (so rules keep matching), or **08** to run workflows once with a **synthetic** alert payload (not the same as a rule-generated alert). Step **09** creates **Analytics dashboards** on each Kibana using **`POST /api/dashboards`** and **`PUT /api/dashboards/{id}`** (do **not** pass `?apiVersion=` on Serverless — Kibana returns 400).
 
 ## What stays manual (unless you use a skill)
 
@@ -94,7 +106,7 @@ Outputs (gitignored / sensitive):
 
 ## Exercise the setup (both paths)
 
-Use these steps after projects exist, credentials are in **`state/workshop.env`**, and (for Path 2) **`run-all.sh`** has finished—or after you complete the equivalent steps via Agent Skills (**Path 1**). Repo root paths below assume you cloned **[o11y-security](https://github.com/poulsbopete/o11y-security)**.
+Use these steps after projects exist, credentials are in **`state/workshop.env`**, and (for Path 2) **`run-all.sh`** has finished—or after you complete the equivalent steps via Agent Skills (**Path 1**). Repo root paths below assume you cloned **[o11y-security](https://github.com/poulsbopete/o11y-security)**. To **present** the same setup to others (slides, Dev Tools, load script, Agent Builder, A2A caveat), see **[Demo the setup](#demo-the-setup)** below.
 
 ### Path 1 — Agent Skills (outside Instruqt)
 
@@ -155,6 +167,36 @@ Use these steps after projects exist, credentials are in **`state/workshop.env`*
 7. **True A2A** — same as Path 1 step 7.
 
 **Workshop-only exercises** (Instruqt track, challenge order, `Check` scripts): see **[`../elastic-agent-builder-a2a-workshop/README.md`](../elastic-agent-builder-a2a-workshop/README.md)**.
+
+## Demo the setup
+
+Walk a buyer, SA, or exec through what this repo already stands up (two Serverless projects, **`workshop-synth-*`** data, optional **A2A Lab** agents, load generator). For **Instruqt-only** delivery, use **[`../elastic-agent-builder-a2a-workshop/README.md` § Demo](../elastic-agent-builder-a2a-workshop/README.md#demo-the-setup)**.
+
+### Prep (~2 minutes)
+
+- Two browser tabs: **Security** Kibana and **Observability** Kibana — URLs from **`bash elastic-agent-builder-a2a-cloud-path/scripts/04-print-next-steps.sh`** or **`state/bootstrap.json`**.
+- Optional: **[GitHub Pages slides](https://poulsbopete.github.io/o11y-security/)** (value prop) and **[AE prompt library](https://poulsbopete.github.io/o11y-security/prompts/)** (positioning / persona copy).
+- Confirm **`state/workshop.env`** exists for **`curl`** and **`simulate-cross-domain-load.sh`**.
+
+### Suggested arc (~8–12 minutes)
+
+1. **Framing** — Slides or one sentence: projects are split **on purpose**; A2A means **API-first enrichment**, not copying all analytics into Security.
+2. **Evidence in Elasticsearch** — **Security** Kibana → **Dev Tools** (Console only): run the **`GET workshop-synth-endpoint-alerts/_search`** example from **Exercise the setup → Path 2 → step 6** above. **Observability** Kibana → same pattern for **`workshop-synth-metrics`** / **`workshop-synth-traces`**.
+3. **Correlated spike** — from repo root, generate parallel Security + Observability load, then refresh Dev Tools / **Discover**:
+
+   ```bash
+   export ELASTIC_WORKSHOP_ROOT="$(pwd)/elastic-agent-builder-a2a-workshop"
+   export ELASTIC_WORKSHOP_ENV_FILE="$(pwd)/elastic-agent-builder-a2a-cloud-path/state/workshop.env"
+   SIMULATE_ROUNDS=15 SIMULATE_BURST_SIZE=12 SIMULATE_SLEEP_SEC=0 \
+     bash elastic-agent-builder-a2a-workshop/scripts/simulate-cross-domain-load.sh
+   ```
+
+4. **Agent Builder** — **Agents**: contrast built-in **read-only** agents with **A2A Lab …** agents. **Chat**: Observability context → ask for **`prod-db-01`** over the last minute; Security enrichment → ask to correlate auth failures with ops context.
+5. **“Real” A2A HTTP** — Be explicit: live **POST** from Security to Observability needs **`O11Y_AGENT_ENDPOINT`** plus a **workflow** step (see **[`AGENT_BUILDER.md`](./AGENT_BUILDER.md)** and **[`../elastic-agent-builder-a2a-workshop/04-connect-agents-a2a/assignment.md`](../elastic-agent-builder-a2a-workshop/04-connect-agents-a2a/assignment.md)**). Optional: set the URL in **`workshop.env`** and re-run **`05`** so instructions stay current.
+
+### Exec / sponsor cut (~3 minutes)
+
+Slides → one **Dev Tools** query on Security → one line on **same host** spiking in Security + Observability (load script or narrative) → **Agents** list → “HTTP + workflow is the next commitment step.”
 
 ## Tightening API key privileges
 

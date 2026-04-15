@@ -1,0 +1,52 @@
+name: A2A Lab — alert to Security Case
+description: >
+  Case-only Security workflow. Prefer **A2A Lab — alert audit (console)** on rules instead (it logs + creates a case).
+  Do not attach both workflows to the same rule or you will get duplicate cases.
+enabled: true
+tags:
+  - a2a-lab
+triggers:
+  - type: alert
+steps:
+  - name: create_a_case
+    type: kibana.createCaseDefaultSpace
+    with:
+      title: "{% assign _s = event.alerts[0].kibana.alert.uuid | default: execution.id | slice: -1 | downcase %}{% capture _drill %}{% if _s == \"0\" or _s == \"1\" or _s == \"2\" %}Lateral movement hint{% elsif _s == \"3\" or _s == \"4\" or _s == \"5\" %}Suspicious code execution{% elsif _s == \"6\" or _s == \"7\" or _s == \"8\" %}Credential access pattern{% elsif _s == \"9\" or _s == \"a\" or _s == \"b\" %}Data staging / exfil prep{% elsif _s == \"c\" or _s == \"d\" %}C2-like beaconing{% else %}Privilege / defense evasion{% endif %}{% endcapture %}{{ event.alerts[0].kibana.alert.rule.name }} — {{ _drill | strip }} (lab)"
+      description: |
+        {% assign _s = event.alerts[0].kibana.alert.uuid | default: execution.id | slice: -1 | downcase %}
+        {% capture _drill %}{% if _s == "0" or _s == "1" or _s == "2" %}**Lateral movement hint** — pivot across hosts/users in the same window as this alert; map sessions and rare processes.{% elsif _s == "3" or _s == "4" or _s == "5" %}**Suspicious code execution** — treat like interpreter abuse, LOLBins, or unexpected script chains tied to the entity above.{% elsif _s == "6" or _s == "7" or _s == "8" %}**Credential access pattern** — focus on logon anomalies, token reuse, or brute-force precursors around the alert time.{% elsif _s == "9" or _s == "a" or _s == "b" %}**Data staging / exfil prep** — look for archive activity, unusual volume, or off-hours access to sensitive paths.{% elsif _s == "c" or _s == "d" %}**C2-like beaconing** — correlate DNS / TLS / fixed-interval egress with the host’s baseline.{% else %}**Privilege / defense evasion** — trace elevation, tampering, or weakening of visibility near this signal.{% endif %}{% endcapture %}
+
+        ## Executive summary
+        This case was opened automatically by the **A2A Lab** workflow when a detection rule fired. Treat it as a first-pass triage record: confirm the alert is expected for the workshop, then pivot to host and user context.
+
+        ## Randomized drill scenario
+        {{ _drill | strip }}
+        _Picked from the last hex digit of the alert UUID (stable for this alert); reruns keep the same storyline._
+
+        ## Backlog (GitHub)
+        Open **Issues → New issue** in this workshop repo → **Security-side scenario** or **Cross-domain A2A**; paste the **Alert id** below.
+
+        | Field | Value |
+        | --- | --- |
+        | **Rule** | {{ event.alerts[0].kibana.alert.rule.name }} |
+        | **Reason** | {{ event.alerts[0].kibana.alert.reason }} |
+        | **Host** | {{ event.alerts[0].host.name }} |
+        | **Alert id** | {{ event.alerts[0].kibana.alert.uuid }} |
+
+        ## Suggested next steps
+        1. Open the linked alert(s) in **Investigate** (alerts stay synced because `syncAlerts` is on).
+        2. Check **Timeline** or **Discover** for the same time window on `workshop-synth-endpoint-alerts`.
+        3. If A2A enrichment is enabled, query **`.elastic-agents-security-a2a-enriched`** for merged agent + A2A audit fields (response time, severity, tool metadata).
+
+        ## Where A2A fits
+        Agent-to-agent calls that touch production should leave an auditable trail. Use this case to correlate **who** (user), **where** (host), and **what** (rule reason) before closing or escalating.
+      tags: ["a2a-lab", "workflow", "automated-response"]
+      severity: "high"
+      owner: "securitySolution"
+      settings:
+        syncAlerts: true
+      connector:
+        id: "none"
+        name: "none"
+        type: ".none"
+        fields: null

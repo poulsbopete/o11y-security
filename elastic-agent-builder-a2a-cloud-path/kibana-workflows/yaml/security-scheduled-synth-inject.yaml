@@ -1,0 +1,41 @@
+name: A2A Lab — Security scheduled synth inject (15m)
+description: >
+  Runs every 15 minutes: logs a console line and indexes one failed authentication-style event into
+  workshop-synth-endpoint-alerts. Use **A2A Lab — Security synth inject (manual)** for on-demand runs.
+  Timestamps use Liquid **"now"** (ISO) for Elasticsearch.
+  Not cross-project A2A: no outbound call to Observability here. A2A = Security Agent Builder enrichment → O11Y_AGENT_ENDPOINT (AGENT_BUILDER.md).
+enabled: true
+tags:
+  - a2a-lab
+  - scheduled
+triggers:
+  - type: scheduled
+    with:
+      every: 15m
+steps:
+  - name: tick
+    type: console
+    with:
+      message: "Scheduled Security synth inject at {{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+  - name: inject_auth_failure
+    type: elasticsearch.request
+    with:
+      method: POST
+      path: /workshop-synth-endpoint-alerts/_doc?refresh=wait_for
+      body:
+        "@timestamp": "{{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+        host:
+          name: prod-db-01
+        event:
+          category:
+            - authentication
+          outcome: failure
+          type:
+            - start
+        user:
+          name: svc-workflow-inject
+        source:
+          ip: 192.0.2.50
+        message: scheduled workflow auth failure (lab inject)
+        labels:
+          a2a_injected: scheduled-workflow

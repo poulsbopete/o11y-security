@@ -1,0 +1,51 @@
+name: A2A Lab — O11y synth inject (manual)
+description: >
+  On-demand (Run in Workflows UI): injects one failed trace and one high-CPU metrics doc into
+  workshop-synth-* for demos without waiting for the 15m schedule. Same steps as the scheduled injector.
+  Does not call Security or perform A2A—only Elasticsearch writes on this Observability project.
+  The Security↔O11y bridge for this lab is the Security enrichment agent HTTPS call to the published Observability agent (O11Y_AGENT_ENDPOINT); see AGENT_BUILDER.md.
+enabled: true
+tags:
+  - a2a-lab
+  - manual
+triggers:
+  - type: manual
+steps:
+  - name: tick
+    type: console
+    with:
+      message: "Manual O11y synth inject at {{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+  - name: inject_failed_trace
+    type: elasticsearch.request
+    with:
+      method: POST
+      path: /workshop-synth-traces/_doc?refresh=wait_for
+      body:
+        "@timestamp": "{{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+        service:
+          name: inventory-api
+        host:
+          name: prod-db-01
+        transaction:
+          duration:
+            us: 2650000
+        event:
+          outcome: failure
+        http:
+          response:
+            status_code: 503
+        labels:
+          a2a_injected: manual-workflow
+  - name: inject_high_cpu_metric
+    type: elasticsearch.request
+    with:
+      method: POST
+      path: /workshop-synth-metrics/_doc?refresh=wait_for
+      body:
+        "@timestamp": "{{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+        "host.name": prod-db-01
+        "system.cpu.total.norm.pct": 0.94
+        "system.memory.actual.used.pct": 0.86
+        "system.diskio.read.bytes": 20971520
+        labels:
+          a2a_injected: manual-workflow

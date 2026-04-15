@@ -1,0 +1,53 @@
+name: A2A Lab — O11y scheduled synth inject (15m)
+description: >
+  Runs every 15 minutes: logs a console line and indexes one failed APM-style trace plus a high-CPU
+  metrics doc into workshop-synth-* so dashboards and rules see fresh activity without flooding Cases.
+  Use **A2A Lab — O11y synth inject (manual)** for on-demand runs. Timestamps use Liquid **"now"** (ISO) for Elasticsearch.
+  Not the A2A bridge: no Security HTTP/agent steps—only O11y index writes. Bridge = Security enrichment agent → O11Y_AGENT_ENDPOINT (AGENT_BUILDER.md).
+enabled: true
+tags:
+  - a2a-lab
+  - scheduled
+triggers:
+  - type: scheduled
+    with:
+      every: 15m
+steps:
+  - name: tick
+    type: console
+    with:
+      message: "Scheduled O11y synth inject at {{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+  - name: inject_failed_trace
+    type: elasticsearch.request
+    with:
+      method: POST
+      path: /workshop-synth-traces/_doc?refresh=wait_for
+      body:
+        "@timestamp": "{{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+        service:
+          name: inventory-api
+        host:
+          name: prod-db-01
+        transaction:
+          duration:
+            us: 2650000
+        event:
+          outcome: failure
+        http:
+          response:
+            status_code: 503
+        labels:
+          a2a_injected: scheduled-workflow
+  - name: inject_high_cpu_metric
+    type: elasticsearch.request
+    with:
+      method: POST
+      path: /workshop-synth-metrics/_doc?refresh=wait_for
+      body:
+        "@timestamp": "{{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+        "host.name": prod-db-01
+        "system.cpu.total.norm.pct": 0.94
+        "system.memory.actual.used.pct": 0.86
+        "system.diskio.read.bytes": 20971520
+        labels:
+          a2a_injected: scheduled-workflow

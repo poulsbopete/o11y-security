@@ -1,0 +1,52 @@
+name: A2A Lab — O11y alert to Case
+description: >
+  Case-only Observability workflow. Prefer **A2A Lab — O11y alert log** on rules instead (it logs + creates a case).
+  Do not attach both workflows to the same rule or you will get duplicate cases.
+enabled: true
+tags:
+  - a2a-lab
+triggers:
+  - type: alert
+steps:
+  - name: create_a_case
+    type: kibana.createCaseDefaultSpace
+    with:
+      title: "{% assign _s = event.alerts[0].kibana.alert.uuid | default: execution.id | slice: -1 | downcase %}{% capture _drill %}{% if _s == \"0\" or _s == \"1\" or _s == \"2\" %}Latency / SLO risk{% elsif _s == \"3\" or _s == \"4\" or _s == \"5\" %}Error budget burn{% elsif _s == \"6\" or _s == \"7\" or _s == \"8\" %}Dependency failure{% elsif _s == \"9\" or _s == \"a\" or _s == \"b\" %}Resource saturation{% elsif _s == \"c\" or _s == \"d\" %}Deploy regression{% else %}Noisy neighbor / capacity{% endif %}{% endcapture %}{{ event.alerts[0].kibana.alert.rule.name }} — {{ _drill | strip }} (lab)"
+      description: |
+        {% assign _s = event.alerts[0].kibana.alert.uuid | default: execution.id | slice: -1 | downcase %}
+        {% capture _drill %}{% if _s == "0" or _s == "1" or _s == "2" %}**Latency / SLO risk** — quantify tail latency, saturation on hot paths, and user-visible slowdown for the service tied to this signal.{% elsif _s == "3" or _s == "4" or _s == "5" %}**Error budget burn** — separate transient blips from sustained 4xx/5xx; tie errors to deploys or dependency health.{% elsif _s == "6" or _s == "7" or _s == "8" %}**Dependency failure** — walk upstream/downstream graphs; confirm timeouts and circuit-breaker behavior.{% elsif _s == "9" or _s == "a" or _s == "b" %}**Resource saturation** — CPU, memory, disk, or connection pools; check for runaway jobs or missing limits.{% elsif _s == "c" or _s == "d" %}**Deploy regression** — compare change windows to error/latency inflection points.{% else %}**Noisy neighbor / capacity** — look for shared-node contention or quota exhaustion in the same time slice.{% endif %}{% endcapture %}
+
+        ## What happened
+        An **Observability** alerting rule on workshop indices matched and this workflow created this case. Use it to practice **SRE-style** triage: confirm impact, scope blast radius, and capture findings in one place.
+
+        ## Randomized drill scenario
+        {{ _drill | strip }}
+        _Picked from the last hex digit of the alert UUID (stable for this alert); reruns keep the same storyline._
+
+        ## Backlog (GitHub)
+        Open **Issues → New issue** in this workshop repo → **Observability-side scenario** or **Cross-domain A2A**; paste the **Alert id** below.
+
+        | Field | Value |
+        | --- | --- |
+        | **Rule** | {{ event.alerts[0].kibana.alert.rule.name }} |
+        | **Reason** | {{ event.alerts[0].kibana.alert.reason }} |
+        | **Host** | {{ event.alerts[0].host.name }} |
+        | **Alert id** | {{ event.alerts[0].kibana.alert.uuid }} |
+
+        ## Suggested next steps
+        1. Open **Observability → APM / Services** (or **Discover**) for the alert window on `workshop-synth-metrics` and `workshop-synth-traces`.
+        2. Compare **error rate** vs **latency** spikes; note `event.outcome` on traces.
+        3. Add metrics or log links as case comments so the next responder has a breadcrumb trail.
+
+        ## Lab note
+        Dashboards in **Analytics** do not replace the **Alerts** UI — keep alerts and cases side by side for a realistic ops workflow.
+      tags: ["a2a-lab", "workflow"]
+      severity: "medium"
+      owner: "observability"
+      settings:
+        syncAlerts: true
+      connector:
+        id: "none"
+        name: "none"
+        type: ".none"
+        fields: null

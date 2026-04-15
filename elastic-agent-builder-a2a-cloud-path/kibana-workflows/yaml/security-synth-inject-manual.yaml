@@ -1,0 +1,39 @@
+name: A2A Lab — Security synth inject (manual)
+description: >
+  On-demand (Run in Workflows UI): injects one failed authentication-style event into
+  workshop-synth-endpoint-alerts for demos without waiting for the 15m schedule.
+  Does not call Observability—only Elasticsearch writes on this Security project.
+  The lab’s Security↔O11y A2A is the enrichment agent calling the published Observability agent over HTTPS (O11Y_AGENT_ENDPOINT); see AGENT_BUILDER.md.
+enabled: true
+tags:
+  - a2a-lab
+  - manual
+triggers:
+  - type: manual
+steps:
+  - name: tick
+    type: console
+    with:
+      message: "Manual Security synth inject at {{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+  - name: inject_auth_failure
+    type: elasticsearch.request
+    with:
+      method: POST
+      path: /workshop-synth-endpoint-alerts/_doc?refresh=wait_for
+      body:
+        "@timestamp": "{{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
+        host:
+          name: prod-db-01
+        event:
+          category:
+            - authentication
+          outcome: failure
+          type:
+            - start
+        user:
+          name: svc-workflow-inject
+        source:
+          ip: 192.0.2.50
+        message: manual workflow auth failure (lab inject)
+        labels:
+          a2a_injected: manual-workflow

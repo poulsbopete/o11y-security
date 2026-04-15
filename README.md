@@ -45,6 +45,8 @@ flowchart LR
 
 This repository’s **Agent Builder A2A** lab is one concrete pattern on that path: **Security** agents ask **Observability** for live context over APIs, so enriched incidents answer *“was this attack coupled with real user or service pain?”* without duplicating the entire analytics stack.
 
+**Scope check:** lab **workflows** (alert → case, scheduled/manual **synth inject**) are there to **simulate traffic** and **practice response** in each Kibana. They are **not** the cross-project bridge. The bridge is the **HTTPS call** from the Security enrichment agent to the Observability agent (**agent-to-agent**), wired after **Agent Builder** publish + instructions—see the cloud path’s **`AGENT_BUILDER.md`** and **`05-agent-builder-lab-agents.sh`**.
+
 ## Goals
 
 - Stand up **two** serverless projects (Observability + Security) the way many customers run them: **split ownership**, shared narrative.
@@ -58,6 +60,7 @@ This repository’s **Agent Builder A2A** lab is one concrete pattern on that pa
 | [`elastic-agent-builder-a2a-workshop/`](elastic-agent-builder-a2a-workshop/) | **Instruqt** track: `track.yml`, `config.yml`, challenges (`01-`…`06-`), index templates, sample NDJSON/JSON, lifecycle scripts (`setup-workstation`, `check-workstation`, `solve-workstation`), agent scaffolds. **How to run and exercise the track:** [`elastic-agent-builder-a2a-workshop/README.md`](elastic-agent-builder-a2a-workshop/README.md). |
 | [`elastic-agent-builder-a2a-cloud-path/`](elastic-agent-builder-a2a-cloud-path/) | **Cloud path** (no Instruqt): **[elastic/agent-skills](https://github.com/elastic/agent-skills)** is the recommended prerequisite; use **`SKILLS-FIRST-WORKFLOW.md`** for provisioning + keys + Agent Builder via skills. Bash `scripts/` remain for CI/headless. See **`README.md`** (includes **Exercise the setup** for Skills + bash paths), **`AGENT_BUILDER.md`**. |
 | [`docs/`](docs/) | Short **GitHub Pages** slide deck (`index.html`) for the value prop; optional marketing aid, not the main lab. |
+| [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/) | **GitHub issue templates** — open **Security-side**, **Observability-side**, or **cross-domain A2A** issues so backlog stays split by persona (e.g. lateral movement / code-execution scenarios vs. SLO or service-impact work). |
 
 ## Two ways to run the lab
 

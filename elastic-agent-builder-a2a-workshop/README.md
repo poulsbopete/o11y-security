@@ -8,6 +8,8 @@ This directory is the **source tree** for the **Instruqt** workshop *Agent Build
 
 ## Exercise the setup — Instruqt path
 
+To **demo or facilitate** the track (screen layout, challenge highlights, optional load script), see **[Demo the setup](#demo-the-setup)** below.
+
 1. **Install the Instruqt CLI** and authenticate per [Instruqt documentation](https://docs.instruqt.com/).
 2. **Push the track** from this directory (or your fork): `instruqt track push` (or your org’s equivalent) so learners get the latest challenges.
 3. **Run the track** in a sandbox or workshop event. Learners use the **Terminal** tab and **Assignment** tab per challenge.
@@ -25,11 +27,13 @@ This directory is the **source tree** for the **Instruqt** workshop *Agent Build
 5. **Click Check** after each challenge when the assignment says to — `check-workstation` validates the lab state.
 6. **Stuck?** Use **Show solution** only if the event policy allows it; compare with `solve-workstation` scripts.
 
-**Scaffolds** (copy/paste prompts and shapes for Agent Builder): [`agent-scaffolds/`](./agent-scaffolds/).
+**Scaffolds** (copy/paste prompts and shapes for Agent Builder): [`agent-scaffolds/`](./agent-scaffolds/) — includes **[`alert-to-case-with-dual-project-audit.md`](./agent-scaffolds/alert-to-case-with-dual-project-audit.md)** for alert-driven workflows, dual-project audit text, and Security Cases.
 
 ---
 
 ## Exercise the setup — Your own Elastic (no Instruqt)
+
+For a **buyer-facing walkthrough** after these steps, use **[Demo the setup](#demo-the-setup)** (and the linked **[cloud-path demo](../elastic-agent-builder-a2a-cloud-path/README.md#demo-the-setup)** for the full script).
 
 Use this when you already have **two** Elasticsearch endpoints + API keys (e.g. from **[cloud-path](https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-cloud-path)** `state/workshop.env`).
 
@@ -59,6 +63,26 @@ Use this when you already have **two** Elasticsearch endpoints + API keys (e.g. 
 4. **Agent Builder in Kibana** — follow [`agent-scaffolds/`](./agent-scaffolds/) on each Serverless Kibana, or run cloud-path **`05-agent-builder-lab-agents.sh`** if you use that repo layout and have Node + **kibana-agent-builder** installed.
 
 5. **A2A HTTP** — same as Instruqt challenge **04**: publish Observability URL, set `O11Y_AGENT_ENDPOINT`, workflow HTTP step on Security — see **[`../elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md`](../elastic-agent-builder-a2a-cloud-path/AGENT_BUILDER.md)**.
+
+---
+
+## Demo the setup
+
+Use this section to **facilitate or record** a walkthrough. If you provisioned stacks with **[cloud-path](https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-cloud-path)**, follow the fuller checklist there: **[`../elastic-agent-builder-a2a-cloud-path/README.md` § Demo the setup](../elastic-agent-builder-a2a-cloud-path/README.md#demo-the-setup)** (slides, Dev Tools, load script, Agent Builder chat, A2A boundary).
+
+### Instruqt (facilitator-led)
+
+1. **Before the session** — push the track; confirm sandboxes resolve **two** Kibana URLs and credentials from challenge **01**.
+2. **Screen share** — **Assignment** (left) + **Terminal** (right); keep [`agent-scaffolds/`](./agent-scaffolds/) open in a third tab for copy/paste.
+3. **Challenge 01** — “Two projects on purpose”; show cluster health and loaded **`workshop-synth-*`** data.
+4. **Challenges 02–03** — Security detection + Observability context agents (Agent Builder UI).
+5. **Challenge 04** — **Demo peak**: HTTP to Observability, merged enriched story; passing **Check** is your “A2A works” moment.
+6. **Challenge 05** (optional) — ES|QL / dashboard: “one narrative for execs.”
+7. **Optional live pressure** — if policy allows Elasticsearch egress from the sandbox, run **[`scripts/simulate-cross-domain-load.sh`](./scripts/simulate-cross-domain-load.sh)** with `ELASTIC_WORKSHOP_*` set (same env shape as cloud-path `workshop.env`), then re-show **Discover** or Dev Tools.
+
+### Your own Elastic (no Instruqt)
+
+Use the **same narrative** as **[cloud-path README → Demo the setup](../elastic-agent-builder-a2a-cloud-path/README.md#demo-the-setup)** after **`apply-index-templates`**, **`load-sample-bulk`**, and (optional) **`05-agent-builder-lab-agents.sh`**.
 
 ---
 

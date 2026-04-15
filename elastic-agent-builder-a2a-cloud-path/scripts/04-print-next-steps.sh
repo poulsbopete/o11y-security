@@ -17,6 +17,8 @@ fi
 o11y_kb="$(jq -r '.observability.endpoints.kibana // empty' "$BOOT")"
 sec_kb="$(jq -r '.security.endpoints.kibana // empty' "$BOOT")"
 ab_lab="${ROOT}/state/agent-builder-lab.json"
+wf_lab="${ROOT}/state/kibana-workflows-lab.json"
+dash_lab="${ROOT}/state/kibana-dashboards-lab.json"
 
 cat <<EOF
 
@@ -46,5 +48,29 @@ if [ -f "$ab_lab" ]; then
   echo "Lab Agent Builder automation (if 05 ran successfully):"
   echo "  ${ab_lab}"
   jq . "$ab_lab" 2>/dev/null || cat "$ab_lab"
+  echo ""
+fi
+
+if [ -f "$wf_lab" ]; then
+  echo "Lab Kibana Workflows (if scripts/06-kibana-workflows-lab.sh ran):"
+  echo "  ${wf_lab}"
+  jq . "$wf_lab" 2>/dev/null || cat "$wf_lab"
+  echo "Attach **A2A Lab — O11y alert log** / **alert audit (console)** to lab rules (Actions → Workflow) — each run logs + opens a case; avoid duplicating the Case-only workflow on the same rule."
+  echo "ES|QL / Dev Tools do not create alerting alerts — run scripts/07-lab-alert-rules.sh (or re-run run-all.sh) for lab rules on workshop-* indices."
+  echo "Instant workflow smoke test: bash ${ROOT}/scripts/08-synthetic-workflow-test.sh"
+  echo ""
+fi
+
+if [ -f "$ROOT/state/workshop.env" ]; then
+  echo "Simulate traffic for lab rules (optional): bash ${ROOT}/scripts/10-lab-simulate-traffic.sh"
+  echo "  (bulk workshop docs on both clusters so **07** rules match; different from **08** synthetic workflow test.)"
+  echo ""
+fi
+
+if [ -f "$dash_lab" ]; then
+  echo "Lab dashboards — Dashboards API (if scripts/09-lab-dashboards-api.sh ran):"
+  echo "  ${dash_lab}"
+  jq . "$dash_lab" 2>/dev/null || cat "$dash_lab"
+  echo "Open Analytics → Dashboards; search **A2A Lab**."
   echo ""
 fi
