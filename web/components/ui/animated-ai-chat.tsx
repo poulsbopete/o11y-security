@@ -23,6 +23,8 @@ import {
   XIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
 
 interface UseAutoResizeTextareaProps {
   minHeight: number;
@@ -158,6 +160,135 @@ function extractAssistantMessage(data: unknown): string {
   if (typeof o.message === "string") return o.message;
   return "";
 }
+
+/** Tailwind-styled elements for model markdown (headings, lists, code, links). */
+const ASSISTANT_MD_COMPONENTS: Partial<Components> = {
+  h1: ({ children, ...props }) => (
+    <h1
+      className="mb-3 mt-1 border-b border-white/10 pb-2.5 text-xl font-semibold tracking-tight text-white first:mt-0 sm:text-2xl"
+      {...props}
+    >
+      {children}
+    </h1>
+  ),
+  h2: ({ children, ...props }) => (
+    <h2
+      className="mb-2.5 mt-6 text-lg font-semibold tracking-tight text-white/95 first:mt-0 sm:text-xl"
+      {...props}
+    >
+      {children}
+    </h2>
+  ),
+  h3: ({ children, ...props }) => (
+    <h3 className="mb-2 mt-4 text-base font-semibold text-white/90 first:mt-0" {...props}>
+      {children}
+    </h3>
+  ),
+  p: ({ children, ...props }) => (
+    <p className="mb-3 text-[0.9375rem] leading-relaxed text-white/88 last:mb-0" {...props}>
+      {children}
+    </p>
+  ),
+  ul: ({ children, ...props }) => (
+    <ul
+      className="mb-3 list-disc space-y-1.5 pl-5 text-[0.9375rem] leading-relaxed text-white/85 marker:text-emerald-400/70"
+      {...props}
+    >
+      {children}
+    </ul>
+  ),
+  ol: ({ children, ...props }) => (
+    <ol
+      className="mb-3 list-decimal space-y-1.5 pl-5 text-[0.9375rem] leading-relaxed text-white/85 marker:text-emerald-400/70"
+      {...props}
+    >
+      {children}
+    </ol>
+  ),
+  li: ({ children, ...props }) => (
+    <li className="leading-relaxed [&>p]:mb-0" {...props}>
+      {children}
+    </li>
+  ),
+  blockquote: ({ children, ...props }) => (
+    <blockquote
+      className="mb-3 border-l-2 border-emerald-400/40 pl-3.5 text-white/78 italic"
+      {...props}
+    >
+      {children}
+    </blockquote>
+  ),
+  a: ({ children, href, ...props }) => (
+    <a
+      href={href}
+      className="font-medium text-violet-300 underline-offset-2 hover:text-violet-200 hover:underline"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+  hr: (props) => <hr className="my-5 border-white/10" {...props} />,
+  strong: ({ children, ...props }) => (
+    <strong className="font-semibold text-white" {...props}>
+      {children}
+    </strong>
+  ),
+  em: ({ children, ...props }) => (
+    <em className="text-white/85" {...props}>
+      {children}
+    </em>
+  ),
+  table: ({ children, ...props }) => (
+    <div className="mb-3 overflow-x-auto rounded-lg border border-white/10">
+      <table className="w-full min-w-[16rem] border-collapse text-left text-sm" {...props}>
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children, ...props }) => (
+    <thead className="border-b border-white/15 bg-white/[0.06]" {...props}>
+      {children}
+    </thead>
+  ),
+  th: ({ children, ...props }) => (
+    <th className="px-3 py-2 font-semibold text-white/90" {...props}>
+      {children}
+    </th>
+  ),
+  td: ({ children, ...props }) => (
+    <td className="border-t border-white/10 px-3 py-2 text-white/80" {...props}>
+      {children}
+    </td>
+  ),
+  pre: ({ children, ...props }) => (
+    <pre
+      className="mb-3 overflow-x-auto rounded-xl border border-white/10 bg-black/55 p-4 text-[0.8125rem] leading-relaxed text-emerald-100/90 shadow-inner"
+      {...props}
+    >
+      {children}
+    </pre>
+  ),
+  code: ({ className, children, ...props }) => {
+    const block = Boolean(className?.includes("language-"));
+    if (block) {
+      return (
+        <code className={cn("block font-mono text-[0.8125rem]", className)} {...props}>
+          {children}
+        </code>
+      );
+    }
+    return (
+      <code
+        className="rounded-md bg-white/[0.14] px-1.5 py-0.5 font-mono text-[0.85em] text-white/95"
+        {...props}
+      >
+        {children}
+      </code>
+    );
+  },
+};
 
 export type AnimatedAIChatProps = {
   /** Same-origin Kibana converse proxy (Vercel: `/api/converse`). */
@@ -447,15 +578,15 @@ export function AnimatedAIChat({
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-transparent p-6 text-white">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-transparent px-4 py-8 text-white sm:px-6 lg:px-10">
       <div className="absolute inset-0 h-full w-full overflow-hidden">
         <div className="absolute left-1/4 top-0 h-96 w-96 animate-pulse rounded-full bg-violet-500/10 mix-blend-normal blur-[128px] filter" />
         <div className="absolute bottom-0 right-1/4 h-96 w-96 animate-pulse rounded-full bg-indigo-500/10 mix-blend-normal blur-[128px] filter delay-700" />
         <div className="absolute right-1/3 top-1/4 h-64 w-64 animate-pulse rounded-full bg-fuchsia-500/10 mix-blend-normal blur-[96px] filter delay-1000" />
       </div>
-      <div className="relative mx-auto w-full max-w-2xl">
+      <div className="relative mx-auto w-full max-w-5xl xl:max-w-6xl">
         <motion.div
-          className="relative z-10 space-y-12"
+          className="relative z-10 space-y-8 sm:space-y-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -478,7 +609,7 @@ export function AnimatedAIChat({
               />
             </motion.div>
             <motion.p
-              className="mx-auto max-w-lg text-sm leading-relaxed text-white/45"
+              className="mx-auto max-w-3xl text-sm leading-relaxed text-white/45 sm:text-base"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -493,7 +624,7 @@ export function AnimatedAIChat({
           </div>
 
           <motion.div
-            className="relative flex max-h-[min(88vh,46rem)] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-black/50 shadow-2xl backdrop-blur-2xl"
+            className="relative flex max-h-[min(92vh,54rem)] flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-black/50 shadow-2xl shadow-black/40 backdrop-blur-2xl xl:max-h-[min(92vh,58rem)]"
             initial={{ scale: 0.98 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.1 }}
@@ -510,7 +641,7 @@ export function AnimatedAIChat({
                 One thread until you use New conversation.
               </p>
               <ul
-                className="max-h-[11.5rem] space-y-0.5 overflow-y-auto pr-0.5"
+                className="max-h-[min(28vh,13rem)] space-y-0.5 overflow-y-auto pr-0.5 sm:max-h-[min(26vh,12rem)]"
                 aria-label="Starter prompts"
               >
                 {quickStarters.map((s) => (
@@ -542,8 +673,8 @@ export function AnimatedAIChat({
 
             <div
               className={cn(
-                "min-h-[8rem] flex-1 space-y-2 overflow-y-auto px-3 py-3 text-left text-sm text-white/90",
-                "max-h-[min(40vh,22rem)]"
+                "min-h-[10rem] flex-1 space-y-3 overflow-y-auto px-3 py-4 text-left sm:px-5 sm:py-5",
+                "max-h-[min(52vh,32rem)] xl:max-h-[min(56vh,36rem)]"
               )}
               aria-label="Messages"
             >
@@ -558,19 +689,21 @@ export function AnimatedAIChat({
                 <div
                   key={msg.id}
                   className={cn(
-                    "whitespace-pre-wrap rounded-lg px-3 py-2.5 leading-relaxed",
-                    msg.role === "user" && "bg-violet-500/20 text-white",
-                    msg.role === "assistant" && "bg-emerald-500/15 text-white/95",
+                    "rounded-xl leading-relaxed",
+                    msg.role === "user" &&
+                      "whitespace-pre-wrap border border-violet-500/25 bg-violet-500/[0.14] px-4 py-3.5 text-[0.9375rem] text-white sm:px-5 sm:py-4",
+                    msg.role === "assistant" &&
+                      "border border-emerald-500/30 bg-gradient-to-br from-emerald-950/45 via-black/35 to-black/25 px-4 py-4 text-white/90 shadow-inner sm:px-6 sm:py-5",
                     msg.role === "error" &&
-                      "border border-red-400/35 bg-red-500/10 text-red-100"
+                      "whitespace-pre-wrap border border-red-400/35 bg-red-500/10 px-4 py-3.5 text-red-100"
                   )}
                 >
                   <span
                     className={cn(
-                      "mb-1.5 block text-[0.65rem] font-semibold uppercase tracking-wide",
-                      msg.role === "user" && "text-violet-200",
-                      msg.role === "assistant" && "text-emerald-200",
-                      msg.role === "error" && "text-red-200"
+                      "mb-2.5 inline-flex items-center rounded-md px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.14em]",
+                      msg.role === "user" && "bg-violet-500/25 text-violet-100",
+                      msg.role === "assistant" && "bg-emerald-500/20 text-emerald-100",
+                      msg.role === "error" && "bg-red-500/25 text-red-100"
                     )}
                   >
                     {msg.role === "user"
@@ -579,7 +712,15 @@ export function AnimatedAIChat({
                         ? "Agent"
                         : "Error"}
                   </span>
-                  {msg.text}
+                  {msg.role === "assistant" ? (
+                    <div className="chat-markdown max-w-none [&>:first-child]:mt-0">
+                      <ReactMarkdown components={ASSISTANT_MD_COMPONENTS}>
+                        {msg.text}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="text-[0.9375rem] leading-relaxed">{msg.text}</div>
+                  )}
                 </div>
               ))}
               <div ref={messagesEndRef} />

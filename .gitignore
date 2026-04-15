@@ -1,3 +1,7 @@
+.DS_Store
+**/.DS_Store
+*.tsbuildinfo
+
 .elastic-credentials
 .env
 elastic-agent-builder-a2a-cloud-path/state/

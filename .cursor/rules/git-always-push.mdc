@@ -1,0 +1,15 @@
+---
+description: After substantive repo edits, commit and push to origin so Vercel and collaborators stay current.
+alwaysApply: true
+---
+
+# Git — commit and push
+
+When you finish a task that changes tracked project files (code, config, or dependencies):
+
+1. Run `git status`. Do not commit secrets, `.env`, or generated artifacts that belong in `.gitignore`.
+2. Stage only intentional changes. If `package-lock.json` changed with `package.json`, include both.
+3. Write a clear commit message (imperative mood, one line subject; optional body for context).
+4. Push to the tracked remote branch (usually `git push origin main` or the current upstream).
+
+If the user only asked a question and made no file changes, do not create empty commits. If push fails, report the error and fix auth/remote issues if possible.
