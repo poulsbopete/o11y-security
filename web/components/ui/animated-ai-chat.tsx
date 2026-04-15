@@ -188,7 +188,6 @@ export function AnimatedAIChat({
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
-  const [agentOverride, setAgentOverride] = useState("");
 
   const commandSuggestions = useMemo<CommandSuggestion[]>(
     () => [
@@ -288,9 +287,6 @@ export function AnimatedAIChat({
         if (conversationIdRef.current) {
           body.conversation_id = conversationIdRef.current;
         }
-        const aid = agentOverride.trim();
-        if (aid) body.agent_id = aid;
-
         const r = await fetch(converseUrl, {
           method: "POST",
           headers: {
@@ -341,7 +337,7 @@ export function AnimatedAIChat({
         setIsSending(false);
       }
     },
-    [isSending, agentOverride, converseUrl, adjustHeight]
+    [isSending, converseUrl, adjustHeight]
   );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -514,28 +510,14 @@ export function AnimatedAIChat({
               )}
             </AnimatePresence>
 
-            <div className="border-b border-white/[0.06] px-4 pb-3 pt-3">
-              <label
-                htmlFor="animated-ai-agent-override"
-                className="mb-1 block text-[0.7rem] font-medium text-white/45"
-              >
-                Agent id (optional — overrides server default)
-              </label>
-              <input
-                id="animated-ai-agent-override"
-                type="text"
-                value={agentOverride}
-                onChange={(e) => setAgentOverride(e.target.value)}
-                placeholder="Blank = KIBANA_AGENT_ID on Vercel"
-                className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white/90 placeholder:text-white/25 focus:border-violet-500/40 focus:outline-none"
-              />
+            <div className="flex justify-end border-b border-white/[0.06] px-4 py-2">
               <button
                 type="button"
                 onClick={() => {
                   conversationIdRef.current = null;
                   setMessages([]);
                 }}
-                className="mt-2 text-[0.7rem] text-violet-300/90 underline-offset-2 hover:text-violet-200 hover:underline"
+                className="text-[0.7rem] text-violet-300/90 underline-offset-2 hover:text-violet-200 hover:underline"
               >
                 New conversation
               </button>

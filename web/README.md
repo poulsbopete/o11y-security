@@ -8,7 +8,7 @@ This folder deploys the same static deck and prompt library as [`../docs/`](../d
 |------|----------|-------------|
 | `KIBANA_BASE_URL` | Yes | Kibana origin, e.g. `https://your-deployment.kb.region.aws.elastic.cloud` (no trailing slash). |
 | `KIBANA_API_KEY` | Yes | Base64 Kibana API key with Agent Builder privileges. **Mark as sensitive** in Vercel. |
-| `KIBANA_AGENT_ID` | No | Agent Builder **agent id** (UUID). When set, the proxy sends it whenever the chat UI leaves **Agent id** blank—use this so the hosted site talks to your **o11y-security** (or other named) agent instead of the Kibana default. |
+| `KIBANA_AGENT_ID` | No | Agent Builder **agent id** (UUID). When set, the proxy adds **`agent_id`** to **converse** whenever the browser omits it—use this so **`/chat`** uses your workshop agent without a per-browser field. |
 
 See [`env.example`](./env.example).
 
@@ -23,7 +23,7 @@ The `web/vercel.json` **buildCommand** is `npm run build` so Vercel does not use
 
 ### React + Tailwind + shadcn-style UI
 
-- **`/chat`** — **`AnimatedAIChat`** ([`components/ui/animated-ai-chat.tsx`](./components/ui/animated-ai-chat.tsx)): sends **`POST /api/converse`** (same as the slide-deck widget), shows **You / Agent / Error** bubbles, keeps **`conversation_id`**, optional **Agent id** override, and **New conversation**. Vercel logs should show **`POST /api/converse`** after each send.
+- **`/chat`** — **`AnimatedAIChat`** ([`components/ui/animated-ai-chat.tsx`](./components/ui/animated-ai-chat.tsx)): sends **`POST /api/converse`**, shows **You / Agent / Error** bubbles, keeps **`conversation_id`**, and **New conversation**. Default agent comes from **`KIBANA_AGENT_ID`** on the server only. Vercel logs should show **`POST /api/converse`** after each send.
 - Setup notes and CLI reference: [`docs/SHADCN-TAILWIND-SETUP.md`](./docs/SHADCN-TAILWIND-SETUP.md).
 
 Build runs `npm run sync-docs` (copies `../docs` into `public/` and sets `<meta name="o11y-converse-url" content="/api/converse" />`), then `next build`.
