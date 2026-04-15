@@ -14,11 +14,19 @@ See [`env.example`](./env.example).
 ## Deploy on Vercel
 
 1. **New Project** → import this Git repository.
-2. Set **Root Directory** to `web`.
+2. Set **Root Directory** to `web` (required if the repo root is not the Next app).
 3. Framework Preset: **Next.js** (auto-detected).
 4. Add the environment variables above, then deploy.
 
+The `web/vercel.json` **buildCommand** is `npm run build` so Vercel does not use the default `next build` alone (that would skip copying `../docs` into `public/` and you would get **404** on `/` and `/index.html`).
+
 Build runs `npm run sync-docs` (copies `../docs` into `public/` and sets `<meta name="o11y-converse-url" content="/api/converse" />`), then `next build`.
+
+### If you see `404: NOT_FOUND`
+
+- Confirm **Root Directory** is **`web`**.
+- Confirm the latest deploy **Build Command** shows `npm run build` (from `vercel.json`) or set it manually to `npm run build`.
+- Open **`/index.html`** after redeploy; `/` should redirect there once the build copied static files into `public/`.
 
 ## Local preview
 
