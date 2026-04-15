@@ -1,3 +1,6 @@
 .elastic-credentials
 .env
 elastic-agent-builder-a2a-cloud-path/state/
+web/.next/
+web/node_modules/
+web/public/

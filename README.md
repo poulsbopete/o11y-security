@@ -101,13 +101,15 @@ Target indices (examples used in the workshop):
 
 ## Slides (GitHub Pages)
 
-A **4-slide** value deck lives in [`docs/index.html`](docs/index.html), with an animated **CSS “FallingPattern”** background ([`docs/pattern.css`](docs/pattern.css))—static Pages, no React build. After enabling **Pages** from the **`/docs`** folder on `main`, it is served at:
+A **6-slide** value deck lives in [`docs/index.html`](docs/index.html), with an animated **CSS “FallingPattern”** background ([`docs/pattern.css`](docs/pattern.css))—static Pages, no React build. After enabling **Pages** from the **`/docs`** folder on `main`, it is served at:
 
 **https://poulsbopete.github.io/o11y-security/**
 
 **AE enablement:** copy-ready **AI prompts** for seller coaching (personas, discovery, objections) live under [`docs/prompts/`](docs/prompts/) and are linked from slides 3–4 and the footer.
 
 Setup notes: [`docs/README.md`](docs/README.md).
+
+**Optional (Vercel):** deploy the same `docs/` site with a **server-side** `POST /api/converse` proxy so the **A2A help** chat works without CORS or pasting a Kibana API key in the browser. Use **Root Directory** `web` and env vars from [`web/README.md`](web/README.md).
 
 ## Security notes
 

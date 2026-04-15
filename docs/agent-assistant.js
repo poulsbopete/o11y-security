@@ -1,17 +1,28 @@
 /**
- * Floating assistant for GitHub Pages: Agent Builder MCP setup + optional Kibana Converse chat.
- * Same Kibana host as the MCP URL below; MCP remains the supported tool protocol for editors.
+ * Floating assistant: Agent Builder MCP copy + Kibana Converse chat.
+ * Set <meta name="o11y-converse-url" content="/api/converse" /> (same-origin path) to use a
+ * server proxy (e.g. Vercel) so the browser does not call Kibana directly.
  */
 (function () {
   "use strict";
 
   var KIBANA_BASE = "https://ai-assistants-ffcafb.kb.us-east-1.aws.elastic.cloud";
   var MCP_URL = KIBANA_BASE + "/api/agent_builder/mcp";
-  var CONVERSE_URL = KIBANA_BASE + "/api/agent_builder/converse";
+
+  var metaConverse = document.querySelector('meta[name="o11y-converse-url"]');
+  var converseMetaRaw = metaConverse && metaConverse.getAttribute("content");
+  var converseMeta = converseMetaRaw != null ? String(converseMetaRaw).trim() : "";
+  var CONVERSE_URL = converseMeta.length ? converseMeta : KIBANA_BASE + "/api/agent_builder/converse";
+  /** Leading / means same-origin proxy (no browser API key). */
+  var SERVER_PROXY = converseMeta.length > 0 && converseMeta.charAt(0) === "/";
 
   var SK = "o11y_pages_ab_api_key";
   var SK_CONV = "o11y_pages_ab_conversation_id";
   var SK_AGENT = "o11y_pages_ab_agent_id";
+
+  function escapeAttr(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
 
   function copyText(text, ok, fail) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -77,6 +88,24 @@
   style.textContent = css;
   document.head.appendChild(style);
 
+  var introHtml = SERVER_PROXY
+    ? "<p class=\"o11y-ab-note\">Chat uses this site’s <code style=\"color:#79c0ff\">" +
+      escapeAttr(CONVERSE_URL) +
+      "</code> proxy. The Kibana API key is configured on the server (for example Vercel environment variables), not in your browser.</p>"
+    : "<p class=\"o11y-ab-note\">Uses <code style=\"color:#79c0ff\">POST /api/agent_builder/converse</code> on the same host as the lab MCP URL. Paste a Kibana API key with Agent Builder access (stored only in <strong>session storage</strong> for this tab).</p>";
+
+  var corsHtml = SERVER_PROXY
+    ? ""
+    : "<p class=\"o11y-ab-note\">Many Kibana deployments do not send CORS headers to static hosts like GitHub Pages, so the browser may block the request. If chat fails with “Failed to fetch”, deploy this site behind a small proxy (see <code>web/README.md</code>), use the MCP tab in Cursor, or open Kibana and chat there.</p>";
+
+  var keyBlock =
+    '<div id="o11y-ab-key-row"' +
+    (SERVER_PROXY ? ' style="display:none"' : "") +
+    ">" +
+    '    <label class="o11y-ab-label" for="o11y-ab-key">Kibana API key</label>' +
+    '    <input id="o11y-ab-key" class="o11y-ab-input" type="password" autocomplete="off" placeholder="Base64 API key" />' +
+    "</div>";
+
   var root = document.createElement("div");
   root.id = "o11y-ab-assistant-root";
   root.setAttribute("aria-live", "polite");
@@ -92,10 +121,9 @@
     '    <button type="button" role="tab" id="o11y-tab-mcp" aria-selected="false" aria-controls="o11y-pane-mcp">MCP (Cursor)</button>' +
     "  </div>" +
     '  <div id="o11y-pane-chat" class="o11y-ab-pane active" role="tabpanel" aria-labelledby="o11y-tab-chat">' +
-    "    <p class=\"o11y-ab-note\">Uses <code style=\"color:#79c0ff\">POST /api/agent_builder/converse</code> on the same host as the lab MCP URL. Paste a Kibana API key with Agent Builder access (stored only in <strong>session storage</strong> for this tab).</p>" +
-    "    <p class=\"o11y-ab-note\">Many Kibana deployments do not send CORS headers to GitHub Pages, so the browser may block the request. If chat fails with “Failed to fetch”, use the MCP tab in Cursor or open Kibana and chat there.</p>" +
-    '    <label class="o11y-ab-label" for="o11y-ab-key">Kibana API key</label>' +
-    '    <input id="o11y-ab-key" class="o11y-ab-input" type="password" autocomplete="off" placeholder="Base64 API key" />' +
+    introHtml +
+    corsHtml +
+    keyBlock +
     '    <label class="o11y-ab-label" for="o11y-ab-agent">Agent id (optional)</label>' +
     '    <input id="o11y-ab-agent" class="o11y-ab-input" type="text" autocomplete="off" placeholder="Leave blank for default agent" />' +
     '    <div id="o11y-ab-msgs" class="o11y-ab-msgs" aria-label="Messages"></div>' +
@@ -284,14 +312,14 @@
   sendBtn.addEventListener("click", function () {
     var key = keyInput.value.trim();
     var text = userInput.value.trim();
-    if (!key) {
+    if (!SERVER_PROXY && !key) {
       appendMsg("err", "Add a Kibana API key first.");
       return;
     }
     if (!text) return;
 
     try {
-      sessionStorage.setItem(SK, key);
+      if (!SERVER_PROXY) sessionStorage.setItem(SK, key);
       sessionStorage.setItem(SK_AGENT, agentInput.value.trim());
     } catch (e) {}
 
@@ -305,15 +333,17 @@
     var aid = agentInput.value.trim();
     if (aid) body.agent_id = aid;
 
+    var headers = {
+      "Content-Type": "application/json",
+      "kbn-xsrf": "true",
+    };
+    if (!SERVER_PROXY) headers.Authorization = "ApiKey " + key;
+
     fetch(CONVERSE_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "ApiKey " + key,
-        "kbn-xsrf": "true",
-      },
+      headers: headers,
       body: JSON.stringify(body),
-      credentials: "omit",
+      credentials: SERVER_PROXY ? "same-origin" : "omit",
     })
       .then(function (r) {
         return r.text().then(function (t) {
@@ -345,7 +375,9 @@
         if (/Failed to fetch|NetworkError|load failed/i.test(msg)) {
           appendMsg(
             "err",
-            "Browser could not reach Kibana (often CORS: Kibana did not allow this site’s origin). Use the MCP tab for Cursor, or open Kibana in a signed-in browser tab."
+            SERVER_PROXY
+              ? "Could not reach this site’s chat proxy. Check Vercel logs and that KIBANA_BASE_URL / KIBANA_API_KEY are set."
+              : "Browser could not reach Kibana (often CORS). Use a deployed proxy (see web/README.md), the MCP tab in Cursor, or open Kibana."
           );
         } else {
           appendMsg("err", msg);
