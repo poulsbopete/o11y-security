@@ -13,14 +13,14 @@ import {
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import {
+  BookOpen,
   Command,
-  Figma,
-  ImageIcon,
+  Link2,
   LoaderIcon,
-  MonitorIcon,
+  Megaphone,
   Paperclip,
   SendIcon,
-  Sparkles,
+  Users,
   XIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -193,28 +193,28 @@ export function AnimatedAIChat({
   const commandSuggestions = useMemo<CommandSuggestion[]>(
     () => [
       {
-        icon: <ImageIcon className="h-4 w-4" />,
-        label: "Clone UI",
-        description: "Generate a UI from a screenshot",
-        prefix: "/clone",
+        icon: <Megaphone className="h-4 w-4" />,
+        label: "Elevator pitch",
+        description: "Short o11y-security A2A cross-sell opener",
+        prefix: "/pitch",
       },
       {
-        icon: <Figma className="h-4 w-4" />,
-        label: "Import Figma",
-        description: "Import a design from Figma",
-        prefix: "/figma",
+        icon: <Users className="h-4 w-4" />,
+        label: "Buyer angles",
+        description: "CISO, SRE, Platform — split clusters + one narrative",
+        prefix: "/buyers",
       },
       {
-        icon: <MonitorIcon className="h-4 w-4" />,
-        label: "Create Page",
-        description: "Generate a new web page",
-        prefix: "/page",
+        icon: <Link2 className="h-4 w-4" />,
+        label: "A2A bridge",
+        description: "Security calls Observability over HTTPS, no duplicated analytics",
+        prefix: "/a2a",
       },
       {
-        icon: <Sparkles className="h-4 w-4" />,
-        label: "Improve",
-        description: "Improve existing UI design",
-        prefix: "/improve",
+        icon: <BookOpen className="h-4 w-4" />,
+        label: "Workshop",
+        description: "Agent Builder lab, two Kibanas, enrichment index",
+        prefix: "/lab",
       },
     ],
     []
@@ -412,8 +412,8 @@ export function AnimatedAIChat({
               transition={{ delay: 0.2, duration: 0.5 }}
               className="inline-block"
             >
-              <h1 className="bg-gradient-to-r from-white/90 to-white/40 bg-clip-text pb-1 text-3xl font-medium tracking-tight text-transparent">
-                How can I help today?
+              <h1 className="bg-gradient-to-r from-white/90 to-white/40 bg-clip-text pb-1 text-2xl font-medium tracking-tight text-transparent sm:text-3xl">
+                o11y-security · A2A cross-selling
               </h1>
               <motion.div
                 className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
@@ -423,12 +423,16 @@ export function AnimatedAIChat({
               />
             </motion.div>
             <motion.p
-              className="text-sm text-white/40"
+              className="mx-auto max-w-lg text-sm leading-relaxed text-white/45"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              Type a command or ask a question
+              Cross-sell <strong className="text-white/70">Elastic Observability</strong> with{" "}
+              <strong className="text-white/70">Elastic Security</strong> using Agent Builder{" "}
+              <strong className="text-white/70">agent-to-agent (A2A)</strong>—split serverless
+              projects, one buyer story. Type <kbd className="rounded border border-white/15 bg-white/5 px-1 py-0.5 font-mono text-[0.7rem]">/</kbd>{" "}
+              for quick prompts or ask anything below.
             </motion.p>
           </div>
 
@@ -548,7 +552,7 @@ export function AnimatedAIChat({
                 onKeyDown={handleKeyDown}
                 onFocus={() => setInputFocused(true)}
                 onBlur={() => setInputFocused(false)}
-                placeholder="Ask zap a question..."
+                placeholder="Ask about o11y-security A2A cross-selling: positioning, objections, enrichment agents, or the workshop lab…"
                 containerClassName="w-full"
                 className={cn(
                   "w-full min-h-[60px] resize-none border-none bg-transparent px-4 py-3 text-sm text-white/90",
@@ -692,13 +696,13 @@ export function AnimatedAIChat({
             exit={{ opacity: 0, y: 20 }}
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-7 w-8 items-center justify-center rounded-full bg-white/[0.05] text-center">
-                <span className="mb-0.5 text-xs font-medium text-white/90">
-                  zap
+              <div className="flex h-7 min-w-[2.75rem] items-center justify-center rounded-full bg-white/[0.05] px-1.5 text-center">
+                <span className="text-[0.65rem] font-semibold leading-none text-white/90">
+                  o11y
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-white/70">
-                <span>Thinking</span>
+                <span>A2A agent thinking</span>
                 <TypingDots />
               </div>
             </div>
