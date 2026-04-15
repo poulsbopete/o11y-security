@@ -8,6 +8,7 @@ This folder deploys the same static deck and prompt library as [`../docs/`](../d
 |------|----------|-------------|
 | `KIBANA_BASE_URL` | Yes | Kibana origin, e.g. `https://your-deployment.kb.region.aws.elastic.cloud` (no trailing slash). |
 | `KIBANA_API_KEY` | Yes | Base64 Kibana API key with Agent Builder privileges. **Mark as sensitive** in Vercel. |
+| `KIBANA_AGENT_ID` | No | Agent Builder **agent id** (UUID). When set, the proxy sends it whenever the chat UI leaves **Agent id** blank—use this so the hosted site talks to your **o11y-security** (or other named) agent instead of the Kibana default. |
 
 See [`env.example`](./env.example).
 
@@ -38,7 +39,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000` (redirects to `/index.html`). Use **A2A help** → Kibana chat; no API key field when the proxy meta is set.
+Open `http://localhost:3000` (redirects to `/index.html`). On the hosted build the launcher reads **Live · A2A** and the panel shows a **Hosted** pill plus a one-line hint for `KIBANA_AGENT_ID`. The slide deck itself matches GitHub Pages by design.
 
 ## GitHub Pages
 

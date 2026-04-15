@@ -82,16 +82,25 @@
     ".o11y-ab-msg.err{background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.35);color:#ffa198;}" +
     ".o11y-ab-code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.72rem;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:0.5rem;overflow:auto;max-height:9rem;white-space:pre-wrap;word-break:break-all;}" +
     "a.o11y-ab-link{color:#58a6ff;font-weight:600;text-decoration:none;font-size:0.82rem;}" +
-    "a.o11y-ab-link:hover{text-decoration:underline;}";
+    "a.o11y-ab-link:hover{text-decoration:underline;}" +
+    ".o11y-ab-head-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.2rem;}" +
+    ".o11y-ab-title-row{display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;}" +
+    ".o11y-ab-hosted-pill{font-size:0.62rem;font-weight:750;letter-spacing:0.06em;text-transform:uppercase;padding:0.12rem 0.42rem;border-radius:999px;background:rgba(63,185,80,0.22);color:#3fb950;border:1px solid rgba(63,185,80,0.5);}" +
+    "#o11y-ab-agent-hint{min-height:1.1em;}";
 
   var style = document.createElement("style");
   style.textContent = css;
   document.head.appendChild(style);
 
+  var fabLabel = SERVER_PROXY ? "Live · A2A" : "A2A help";
+  var agentPlaceholder = SERVER_PROXY
+    ? "Optional: override server default agent id"
+    : "Leave blank for default agent";
+
   var introHtml = SERVER_PROXY
-    ? "<p class=\"o11y-ab-note\">Chat uses this site’s <code style=\"color:#79c0ff\">" +
+    ? "<p class=\"o11y-ab-note\">You are on the <strong>hosted</strong> build: chat goes to <code style=\"color:#79c0ff\">" +
       escapeAttr(CONVERSE_URL) +
-      "</code> proxy. The Kibana API key is configured on the server (for example Vercel environment variables), not in your browser.</p>"
+      "</code>, not straight to Kibana in the browser. Set <code style=\"color:#79c0ff\">KIBANA_AGENT_ID</code> in Vercel to pin your workshop agent when this field is empty.</p>"
     : "<p class=\"o11y-ab-note\">Uses <code style=\"color:#79c0ff\">POST /api/agent_builder/converse</code> on the same host as the lab MCP URL. Paste a Kibana API key with Agent Builder access (stored only in <strong>session storage</strong> for this tab).</p>";
 
   var corsHtml = SERVER_PROXY
@@ -110,10 +119,22 @@
   root.id = "o11y-ab-assistant-root";
   root.setAttribute("aria-live", "polite");
   root.innerHTML =
-    '<button type="button" id="o11y-ab-fab" aria-expanded="false" aria-controls="o11y-ab-panel">A2A help</button>' +
+    '<button type="button" id="o11y-ab-fab" aria-expanded="false" aria-controls="o11y-ab-panel">' +
+    escapeAttr(fabLabel) +
+    "</button>" +
     '<div id="o11y-ab-panel" role="dialog" aria-label="o11y-security Agent Builder assistant">' +
     '  <div id="o11y-ab-head">' +
-    '    <strong>Agent Builder</strong>' +
+    '    <div class="o11y-ab-head-main">' +
+    '      <div class="o11y-ab-title-row">' +
+    "        <strong>Agent Builder</strong>" +
+    '        <span id="o11y-ab-hosted-pill" class="o11y-ab-hosted-pill"' +
+    (SERVER_PROXY ? "" : ' style="display:none"') +
+    ">Hosted</span>" +
+    "      </div>" +
+    '      <span id="o11y-ab-agent-hint" class="o11y-ab-note"' +
+    (SERVER_PROXY ? "" : ' style="display:none"') +
+    "></span>" +
+    "    </div>" +
     '    <button type="button" id="o11y-ab-close" aria-label="Close">×</button>' +
     "  </div>" +
     '  <div id="o11y-ab-tabs" role="tablist">' +
@@ -125,7 +146,9 @@
     corsHtml +
     keyBlock +
     '    <label class="o11y-ab-label" for="o11y-ab-agent">Agent id (optional)</label>' +
-    '    <input id="o11y-ab-agent" class="o11y-ab-input" type="text" autocomplete="off" placeholder="Leave blank for default agent" />' +
+    '    <input id="o11y-ab-agent" class="o11y-ab-input" type="text" autocomplete="off" placeholder="' +
+    escapeAttr(agentPlaceholder) +
+    '" />' +
     '    <div id="o11y-ab-msgs" class="o11y-ab-msgs" aria-label="Messages"></div>' +
     '    <label class="o11y-ab-label" for="o11y-ab-user">Message</label>' +
     '    <textarea id="o11y-ab-user" class="o11y-ab-textarea" placeholder="Ask about Agent Builder A2A, MCP, or the workshop…"></textarea>' +
@@ -174,6 +197,27 @@
     keyInput.value = sessionStorage.getItem(SK) || "";
     agentInput.value = sessionStorage.getItem(SK_AGENT) || "";
   } catch (e) {}
+
+  var agentHint = document.getElementById("o11y-ab-agent-hint");
+  if (SERVER_PROXY && agentHint) {
+    fetch("/api/assistant-config", { method: "GET", credentials: "same-origin" })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (cfg) {
+        if (!cfg || !agentHint) return;
+        if (cfg.defaultAgentConfigured && cfg.defaultAgentTail) {
+          agentHint.textContent =
+            "Server default agent id ends with ···" + String(cfg.defaultAgentTail) + " (from KIBANA_AGENT_ID).";
+        } else {
+          agentHint.textContent =
+            "No KIBANA_AGENT_ID in Vercel yet — Kibana’s default agent is used unless you paste an id above.";
+        }
+      })
+      .catch(function () {
+        if (agentHint) agentHint.textContent = "";
+      });
+  }
 
   function setOpen(open) {
     panel.classList.toggle("open", open);

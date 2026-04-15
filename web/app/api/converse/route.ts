@@ -22,6 +22,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Invalid JSON body" }, { status: 400 });
   }
 
+  const payload: Record<string, unknown> =
+    typeof body === "object" && body !== null && !Array.isArray(body)
+      ? { ...(body as Record<string, unknown>) }
+      : {};
+
+  const fromClient = payload.agent_id;
+  const clientEmpty =
+    fromClient === undefined ||
+    fromClient === null ||
+    (typeof fromClient === "string" && fromClient.trim() === "");
+  const defaultAgent = process.env.KIBANA_AGENT_ID?.trim();
+  if (clientEmpty && defaultAgent) {
+    payload.agent_id = defaultAgent;
+  }
+
   const url = `${base}/api/agent_builder/converse`;
   const r = await fetch(url, {
     method: "POST",
@@ -30,7 +45,7 @@ export async function POST(req: NextRequest) {
       Authorization: `ApiKey ${key}`,
       "kbn-xsrf": "true",
     },
-    body: JSON.stringify(body ?? {}),
+    body: JSON.stringify(payload),
   });
 
   const text = await r.text();
