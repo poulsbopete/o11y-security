@@ -1,45 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  parseConverseJsonBody,
+  requireKibanaConverseEnv,
+} from "@/lib/kibana-converse-request";
 
 export const runtime = "nodejs";
 /** Allow long agent runs (Vercel plan must support this cap). */
 export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
-  const base = process.env.KIBANA_BASE_URL?.replace(/\/$/, "");
-  const key = process.env.KIBANA_API_KEY;
-  if (!base || !key) {
-    return NextResponse.json(
-      {
-        message:
-          "Server is missing KIBANA_BASE_URL or KIBANA_API_KEY. Set them in the Vercel project environment.",
-      },
-      { status: 503 }
-    );
-  }
+  const env = requireKibanaConverseEnv();
+  if (!env.ok) return env.response;
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ message: "Invalid JSON body" }, { status: 400 });
-  }
+  const parsed = await parseConverseJsonBody(req);
+  if (!parsed.ok) return parsed.response;
 
-  const payload: Record<string, unknown> =
-    typeof body === "object" && body !== null && !Array.isArray(body)
-      ? { ...(body as Record<string, unknown>) }
-      : {};
-
-  const fromClient = payload.agent_id;
-  const clientEmpty =
-    fromClient === undefined ||
-    fromClient === null ||
-    (typeof fromClient === "string" && fromClient.trim() === "");
-  const defaultAgent = process.env.KIBANA_AGENT_ID?.trim();
-  if (clientEmpty && defaultAgent) {
-    payload.agent_id = defaultAgent;
-  }
-
-  const url = `${base}/api/agent_builder/converse`;
+  const url = `${env.base}/api/agent_builder/converse`;
 
   let r: Response;
   try {
@@ -47,16 +23,16 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `ApiKey ${key}`,
+        Authorization: `ApiKey ${env.key}`,
         "kbn-xsrf": "true",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(parsed.payload),
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "fetch failed";
     console.error("[converse proxy] fetch error:", msg);
     return NextResponse.json(
-      { message: `Upstream fetch failed: ${msg}`, upstream: base },
+      { message: `Upstream fetch failed: ${msg}`, upstream: env.base },
       { status: 502 }
     );
   }

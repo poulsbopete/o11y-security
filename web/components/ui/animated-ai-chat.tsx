@@ -12,6 +12,7 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { consumeAgentBuilderSse, converseStreamUrl } from "@/lib/converse-stream-client";
 import {
   BookOpen,
   Link2,
@@ -469,57 +470,128 @@ export function AnimatedAIChat({
       adjustHeight(true);
       setIsSending(true);
 
-      try {
-        const body: Record<string, unknown> = { input: trimmed };
-        if (conversationIdRef.current) {
-          body.conversation_id = conversationIdRef.current;
+      const body: Record<string, unknown> = { input: trimmed };
+      if (conversationIdRef.current) {
+        body.conversation_id = conversationIdRef.current;
+      }
+
+      const appendError = (errText: string) => {
+        setMessages((m) => [...m, { id: newMsgId(), role: "error", text: errText }]);
+      };
+
+      const runSyncFallback = async (): Promise<boolean> => {
+        try {
+          const r = await fetch(converseUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "kbn-xsrf": "true",
+            },
+            body: JSON.stringify(body),
+            credentials: "same-origin",
+          });
+
+          const raw = await r.text();
+          let data: unknown = null;
+          try {
+            data = raw ? JSON.parse(raw) : null;
+          } catch {
+            data = null;
+          }
+
+          if (!r.ok) {
+            const errObj = data as Record<string, unknown> | null;
+            const errText =
+              (errObj && typeof errObj.message === "string" && errObj.message) ||
+              (errObj && typeof errObj.error === "string" && errObj.error) ||
+              raw ||
+              `HTTP ${r.status}`;
+            appendError(errText);
+            return false;
+          }
+
+          const obj = data as Record<string, unknown> | null;
+          if (obj && typeof obj.conversation_id === "string") {
+            conversationIdRef.current = obj.conversation_id;
+          }
+
+          const reply =
+            extractAssistantMessage(data) || "(Empty reply from agent)";
+          setMessages((m) => [
+            ...m,
+            { id: newMsgId(), role: "assistant", text: reply },
+          ]);
+          return true;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Network error";
+          appendError(msg);
+          return false;
         }
-        const r = await fetch(converseUrl, {
+      };
+
+      try {
+        const streamUrl = converseStreamUrl(converseUrl);
+        const rs = await fetch(streamUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "kbn-xsrf": "true",
+            Accept: "text/event-stream",
           },
           body: JSON.stringify(body),
           credentials: "same-origin",
         });
 
-        const raw = await r.text();
-        let data: unknown = null;
-        try {
-          data = raw ? JSON.parse(raw) : null;
-        } catch {
-          data = null;
-        }
+        const useStream =
+          rs.ok &&
+          rs.body &&
+          (rs.status === 200 || rs.status === 201) &&
+          (rs.headers.get("content-type")?.includes("text/event-stream") ||
+            rs.headers.get("content-type")?.includes("octet-stream") ||
+            rs.headers.get("content-type")?.includes("text/plain"));
 
-        if (!r.ok) {
-          const errObj = data as Record<string, unknown> | null;
-          const errText =
-            (errObj && typeof errObj.message === "string" && errObj.message) ||
-            (errObj && typeof errObj.error === "string" && errObj.error) ||
-            raw ||
-            `HTTP ${r.status}`;
-          setMessages((m) => [
-            ...m,
-            { id: newMsgId(), role: "error", text: errText },
-          ]);
+        if (!useStream) {
+          await runSyncFallback();
           return;
         }
 
-        const obj = data as Record<string, unknown> | null;
-        if (obj && typeof obj.conversation_id === "string") {
-          conversationIdRef.current = obj.conversation_id;
+        const streamMsgId = newMsgId();
+        setMessages((m) => [...m, { id: streamMsgId, role: "assistant", text: "" }]);
+
+        let sawAssistantText = false;
+        try {
+          await consumeAgentBuilderSse(rs.body, {
+            onConversationId: (id) => {
+              conversationIdRef.current = id;
+            },
+            onTextChunk: (chunk) => {
+              sawAssistantText = true;
+              setMessages((m) =>
+                m.map((x) =>
+                  x.id === streamMsgId ? { ...x, text: x.text + chunk } : x
+                )
+              );
+            },
+            onCompleteMessage: (full) => {
+              sawAssistantText = true;
+              setMessages((m) =>
+                m.map((x) => (x.id === streamMsgId ? { ...x, text: full } : x))
+              );
+            },
+          });
+        } catch {
+          setMessages((m) => m.filter((x) => x.id !== streamMsgId));
+          await runSyncFallback();
+          return;
         }
 
-        const reply =
-          extractAssistantMessage(data) || "(Empty reply from agent)";
-        setMessages((m) => [
-          ...m,
-          { id: newMsgId(), role: "assistant", text: reply },
-        ]);
+        if (!sawAssistantText) {
+          setMessages((m) => m.filter((x) => x.id !== streamMsgId));
+          await runSyncFallback();
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Network error";
-        setMessages((m) => [...m, { id: newMsgId(), role: "error", text: msg }]);
+        appendError(msg);
       } finally {
         setIsSending(false);
       }

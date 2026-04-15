@@ -1,6 +1,9 @@
 # o11y-security site (Vercel + Next.js)
 
-This folder deploys the same static deck and prompt library as [`../docs/`](../docs/), plus a **server-side proxy** at `POST /api/converse` so the in-page chat can reach Kibana **without CORS or pasting API keys in the browser**.
+This folder deploys the same static deck and prompt library as [`../docs/`](../docs/), plus server-side proxies so the in-page chat can reach Kibana **without CORS or pasting API keys in the browser**:
+
+- **`POST /api/converse`** — synchronous Agent Builder converse (full JSON response when the round finishes).
+- **`POST /api/converse/stream`** — forwards to Kibana **`/api/agent_builder/converse/async`** (SSE). **`/chat`** uses streaming first so text can render as it arrives; unsupported stacks fall back to **`/api/converse`** automatically.
 
 ## Environment variables (Vercel)
 
@@ -23,7 +26,7 @@ The `web/vercel.json` **buildCommand** is `npm run build` so Vercel does not use
 
 ### React + Tailwind + shadcn-style UI
 
-- **`/chat`** — **`AnimatedAIChat`** ([`components/ui/animated-ai-chat.tsx`](./components/ui/animated-ai-chat.tsx)): sends **`POST /api/converse`**, shows **You / Agent / Error** bubbles, keeps **`conversation_id`**, **Practice prompts** (four cross-sell coaching scenarios), slash chips, and **New conversation**. Default agent comes from **`KIBANA_AGENT_ID`** on the server only. Vercel logs should show **`POST /api/converse`** after each send.
+- **`/chat`** — **`AnimatedAIChat`** ([`components/ui/animated-ai-chat.tsx`](./components/ui/animated-ai-chat.tsx)): prefers **`POST /api/converse/stream`** (SSE) then falls back to **`POST /api/converse`**; shows **You / Agent / Error** bubbles; keeps **`conversation_id`**; starter prompts and **New conversation**. Default agent comes from **`KIBANA_AGENT_ID`** on the server only. Logs may show **`/api/converse/stream`** or **`/api/converse`** per request.
 - Setup notes and CLI reference: [`docs/SHADCN-TAILWIND-SETUP.md`](./docs/SHADCN-TAILWIND-SETUP.md).
 
 Build runs `npm run sync-docs` (copies `../docs` into `public/` and sets `<meta name="o11y-converse-url" content="/api/converse" />`), then `next build`.
@@ -39,7 +42,9 @@ Check:
 3. **`KIBANA_AGENT_ID`** (if set) is the **Agent Builder agent UUID**, not a project slug or MCP URL fragment.
 4. In **Vercel → Deployment → Functions → `/api/converse` logs**, look for **`[converse proxy] Kibana non-OK`** — the next lines include Kibana’s error JSON (connector, inference, license, etc.).
 
-`maxDuration` for this route is **120s** so slow agent runs are less likely to die on the Vercel side (your plan must allow that duration).
+`maxDuration` for both converse routes is **120s** so slow agent runs are less likely to die on the Vercel side (your plan must allow that duration).
+
+**Latency (wall clock):** streaming improves *perceived* wait time (first tokens sooner) but not total model + tool work. In **Kibana Agent Builder**, tighten instructions (fewer default tool hops), trim retrieval limits, or use a faster inference endpoint if you need shorter end-to-end runs.
 
 ### If you see `404: NOT_FOUND`
 
