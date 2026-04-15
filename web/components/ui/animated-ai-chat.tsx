@@ -14,7 +14,6 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
-  Command,
   Link2,
   LoaderIcon,
   Megaphone,
@@ -224,6 +223,7 @@ export function AnimatedAIChat({
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const commandSuggestions = useMemo<CommandSuggestion[]>(
     () => [
@@ -255,9 +255,32 @@ export function AnimatedAIChat({
     []
   );
 
+  /** Single list: scenarios + slash shortcuts, all sent as the same user message stream. */
+  const quickStarters = useMemo(
+    () => [
+      ...PRACTICE_PROMPTS.map((p) => ({
+        id: p.id,
+        title: p.title,
+        hint: p.hint,
+        payload: p.question,
+      })),
+      ...commandSuggestions.map((c) => ({
+        id: `starter-${c.prefix.replace(/^\//, "")}`,
+        title: c.label,
+        hint: c.description,
+        payload: c.prefix,
+      })),
+    ],
+    [commandSuggestions]
+  );
+
   useEffect(() => {
     ensureRippleStyles();
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, isSending]);
 
   useEffect(() => {
     if (value.startsWith("/") && !value.includes(" ")) {
@@ -291,12 +314,9 @@ export function AnimatedAIChat({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      const commandButton = document.querySelector("[data-command-button]");
-
       if (
         commandPaletteRef.current &&
-        !commandPaletteRef.current.contains(target) &&
-        !commandButton?.contains(target)
+        !commandPaletteRef.current.contains(target)
       ) {
         setShowCommandPalette(false);
       }
@@ -376,6 +396,17 @@ export function AnimatedAIChat({
     [isSending, converseUrl, adjustHeight]
   );
 
+  /** Slash shortcuts send immediately so practice cards, chips, and the composer share one thread. */
+  const runCommandSuggestion = useCallback(
+    (index: number) => {
+      const cmd = commandSuggestions[index];
+      if (!cmd) return;
+      setShowCommandPalette(false);
+      void submitMessage(cmd.prefix);
+    },
+    [commandSuggestions, submitMessage]
+  );
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (showCommandPalette) {
       if (e.key === "ArrowDown") {
@@ -391,9 +422,7 @@ export function AnimatedAIChat({
       } else if (e.key === "Tab" || e.key === "Enter") {
         e.preventDefault();
         if (activeSuggestion >= 0) {
-          const selectedCommand = commandSuggestions[activeSuggestion];
-          setValue(selectedCommand.prefix + " ");
-          setShowCommandPalette(false);
+          runCommandSuggestion(activeSuggestion);
         }
       } else if (e.key === "Escape") {
         e.preventDefault();
@@ -415,12 +444,6 @@ export function AnimatedAIChat({
 
   const removeAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const selectCommandSuggestion = (index: number) => {
-    const selectedCommand = commandSuggestions[index];
-    setValue(selectedCommand.prefix + " ");
-    setShowCommandPalette(false);
   };
 
   return (
@@ -463,49 +486,74 @@ export function AnimatedAIChat({
               Cross-sell <strong className="text-white/70">Elastic Observability</strong> with{" "}
               <strong className="text-white/70">Elastic Security</strong> using Agent Builder{" "}
               <strong className="text-white/70">agent-to-agent (A2A)</strong>—split serverless
-              projects, one buyer story. Type <kbd className="rounded border border-white/15 bg-white/5 px-1 py-0.5 font-mono text-[0.7rem]">/</kbd>{" "}
-              for quick prompts or ask anything below.
+              projects, one buyer story. Pick a starter in the chat panel or type your own message.
+              Type <kbd className="rounded border border-white/15 bg-white/5 px-1 py-0.5 font-mono text-[0.7rem]">/</kbd>{" "}
+              in the box to filter slash shortcuts.
             </motion.p>
           </div>
 
-          <div className="w-full space-y-2">
-            <p className="text-center text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-white/40">
-              Practice prompts
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {PRACTICE_PROMPTS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  disabled={isSending}
-                  onClick={() => {
-                    void submitMessage(p.question);
-                  }}
-                  className={cn(
-                    "rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-left transition-colors",
-                    "hover:border-violet-500/40 hover:bg-white/[0.08]",
-                    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500/50",
-                    isSending && "pointer-events-none opacity-45"
-                  )}
-                >
-                  <span className="block text-sm font-semibold text-white/90">
-                    {p.title}
-                  </span>
-                  <span className="mt-1.5 block text-[0.68rem] leading-snug text-white/38">
-                    {p.hint}
-                  </span>
-                </button>
-              ))}
+          <motion.div
+            className="relative flex max-h-[min(88vh,46rem)] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-black/50 shadow-2xl backdrop-blur-2xl"
+            initial={{ scale: 0.98 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.1 }}
+            role="region"
+            aria-label="Chat"
+          >
+            <div className="shrink-0 border-b border-white/[0.06] px-2 pb-2 pt-1">
+              <p className="px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-white/35">
+                Starter prompts
+              </p>
+              <p className="px-2 pb-1.5 text-[0.62rem] leading-snug text-white/28">
+                Good answers follow your{" "}
+                <strong className="text-white/40">Agent Builder instructions</strong> in Kibana.
+                One thread until you use New conversation.
+              </p>
+              <ul
+                className="max-h-[11.5rem] space-y-0.5 overflow-y-auto pr-0.5"
+                aria-label="Starter prompts"
+              >
+                {quickStarters.map((s) => (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      disabled={isSending}
+                      onClick={() => {
+                        void submitMessage(s.payload);
+                      }}
+                      className={cn(
+                        "w-full rounded-lg border border-transparent px-2.5 py-2 text-left transition-colors",
+                        "hover:border-white/10 hover:bg-white/[0.06]",
+                        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-violet-500/50",
+                        isSending && "pointer-events-none opacity-45"
+                      )}
+                    >
+                      <span className="block text-[0.82rem] font-semibold leading-snug text-white/90">
+                        {s.title}
+                      </span>
+                      <span className="mt-0.5 block text-[0.68rem] leading-snug text-white/38">
+                        {s.hint}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <p className="text-center text-[0.62rem] leading-snug text-white/28">
-              Good answers follow your{" "}
-              <strong className="text-white/40">Agent Builder instructions</strong> in Kibana. If
-              the model leads with “one platform ingests everything,” tune the agent—not this page.
-            </p>
-          </div>
 
-          {messages.length > 0 && (
-            <div className="max-h-56 space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-black/55 p-3 text-left text-sm text-white/90 shadow-inner backdrop-blur-md">
+            <div
+              className={cn(
+                "min-h-[8rem] flex-1 space-y-2 overflow-y-auto px-3 py-3 text-left text-sm text-white/90",
+                "max-h-[min(40vh,22rem)]"
+              )}
+              aria-label="Messages"
+            >
+              {messages.length === 0 && (
+                <p className="rounded-lg border border-dashed border-white/10 bg-white/[0.02] px-3 py-4 text-center text-[0.8rem] leading-relaxed text-white/35">
+                  Choose a starter above or write below. Everything posts to the same Kibana
+                  conversation until you click{" "}
+                  <span className="text-white/50">New conversation</span>.
+                </p>
+              )}
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -534,124 +582,105 @@ export function AnimatedAIChat({
                   {msg.text}
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
-          )}
 
-          <motion.div
-            className="relative rounded-2xl border border-white/[0.05] bg-white/[0.02] shadow-2xl backdrop-blur-2xl"
-            initial={{ scale: 0.98 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            <AnimatePresence>
-              {showCommandPalette && (
-                <motion.div
-                  ref={commandPaletteRef}
-                  className="absolute bottom-full left-4 right-4 z-50 mb-2 overflow-hidden rounded-lg border border-white/10 bg-black/90 shadow-lg backdrop-blur-xl"
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 5 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <div className="bg-black/95 py-1">
-                    {commandSuggestions.map((suggestion, index) => (
+            <div className="relative shrink-0 border-t border-white/[0.06]">
+              <AnimatePresence>
+                {showCommandPalette && (
+                  <motion.div
+                    ref={commandPaletteRef}
+                    className="absolute bottom-full left-4 right-4 z-50 mb-2 overflow-hidden rounded-lg border border-white/10 bg-black/90 shadow-lg backdrop-blur-xl"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <div className="bg-black/95 py-1">
+                      {commandSuggestions.map((suggestion, index) => (
+                        <motion.div
+                          key={suggestion.prefix}
+                          className={cn(
+                            "flex cursor-pointer items-center gap-2 px-3 py-2 text-xs transition-colors",
+                            activeSuggestion === index
+                              ? "bg-white/10 text-white"
+                              : "text-white/70 hover:bg-white/5"
+                          )}
+                          onClick={() => runCommandSuggestion(index)}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: index * 0.03 }}
+                        >
+                          <div className="flex h-5 w-5 items-center justify-center text-white/60">
+                            {suggestion.icon}
+                          </div>
+                          <div className="font-medium">{suggestion.label}</div>
+                          <div className="ml-1 text-xs text-white/40">
+                            {suggestion.prefix}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="p-4 pb-2">
+                <Textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => {
+                    setValue(e.target.value);
+                    adjustHeight();
+                  }}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => setInputFocused(false)}
+                  placeholder="Ask about o11y-security A2A cross-selling: positioning, objections, enrichment agents, or the workshop lab…"
+                  containerClassName="w-full"
+                  className={cn(
+                    "w-full min-h-[60px] resize-none border-none bg-transparent px-1 py-2 text-sm text-white/90",
+                    "focus:outline-none",
+                    "placeholder:text-white/20"
+                  )}
+                  style={{
+                    overflow: "hidden",
+                  }}
+                  showRing={false}
+                />
+              </div>
+
+              <AnimatePresence>
+                {attachments.length > 0 && (
+                  <motion.div
+                    className="flex flex-wrap gap-2 px-4 pb-3"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    {attachments.map((file, index) => (
                       <motion.div
-                        key={suggestion.prefix}
-                        className={cn(
-                          "flex cursor-pointer items-center gap-2 px-3 py-2 text-xs transition-colors",
-                          activeSuggestion === index
-                            ? "bg-white/10 text-white"
-                            : "text-white/70 hover:bg-white/5"
-                        )}
-                        onClick={() => selectCommandSuggestion(index)}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: index * 0.03 }}
+                        key={file + String(index)}
+                        className="flex items-center gap-2 rounded-lg bg-white/[0.03] px-3 py-1.5 text-xs text-white/70"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
                       >
-                        <div className="flex h-5 w-5 items-center justify-center text-white/60">
-                          {suggestion.icon}
-                        </div>
-                        <div className="font-medium">{suggestion.label}</div>
-                        <div className="ml-1 text-xs text-white/40">
-                          {suggestion.prefix}
-                        </div>
+                        <span>{file}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(index)}
+                          className="text-white/40 transition-colors hover:text-white"
+                        >
+                          <XIcon className="h-3 w-3" />
+                        </button>
                       </motion.div>
                     ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="flex justify-end border-b border-white/[0.06] px-4 py-2">
-              <button
-                type="button"
-                onClick={() => {
-                  conversationIdRef.current = null;
-                  setMessages([]);
-                }}
-                className="text-[0.7rem] text-violet-300/90 underline-offset-2 hover:text-violet-200 hover:underline"
-              >
-                New conversation
-              </button>
-            </div>
-
-            <div className="p-4">
-              <Textarea
-                ref={textareaRef}
-                value={value}
-                onChange={(e) => {
-                  setValue(e.target.value);
-                  adjustHeight();
-                }}
-                onKeyDown={handleKeyDown}
-                onFocus={() => setInputFocused(true)}
-                onBlur={() => setInputFocused(false)}
-                placeholder="Ask about o11y-security A2A cross-selling: positioning, objections, enrichment agents, or the workshop lab…"
-                containerClassName="w-full"
-                className={cn(
-                  "w-full min-h-[60px] resize-none border-none bg-transparent px-4 py-3 text-sm text-white/90",
-                  "focus:outline-none",
-                  "placeholder:text-white/20"
+                  </motion.div>
                 )}
-                style={{
-                  overflow: "hidden",
-                }}
-                showRing={false}
-              />
-            </div>
+              </AnimatePresence>
 
-            <AnimatePresence>
-              {attachments.length > 0 && (
-                <motion.div
-                  className="flex flex-wrap gap-2 px-4 pb-3"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  {attachments.map((file, index) => (
-                    <motion.div
-                      key={file + String(index)}
-                      className="flex items-center gap-2 rounded-lg bg-white/[0.03] px-3 py-1.5 text-xs text-white/70"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                    >
-                      <span>{file}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeAttachment(index)}
-                        className="text-white/40 transition-colors hover:text-white"
-                      >
-                        <XIcon className="h-3 w-3" />
-                      </button>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="flex items-center justify-between gap-4 border-t border-white/[0.05] p-4">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3 p-4 pt-3">
                 <motion.button
                   type="button"
                   onClick={handleAttachFile}
@@ -664,80 +693,44 @@ export function AnimatedAIChat({
                     layoutId="button-highlight-attach"
                   />
                 </motion.button>
-                <motion.button
-                  type="button"
-                  data-command-button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowCommandPalette((prev) => !prev);
-                  }}
-                  whileTap={{ scale: 0.94 }}
-                  className={cn(
-                    "group relative rounded-lg p-2 text-white/40 transition-colors hover:text-white/90",
-                    showCommandPalette && "bg-white/10 text-white/90"
-                  )}
-                >
-                  <Command className="h-4 w-4" />
-                  <motion.span
-                    className="absolute inset-0 rounded-lg bg-white/[0.05] opacity-0 transition-opacity group-hover:opacity-100"
-                    layoutId="button-highlight-cmd"
-                  />
-                </motion.button>
-              </div>
 
-              <motion.button
-                type="button"
-                onClick={() => {
-                  void submitMessage(value);
-                }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={isSending || !value.trim()}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all",
-                  value.trim()
-                    ? "bg-white text-[#0A0A0B] shadow-lg shadow-white/10"
-                    : "bg-white/[0.05] text-white/40"
-                )}
-              >
-                {isSending ? (
-                  <LoaderIcon className="h-4 w-4 animate-[spin_2s_linear_infinite]" />
-                ) : (
-                  <SendIcon className="h-4 w-4" />
-                )}
-                <span>Send</span>
-              </motion.button>
+                <div className="ml-auto flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      conversationIdRef.current = null;
+                      setMessages([]);
+                    }}
+                    className="text-[0.7rem] text-violet-300/90 underline-offset-2 hover:text-violet-200 hover:underline"
+                  >
+                    New conversation
+                  </button>
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      void submitMessage(value);
+                    }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={isSending || !value.trim()}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all",
+                      value.trim()
+                        ? "bg-white text-[#0A0A0B] shadow-lg shadow-white/10"
+                        : "bg-white/[0.05] text-white/40"
+                    )}
+                  >
+                    {isSending ? (
+                      <LoaderIcon className="h-4 w-4 animate-[spin_2s_linear_infinite]" />
+                    ) : (
+                      <SendIcon className="h-4 w-4" />
+                    )}
+                    <span>Send</span>
+                  </motion.button>
+                </div>
+              </div>
             </div>
           </motion.div>
-
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {commandSuggestions.map((suggestion, index) => (
-              <motion.button
-                key={suggestion.prefix}
-                type="button"
-                onClick={() => selectCommandSuggestion(index)}
-                className="group relative flex items-center gap-2 rounded-lg bg-white/[0.02] px-3 py-2 text-sm text-white/60 transition-all hover:bg-white/[0.05] hover:text-white/90"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                {suggestion.icon}
-                <span>{suggestion.label}</span>
-                <motion.div
-                  className="absolute inset-0 rounded-lg border border-white/[0.05]"
-                  initial={false}
-                  animate={{
-                    opacity: [0, 1],
-                    scale: [0.98, 1],
-                  }}
-                  transition={{
-                    duration: 0.3,
-                    ease: "easeOut",
-                  }}
-                />
-              </motion.button>
-            ))}
-          </div>
         </motion.div>
       </div>
 
