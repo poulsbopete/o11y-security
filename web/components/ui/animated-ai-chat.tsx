@@ -171,6 +171,42 @@ type ChatMsg = {
   text: string;
 };
 
+/** One-click scenarios for cross-sell coaching; answer quality depends on Agent Builder instructions in Kibana. */
+const PRACTICE_PROMPTS: {
+  id: string;
+  title: string;
+  hint: string;
+  question: string;
+}[] = [
+  {
+    id: "obs-security-pitch",
+    title: "O11y customer → why Security?",
+    hint: "Expect: business pain first—breach cost, MTTR delays, blind spots—not a catalog of Elastic features.",
+    question:
+      "I have an observability customer who asked why they should care about adding security. What's my pitch?",
+  },
+  {
+    id: "datadog-both",
+    title: "Datadog for both O11y + security",
+    hint: "Expect: Datadog competitive—cost at scale, security immaturity, AI limits vs your narrative.",
+    question:
+      "My customer says they're just going to use Datadog for both observability and security. How do I respond?",
+  },
+  {
+    id: "soc-sre-friction",
+    title: "SOC waiting on SRE for logs",
+    hint: "Expect: SEC→OBS trigger, talk track, tactical next steps—not generic “share a dashboard.”",
+    question:
+      "I'm in a security account and I just heard the SOC team complain about waiting on the SRE team for logs during investigations. What do I do next?",
+  },
+  {
+    id: "data-platform",
+    title: "Data Platform team engagement",
+    hint: "Expect: account mapping + Data Platform gateway motion—not only product SKUs.",
+    question: "How do I find and engage the Data Platform team at my account?",
+  },
+];
+
 export function AnimatedAIChat({
   converseUrl = "/api/converse",
 }: AnimatedAIChatProps) {
@@ -430,6 +466,42 @@ export function AnimatedAIChat({
               projects, one buyer story. Type <kbd className="rounded border border-white/15 bg-white/5 px-1 py-0.5 font-mono text-[0.7rem]">/</kbd>{" "}
               for quick prompts or ask anything below.
             </motion.p>
+          </div>
+
+          <div className="w-full space-y-2">
+            <p className="text-center text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-white/40">
+              Practice prompts
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {PRACTICE_PROMPTS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  disabled={isSending}
+                  onClick={() => {
+                    void submitMessage(p.question);
+                  }}
+                  className={cn(
+                    "rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-left transition-colors",
+                    "hover:border-violet-500/40 hover:bg-white/[0.08]",
+                    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500/50",
+                    isSending && "pointer-events-none opacity-45"
+                  )}
+                >
+                  <span className="block text-sm font-semibold text-white/90">
+                    {p.title}
+                  </span>
+                  <span className="mt-1.5 block text-[0.68rem] leading-snug text-white/38">
+                    {p.hint}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p className="text-center text-[0.62rem] leading-snug text-white/28">
+              Good answers follow your{" "}
+              <strong className="text-white/40">Agent Builder instructions</strong> in Kibana. If
+              the model leads with “one platform ingests everything,” tune the agent—not this page.
+            </p>
           </div>
 
           {messages.length > 0 && (

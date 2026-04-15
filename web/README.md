@@ -23,7 +23,7 @@ The `web/vercel.json` **buildCommand** is `npm run build` so Vercel does not use
 
 ### React + Tailwind + shadcn-style UI
 
-- **`/chat`** — **`AnimatedAIChat`** ([`components/ui/animated-ai-chat.tsx`](./components/ui/animated-ai-chat.tsx)): sends **`POST /api/converse`**, shows **You / Agent / Error** bubbles, keeps **`conversation_id`**, and **New conversation**. Default agent comes from **`KIBANA_AGENT_ID`** on the server only. Vercel logs should show **`POST /api/converse`** after each send.
+- **`/chat`** — **`AnimatedAIChat`** ([`components/ui/animated-ai-chat.tsx`](./components/ui/animated-ai-chat.tsx)): sends **`POST /api/converse`**, shows **You / Agent / Error** bubbles, keeps **`conversation_id`**, **Practice prompts** (four cross-sell coaching scenarios), slash chips, and **New conversation**. Default agent comes from **`KIBANA_AGENT_ID`** on the server only. Vercel logs should show **`POST /api/converse`** after each send.
 - Setup notes and CLI reference: [`docs/SHADCN-TAILWIND-SETUP.md`](./docs/SHADCN-TAILWIND-SETUP.md).
 
 Build runs `npm run sync-docs` (copies `../docs` into `public/` and sets `<meta name="o11y-converse-url" content="/api/converse" />`), then `next build`.
