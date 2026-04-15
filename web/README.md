@@ -28,6 +28,19 @@ The `web/vercel.json` **buildCommand** is `npm run build` so Vercel does not use
 
 Build runs `npm run sync-docs` (copies `../docs` into `public/` and sets `<meta name="o11y-converse-url" content="/api/converse" />`), then `next build`.
 
+### If `/api/converse` returns **500** (Vercel + Kibana both 500)
+
+The proxy only forwards to **`{KIBANA_BASE_URL}/api/agent_builder/converse`**. A **500** means **Kibana** rejected the request or failed while running the agent (the proxy passes the same status and body back).
+
+Check:
+
+1. **`KIBANA_BASE_URL`** is exactly the Kibana origin, e.g. `https://ai-assistants-ffcafb.kb.us-east-1.aws.elastic.cloud` — **no** `/api/...` suffix, **no** trailing slash.
+2. **`KIBANA_API_KEY`** is a **Kibana** API key with **`agentBuilder:read`** (and whatever else the agent needs), not an Elasticsearch-only key.
+3. **`KIBANA_AGENT_ID`** (if set) is the **Agent Builder agent UUID**, not a project slug or MCP URL fragment.
+4. In **Vercel → Deployment → Functions → `/api/converse` logs**, look for **`[converse proxy] Kibana non-OK`** — the next lines include Kibana’s error JSON (connector, inference, license, etc.).
+
+`maxDuration` for this route is **120s** so slow agent runs are less likely to die on the Vercel side (your plan must allow that duration).
+
 ### If you see `404: NOT_FOUND`
 
 - Confirm **Root Directory** is **`web`**.

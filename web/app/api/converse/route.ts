@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+/** Allow long agent runs (Vercel plan must support this cap). */
+export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
   const base = process.env.KIBANA_BASE_URL?.replace(/\/$/, "");
@@ -38,17 +40,35 @@ export async function POST(req: NextRequest) {
   }
 
   const url = `${base}/api/agent_builder/converse`;
-  const r = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `ApiKey ${key}`,
-      "kbn-xsrf": "true",
-    },
-    body: JSON.stringify(payload),
-  });
+
+  let r: Response;
+  try {
+    r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `ApiKey ${key}`,
+        "kbn-xsrf": "true",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "fetch failed";
+    console.error("[converse proxy] fetch error:", msg);
+    return NextResponse.json(
+      { message: `Upstream fetch failed: ${msg}`, upstream: base },
+      { status: 502 }
+    );
+  }
 
   const text = await r.text();
+  if (!r.ok) {
+    console.error(
+      "[converse proxy] Kibana non-OK",
+      r.status,
+      text.slice(0, 4000)
+    );
+  }
   const ct = r.headers.get("content-type") || "application/json; charset=utf-8";
   return new NextResponse(text, {
     status: r.status,
