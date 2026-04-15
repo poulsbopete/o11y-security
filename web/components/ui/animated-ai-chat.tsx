@@ -7,7 +7,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useTransition,
   type KeyboardEvent,
   type TextareaHTMLAttributes,
 } from "react";
@@ -143,11 +142,41 @@ function ensureRippleStyles() {
   document.head.appendChild(style);
 }
 
-export function AnimatedAIChat() {
+function newMsgId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `m-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function extractAssistantMessage(data: unknown): string {
+  if (!data || typeof data !== "object") return "";
+  const o = data as Record<string, unknown>;
+  if (o.response && typeof o.response === "object") {
+    const r = o.response as Record<string, unknown>;
+    if (typeof r.message === "string") return r.message;
+  }
+  if (typeof o.message === "string") return o.message;
+  return "";
+}
+
+export type AnimatedAIChatProps = {
+  /** Same-origin Kibana converse proxy (Vercel: `/api/converse`). */
+  converseUrl?: string;
+};
+
+type ChatMsg = {
+  id: string;
+  role: "user" | "assistant" | "error";
+  text: string;
+};
+
+export function AnimatedAIChat({
+  converseUrl = "/api/converse",
+}: AnimatedAIChatProps) {
   const [value, setValue] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [, startTransition] = useTransition();
+  const [isSending, setIsSending] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState<number>(-1);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -157,6 +186,9 @@ export function AnimatedAIChat() {
   });
   const [inputFocused, setInputFocused] = useState(false);
   const commandPaletteRef = useRef<HTMLDivElement>(null);
+  const conversationIdRef = useRef<string | null>(null);
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [agentOverride, setAgentOverride] = useState("");
 
   const commandSuggestions = useMemo<CommandSuggestion[]>(
     () => [
@@ -241,6 +273,77 @@ export function AnimatedAIChat() {
     };
   }, []);
 
+  const submitMessage = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || isSending) return;
+
+      setMessages((m) => [...m, { id: newMsgId(), role: "user", text: trimmed }]);
+      setValue("");
+      adjustHeight(true);
+      setIsSending(true);
+
+      try {
+        const body: Record<string, unknown> = { input: trimmed };
+        if (conversationIdRef.current) {
+          body.conversation_id = conversationIdRef.current;
+        }
+        const aid = agentOverride.trim();
+        if (aid) body.agent_id = aid;
+
+        const r = await fetch(converseUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "kbn-xsrf": "true",
+          },
+          body: JSON.stringify(body),
+          credentials: "same-origin",
+        });
+
+        const raw = await r.text();
+        let data: unknown = null;
+        try {
+          data = raw ? JSON.parse(raw) : null;
+        } catch {
+          data = null;
+        }
+
+        if (!r.ok) {
+          const errObj = data as Record<string, unknown> | null;
+          const errText =
+            (errObj && typeof errObj.message === "string" && errObj.message) ||
+            (errObj && typeof errObj.error === "string" && errObj.error) ||
+            raw ||
+            `HTTP ${r.status}`;
+          setMessages((m) => [
+            ...m,
+            { id: newMsgId(), role: "error", text: errText },
+          ]);
+          return;
+        }
+
+        const obj = data as Record<string, unknown> | null;
+        if (obj && typeof obj.conversation_id === "string") {
+          conversationIdRef.current = obj.conversation_id;
+        }
+
+        const reply =
+          extractAssistantMessage(data) || "(Empty reply from agent)";
+        setMessages((m) => [
+          ...m,
+          { id: newMsgId(), role: "assistant", text: reply },
+        ]);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Network error";
+        setMessages((m) => [...m, { id: newMsgId(), role: "error", text: msg }]);
+      } finally {
+        setIsSending(false);
+      }
+    },
+    [isSending, agentOverride, converseUrl, adjustHeight]
+  );
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (showCommandPalette) {
       if (e.key === "ArrowDown") {
@@ -266,22 +369,10 @@ export function AnimatedAIChat() {
       }
     } else if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (value.trim()) {
-        handleSendMessage();
+      const t = value.trim();
+      if (t) {
+        void submitMessage(t);
       }
-    }
-  };
-
-  const handleSendMessage = () => {
-    if (value.trim()) {
-      startTransition(() => {
-        setIsTyping(true);
-        setTimeout(() => {
-          setIsTyping(false);
-          setValue("");
-          adjustHeight(true);
-        }, 3000);
-      });
     }
   };
 
@@ -341,6 +432,39 @@ export function AnimatedAIChat() {
             </motion.p>
           </div>
 
+          {messages.length > 0 && (
+            <div className="max-h-56 space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-black/55 p-3 text-left text-sm text-white/90 shadow-inner backdrop-blur-md">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={cn(
+                    "whitespace-pre-wrap rounded-lg px-3 py-2.5 leading-relaxed",
+                    msg.role === "user" && "bg-violet-500/20 text-white",
+                    msg.role === "assistant" && "bg-emerald-500/15 text-white/95",
+                    msg.role === "error" &&
+                      "border border-red-400/35 bg-red-500/10 text-red-100"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "mb-1.5 block text-[0.65rem] font-semibold uppercase tracking-wide",
+                      msg.role === "user" && "text-violet-200",
+                      msg.role === "assistant" && "text-emerald-200",
+                      msg.role === "error" && "text-red-200"
+                    )}
+                  >
+                    {msg.role === "user"
+                      ? "You"
+                      : msg.role === "assistant"
+                        ? "Agent"
+                        : "Error"}
+                  </span>
+                  {msg.text}
+                </div>
+              ))}
+            </div>
+          )}
+
           <motion.div
             className="relative rounded-2xl border border-white/[0.05] bg-white/[0.02] shadow-2xl backdrop-blur-2xl"
             initial={{ scale: 0.98 }}
@@ -385,6 +509,33 @@ export function AnimatedAIChat() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <div className="border-b border-white/[0.06] px-4 pb-3 pt-3">
+              <label
+                htmlFor="animated-ai-agent-override"
+                className="mb-1 block text-[0.7rem] font-medium text-white/45"
+              >
+                Agent id (optional — overrides server default)
+              </label>
+              <input
+                id="animated-ai-agent-override"
+                type="text"
+                value={agentOverride}
+                onChange={(e) => setAgentOverride(e.target.value)}
+                placeholder="Blank = KIBANA_AGENT_ID on Vercel"
+                className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white/90 placeholder:text-white/25 focus:border-violet-500/40 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  conversationIdRef.current = null;
+                  setMessages([]);
+                }}
+                className="mt-2 text-[0.7rem] text-violet-300/90 underline-offset-2 hover:text-violet-200 hover:underline"
+              >
+                New conversation
+              </button>
+            </div>
 
             <div className="p-4">
               <Textarea
@@ -478,10 +629,12 @@ export function AnimatedAIChat() {
 
               <motion.button
                 type="button"
-                onClick={handleSendMessage}
+                onClick={() => {
+                  void submitMessage(value);
+                }}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
-                disabled={isTyping || !value.trim()}
+                disabled={isSending || !value.trim()}
                 className={cn(
                   "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all",
                   value.trim()
@@ -489,7 +642,7 @@ export function AnimatedAIChat() {
                     : "bg-white/[0.05] text-white/40"
                 )}
               >
-                {isTyping ? (
+                {isSending ? (
                   <LoaderIcon className="h-4 w-4 animate-[spin_2s_linear_infinite]" />
                 ) : (
                   <SendIcon className="h-4 w-4" />
@@ -531,7 +684,7 @@ export function AnimatedAIChat() {
       </div>
 
       <AnimatePresence>
-        {isTyping && (
+        {isSending && (
           <motion.div
             className="fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-full border border-white/[0.05] bg-white/[0.02] px-4 py-2 shadow-lg backdrop-blur-2xl"
             initial={{ opacity: 0, y: 20 }}
