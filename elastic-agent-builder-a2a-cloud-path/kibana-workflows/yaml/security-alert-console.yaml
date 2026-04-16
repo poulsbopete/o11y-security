@@ -1,8 +1,8 @@
 name: A2A Lab — alert audit (console)
 description: >
-  Workshop demo — logs alert payload, **POSTs to the published Observability agent** (O11Y_AGENT_ENDPOINT + O11Y_API_KEY
-  from state/workshop.env at push time) for an operational peer check, then opens an Elastic Security case with that
-  response embedded. Avoid also attaching **alert to Security Case** on the same rule.
+  Workshop demo — logs alert payload, **POSTs to Observability Agent Builder /converse** (default URL + Basic auth from
+  bootstrap.json at push time; optional **O11Y_AGENT_ENDPOINT** + **O11Y_API_KEY** in workshop.env for a custom URL),
+  then opens an Elastic Security case with the model reply embedded. Avoid also attaching **alert to Security Case** on the same rule.
 enabled: true
 tags:
   - a2a-lab
@@ -20,14 +20,12 @@ steps:
       method: POST
       headers:
         Content-Type: application/json
-        Authorization: "ApiKey __WF_O11Y_API_KEY__"
+        kbn-xsrf: "true"
+        Authorization: "__WF_O11Y_AUTHORIZATION__"
       body: |
         {
-          "host": {{ event.alerts[0].host.name | json }},
-          "time_range": "15m",
-          "source": "a2a-lab-security-alert-workflow",
-          "rule": {{ event.alerts[0].kibana.alert.rule.name | json }},
-          "reason": {{ event.alerts[0].kibana.alert.reason | json }}
+          "agent_id": "a2a-lab-observability-context",
+          "input": "Security alert peer review — host {{ event.alerts[0].host.name }}; rule: {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. Summarize workshop-synth-metrics and workshop-synth-traces for ~15m; state whether signals suggest coordinated security concern vs ops-only noise."
         }
   - name: create_a_case
     type: kibana.createCaseDefaultSpace
@@ -45,9 +43,9 @@ steps:
         _Picked from the last hex digit of the alert UUID (stable for this alert); reruns keep the same storyline._
 
         ## A2A — Observability peer check (Security → O11y, HTTP)
-        This workflow **POSTs** `host`, `time_range`, `rule`, and `reason` to the published **Observability** Agent Builder URL
-        (injected as `O11Y_AGENT_ENDPOINT` when you run **scripts/06-kibana-workflows-lab.sh** with **state/workshop.env**).
-        Use the response as **operational context** (CPU, errors, dependency health)—not a substitute for SIEM verdicts.
+        This workflow **POSTs** to **Observability** `api/agent_builder/converse` (default: URL + Basic auth from **bootstrap.json**
+        when **06** runs; or **O11Y_AGENT_ENDPOINT** + **O11Y_API_KEY** for a custom published URL). Use the response as **operational
+        context**—not a substitute for SIEM verdicts.
 
         **Observability agent response (raw)**:
         {{ steps.a2a_call_observability_agent.output }}

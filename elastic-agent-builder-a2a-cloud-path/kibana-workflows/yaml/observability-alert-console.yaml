@@ -1,8 +1,8 @@
 name: A2A Lab — O11y alert log
 description: >
-  Workshop demo — logs alert context, **POSTs to the published Security agent** (SECURITY_AGENT_ENDPOINT + API key from
-  state/workshop.env at push time) for a security peer review of the signal, then opens an Observability case with that
-  response embedded. Avoid also attaching **O11y alert to Case** on the same rule.
+  Workshop demo — logs alert context, **POSTs to Security Agent Builder /converse** (default URL + Basic auth from
+  bootstrap.json at push time; optional **SECURITY_AGENT_ENDPOINT** + API key in workshop.env), then opens an Observability
+  case with the model reply embedded. Avoid also attaching **O11y alert to Case** on the same rule.
 enabled: true
 tags:
   - a2a-lab
@@ -20,15 +20,12 @@ steps:
       method: POST
       headers:
         Content-Type: application/json
-        Authorization: "ApiKey __WF_SECURITY_AGENT_API_KEY__"
+        kbn-xsrf: "true"
+        Authorization: "__WF_SECURITY_AUTHORIZATION__"
       body: |
         {
-          "host": {{ event.alerts[0].host.name | json }},
-          "time_range": "15m",
-          "source": "a2a-lab-observability-alert-workflow",
-          "rule": {{ event.alerts[0].kibana.alert.rule.name | json }},
-          "reason": {{ event.alerts[0].kibana.alert.reason | json }},
-          "ask": {{ "Observability alert: assess whether metrics/traces context for this host suggests security follow-up (credential risk, staging, abuse) vs pure SRE noise." | json }}
+          "agent_id": "a2a-lab-security-detection",
+          "input": "Observability alert peer review — host {{ event.alerts[0].host.name }}; rule: {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. From a security detection stance, note whether this warrants SOC escalation vs operational handling only."
         }
   - name: create_a_case
     type: kibana.createCaseDefaultSpace
@@ -46,9 +43,8 @@ steps:
         _Picked from the last hex digit of the alert UUID (stable for this alert); reruns keep the same storyline._
 
         ## A2A — Security peer check (O11y → Security, HTTP)
-        This workflow **POSTs** a compact payload to the published **Security** Agent Builder URL (**SECURITY_AGENT_ENDPOINT**,
-        optional **SECURITY_AGENT_API_KEY** else **SECURITY_API_KEY** — injected when you run **scripts/06-kibana-workflows-lab.sh**).
-        Treat the reply as a **triage hint** for whether Observability-only signals warrant SOC attention.
+        This workflow **POSTs** to **Security** `api/agent_builder/converse` (defaults from **bootstrap.json** when **06** runs;
+        or **SECURITY_AGENT_ENDPOINT** + API key override). Treat the reply as a **triage hint** for whether Observability-only signals warrant SOC attention.
 
         **Security agent response (raw)**:
         {{ steps.a2a_call_security_agent.output }}
