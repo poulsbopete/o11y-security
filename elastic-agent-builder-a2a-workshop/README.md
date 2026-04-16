@@ -4,6 +4,8 @@ This directory is the **source tree** for the **Instruqt** workshop *Agent Build
 
 **Lab UI:** each challenge exposes **Serverless Observability** and **Serverless Security** [service tabs](https://docs.instruqt.com/tracks/challenges/challenge-tabs) on the single **workstation** container. Nginx listens on **8080** / **8081** and reverse-proxies to the Kibana URLs in `.env`; after editing `.env`, run `sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh` (challenge **01** explains the flow). Ports **8080** and **8081** are declared in `config.yml` for Instruqt’s web proxy.
 
+**Team secrets:** sandbox bindings to team-level secrets must appear under `secrets:` in [`config.yml`](./config.yml) (names only; values stay in **Settings → Secrets** on Instruqt). This repo lists **`LLM_PROXY_PROD`** and **`ESS_CLOUD_API_KEY`** so a plain `instruqt track push` does not drop them—see [Add secrets to tracks](https://docs.instruqt.com/sandboxes/runtime/secrets). Lifecycle scripts receive each as an environment variable of the same name.
+
 **Cloud / Agent Skills path (no Instruqt):** use the sibling folder on GitHub — **[`elastic-agent-builder-a2a-cloud-path`](https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-cloud-path)** — and its **[`README.md`](https://github.com/poulsbopete/o11y-security/blob/main/elastic-agent-builder-a2a-cloud-path/README.md)** (includes **Exercise the setup** for both **Path 1 — Skills** and **Path 2 — Bash**).
 
 ---

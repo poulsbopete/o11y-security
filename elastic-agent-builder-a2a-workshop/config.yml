@@ -1,4 +1,9 @@
 version: "3"
+# Team secrets (values live in Instruqt Settings → Secrets). Listing them here keeps
+# `instruqt track push` from dropping sandbox secret bindings — see runtime secrets docs.
+secrets:
+  - name: LLM_PROXY_PROD
+  - name: ESS_CLOUD_API_KEY
 containers:
   - name: workstation
     image: ubuntu:22.04
