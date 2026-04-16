@@ -277,12 +277,12 @@
             <p class="kicker">The pattern</p>
             <h2>Agent Builder: let each domain keep its expertise</h2>
             <p class="lead">
-              Build a <strong style="color: var(--accent);">Security agent</strong> that detects risky behavior, then call an <strong style="color: var(--accent2);">Observability agent</strong> over HTTPS for host context (CPU, memory, errors, latency) in the same window of time.
+              Build a <strong style="color: var(--accent);">Security agent</strong> and an <strong style="color: var(--accent2);">Observability agent</strong> in separate Serverless projects, then wire <strong>Kibana Workflows</strong> so an alert can <strong>POST</strong> to the other project’s <code style="font-size:0.92em;">/api/agent_builder/converse</code> before a Case is created.
             </p>
             <ul>
-              <li><strong>No duplicated analytics</strong> — each agent stays in its lane.</li>
-              <li><strong>API-first wiring</strong> — works across clusters and teams.</li>
-              <li><strong>One enriched story</strong> — security event + operational context in one document.</li>
+              <li><strong>Bidirectional lab</strong> — Security alerts can ask Observability; Observability alerts can ask Security (same HTTP pattern, swapped URL + agent id).</li>
+              <li><strong>No duplicated analytics</strong> — each agent keeps domain tools; workflow calls stay API-first across projects.</li>
+              <li><strong>One case narrative</strong> — drill copy plus the peer agent reply (or a captured HTTP error if the call fails).</li>
             </ul>
           </div>
         </section>
@@ -303,8 +303,8 @@
             </figure>
             <ul style="margin-top: 1rem;">
               <li><strong>Left lanes</strong> — keep collection specialized; avoid duplicating analytics in both stacks.</li>
-              <li><strong>MCP</strong> — detections, triage, workflow automation, and the enriched case document analysts ship.</li>
-              <li><strong>Cross-project call</strong> — Security agent calls the Observability agent over HTTPS when impact context lives in the other project.</li>
+              <li><strong>MCP / Agent Builder</strong> — detections, triage, workflow automation, and the enriched case document analysts ship.</li>
+              <li><strong>Cross-project call</strong> — Workflows use native <strong>HTTP</strong> to the peer Kibana <strong>converse</strong> endpoint (Basic or API key). Kibana’s outbound connector is still capped near <strong>~60s</strong>, so the lab uses a short <strong>[A2A_WF]</strong> path on the Observability agent for Security-initiated peer review.</li>
             </ul>
           </div>
         </section>
@@ -314,17 +314,16 @@
             <p class="kicker">From the cloud-path lab</p>
             <h2>Kibana Workflows and Cases</h2>
             <p class="lead" style="margin-bottom: 0.5rem;">
-              Scripted lab assets push <strong>workshop</strong> workflows (synth inject, alert → console + case) to each Serverless Kibana.
-              Alert-driven runs open cases with triage copy—including <strong>randomized drill scenarios</strong>—so workshops feel like real ops without manual paste-up.
+              <code style="font-size:0.88em;">elastic-agent-builder-a2a-cloud-path</code> pushes <strong>workshop</strong> workflows to <strong>both</strong> Kibanas: <strong>manual</strong> synth inject (Run on demand), <strong>scheduled</strong> 15m injectors (<strong>disabled</strong> in YAML until you enable the toggle), and <strong>alert</strong> workflows that log, call the peer project via <strong>HTTP converse</strong>, then open a Case with drill text plus the model reply.
             </p>
             <div class="slide-figures-stack">
               <figure class="slide-figure">
-                <img src="./images/a2a-lab-workflows-list.jpg" width="1024" height="312" alt="Kibana Workflows list showing lab workflows: O11y synth inject manual and scheduled, O11y alert to Case, O11y alert log" loading="lazy" decoding="async" />
-                <figcaption>Observability project — lab workflows (manual inject, schedule, alert → case / alert log).</figcaption>
+                <img src="./images/a2a-lab-workflows-list.jpg" width="1024" height="312" alt="Kibana Workflows list: lab injectors (manual + scheduled), alert to Case, alert log / audit" loading="lazy" decoding="async" />
+                <figcaption>Example: Observability project — lab workflows. Scheduled inject is pushed <strong>off</strong> by default; use <strong>manual inject</strong> for a quick demo without background noise.</figcaption>
               </figure>
               <figure class="slide-figure">
-                <img src="./images/a2a-lab-cases-list.jpg" width="1024" height="334" alt="Elastic Security Cases list with open lab cases showing credential access pattern drill titles" loading="lazy" decoding="async" />
-                <figcaption>Security project — cases opened from alert workflows (example drill: credential access pattern).</figcaption>
+                <img src="./images/a2a-lab-cases-list.jpg" width="1024" height="334" alt="Elastic Security Cases list with lab cases from workflow-driven alert actions" loading="lazy" decoding="async" />
+                <figcaption>Example: Security project — Cases from alert-driven workflows (randomized drill titles + optional Observability peer block).</figcaption>
               </figure>
             </div>
           </div>
@@ -354,11 +353,22 @@
             <p class="kicker">Hands-on</p>
             <h2>Workshop: two serverless projects, one correlation story</h2>
             <p class="lead">
-              The companion Instruqt track walks through standing up both agents, calling Observability from Security, indexing enriched events, and visualizing correlation in Kibana.
+              The <strong>cloud-path</strong> scripts provision two Serverless projects, seed <code style="font-size:0.92em;">workshop-synth-*</code> data, create Agent Builder agents, and <strong>PUT</strong> the workflow YAML shown on slide 4.
+              The <strong>Instruqt</strong> track <code style="font-size:0.88em;">elastic-a2a-serverless-agent-builder</code> teaches the same A2A story in-browser: <strong>Serverless Observability</strong> and <strong>Serverless Security</strong> each get a lab tab, both reverse-proxied through the single <strong>workstation</strong> host (nginx on <strong>8080</strong> / <strong>8081</strong>) after learners paste their Cloud Kibana URLs into <code style="font-size:0.88em;">.env</code>.
             </p>
-            <a class="cta" href="https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-workshop">
-              Open the workshop in GitHub →
+            <ul>
+              <li><strong>Instruqt</strong> — facilitator-led UI + checks; source in <code style="font-size:0.88em;">elastic-agent-builder-a2a-workshop/</code>.</li>
+              <li><strong>BYO Elastic</strong> — use <code style="font-size:0.88em;">elastic-agent-builder-a2a-cloud-path</code> and Agent Skills when you are not in a sandbox.</li>
+            </ul>
+            <a class="cta" href="https://play.instruqt.com/manage/elastic/tracks/elastic-a2a-serverless-agent-builder">
+              Open the Instruqt track (elastic team) →
             </a>
+            <a class="cta" href="https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-workshop" style="margin-top:0.65rem;">
+              Workshop source on GitHub →
+            </a>
+            <p class="hint" style="margin-top:0.75rem;">
+              Lab automation (workflows + keys): <a class="prompt-lib" href="https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-cloud-path">elastic-agent-builder-a2a-cloud-path →</a>
+            </p>
             <p class="hint" style="margin-top:1rem;">
               <a class="prompt-lib" href="./prompts/">AE training: AI prompt library →</a>
               <span style="color:var(--muted); font-weight:400;"> — personas, objections, emails, discovery</span>

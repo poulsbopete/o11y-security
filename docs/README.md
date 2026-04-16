@@ -13,7 +13,7 @@ This folder includes an empty **`.nojekyll`** file so GitHub Pages serves **stat
 
 Site URL: **https://poulsbopete.github.io/o11y-security/**
 
-The deck has **six** slides with **Prev / Next**, dots, a counter, and keyboard support (**←** **→**, **Space**). Slide 3 is the **reference workflow** (Security + Observability → MCP) using [`images/a2a-mcp-architecture.jpg`](images/a2a-mcp-architecture.jpg). Slide 4 adds **Kibana screenshots**: [`images/a2a-lab-workflows-list.jpg`](images/a2a-lab-workflows-list.jpg) (workflows) and [`images/a2a-lab-cases-list.jpg`](images/a2a-lab-cases-list.jpg) (cases).
+The deck has **six** slides with **Prev / Next**, dots, a counter, and keyboard support (**←** **→**, **Space**). Slide 3 is the **reference workflow** (Security + Observability → MCP / Agent Builder) using [`images/a2a-mcp-architecture.jpg`](images/a2a-mcp-architecture.jpg). Slide 4 adds **Kibana screenshots** ([`images/a2a-lab-workflows-list.jpg`](images/a2a-lab-workflows-list.jpg), [`images/a2a-lab-cases-list.jpg`](images/a2a-lab-cases-list.jpg)) and copy aligned with **`elastic-agent-builder-a2a-cloud-path`**: bidirectional **alert → HTTP converse → Case** workflows, **scheduled** synth inject pushed **disabled** by default, **manual** inject for demos, and the **~60s** outbound HTTP limit / **`[A2A_WF]`** fast path for Security → Observability peer review. Slide 6 (**Hands-on**) links the **Instruqt** track **`elastic-a2a-serverless-agent-builder`** (dual **Serverless** Kibana service tabs + single-host nginx proxy) and the GitHub workshop folder.
 
 ## AE training prompts
 
