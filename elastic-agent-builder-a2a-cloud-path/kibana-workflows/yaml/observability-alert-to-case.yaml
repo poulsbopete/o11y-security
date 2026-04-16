@@ -1,13 +1,31 @@
 name: A2A Lab — O11y alert to Case
 description: >
-  Case-only Observability workflow. Prefer **A2A Lab — O11y alert log** on rules instead (it logs + creates a case).
-  Do not attach both workflows to the same rule or you will get duplicate cases.
+  Case-only Observability workflow — **HTTP A2A to Security** then create case (SECURITY_AGENT_ENDPOINT injection via **06**
+  + **workshop.env**). Prefer **A2A Lab — O11y alert log** on rules instead (it logs + creates a case). Do not attach both
+  workflows to the same rule or you will get duplicate cases.
 enabled: true
 tags:
   - a2a-lab
 triggers:
   - type: alert
 steps:
+  - name: a2a_call_security_agent
+    type: http
+    with:
+      url: "__WF_SECURITY_AGENT_ENDPOINT__"
+      method: POST
+      headers:
+        Content-Type: application/json
+        Authorization: "ApiKey __WF_SECURITY_AGENT_API_KEY__"
+      body: |
+        {
+          "host": {{ event.alerts[0].host.name | json }},
+          "time_range": "15m",
+          "source": "a2a-lab-observability-alert-workflow",
+          "rule": {{ event.alerts[0].kibana.alert.rule.name | json }},
+          "reason": {{ event.alerts[0].kibana.alert.reason | json }},
+          "ask": {{ "Observability alert: assess whether this signal pattern warrants security escalation vs operational handling only." | json }}
+        }
   - name: create_a_case
     type: kibana.createCaseDefaultSpace
     with:
@@ -22,6 +40,13 @@ steps:
         ## Randomized drill scenario
         {{ drill_detail | strip }}
         _Picked from the last hex digit of the alert UUID (stable for this alert); reruns keep the same storyline._
+
+        ## A2A — Security peer check (O11y → Security, HTTP)
+        **POST** to the published Security agent (**SECURITY_AGENT_ENDPOINT** / **06** + **workshop.env**). Use this block to
+        sanity-check that the Observability signal is **not** hiding obvious security concerns.
+
+        **Security agent response (raw)**:
+        {{ steps.a2a_call_security_agent.output }}
 
         ## Backlog (GitHub)
         Open **Issues → New issue** in this workshop repo → **Observability-side scenario** or **Cross-domain A2A**; paste the **Alert id** below.

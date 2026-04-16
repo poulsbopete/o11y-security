@@ -71,6 +71,8 @@ You can make automation **visible** in two complementary ways: **Kibana Workflow
 | **Agent Builder workflow** (Tracks 2–4) | Agent run / detection branch | Documents in **`.elastic-agents-*`** on the **Security** cluster; **HTTP** to the **Observability** published agent URL for A2A. |
 | **Kibana Workflow** (alert trigger; Serverless / 9.3+) | **Alerting rule** when conditions match | Steps such as **`kibana.createCaseDefaultSpace`**, optional **`ai.prompt`**, **`kibana.request`**, plus (when available) outbound **HTTP** to published agent URLs. |
 
+**Lab alert workflows (`kibana-workflows/yaml/*-alert-*.yaml`)** now include a native **`http`** step before **`kibana.createCaseDefaultSpace`**: **Security** workflows POST to **`O11Y_AGENT_ENDPOINT`** (plus **`O11Y_API_KEY`**), and **Observability** workflows POST to **`SECURITY_AGENT_ENDPOINT`** (plus **`SECURITY_AGENT_API_KEY`** or **`SECURITY_API_KEY`**). **`scripts/06-kibana-workflows-lab.sh`** sources **`state/workshop.env`** and substitutes placeholders so the saved workflow carries the live URLs/keys. Publish both agents, set both endpoints (and keys) in **`workshop.env`**, then re-run **06**.
+
 “**Both Serverless projects**” in customer language almost always means: **Security** runs the orchestration and **Cases**; **Observability** is **invoked over HTTP** from Security (same as [`../elastic-agent-builder-a2a-workshop/agent-scaffolds/security-a2a-enrichment-workflow.md`](../elastic-agent-builder-a2a-workshop/agent-scaffolds/security-a2a-enrichment-workflow.md)). A second workflow on the Observability Kibana is optional, not required for the A2A story.
 
 ### Bidirectional AI in Cases (Observability ↔ Security)

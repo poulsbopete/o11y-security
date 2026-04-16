@@ -32,6 +32,14 @@ YAML_DIR="$ROOT/kibana-workflows/yaml"
 
 load_dotenv "$ROOT/.env"
 
+WS_ENV="$ROOT/state/workshop.env"
+if [ -f "$WS_ENV" ]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$WS_ENV"
+  set +a
+fi
+
 if [ "${A2A_SKIP_KIBANA_WORKFLOWS:-0}" = "1" ]; then
   echo "Skipping Kibana Workflows (A2A_SKIP_KIBANA_WORKFLOWS=1)."
   exit 0
@@ -42,7 +50,7 @@ if [ ! -f "$BOOT" ]; then
   exit 1
 fi
 
-require_cmds "$CURL" jq
+require_cmds "$CURL" jq python3
 
 umask 077
 mkdir -p "$ROOT/state"
@@ -100,16 +108,26 @@ wf_find_by_name() {
 
 wf_upsert() {
   local role="$1" key="$2" yaml_file="$3" base="$4" user="$5" pass="$6"
-  local id new_id code name valid want_name
+  local id new_id code name valid want_name rendered
 
   if [ ! -f "$yaml_file" ]; then
     echo "Missing YAML: $yaml_file" >&2
     return 1
   fi
 
+  rendered="$(mktemp "${TMPDIR:-/tmp}/wf-render.XXXXXX.yaml")"
+  chmod 600 "$rendered"
+  if ! python3 "$SCRIPT_DIR/render-workflow-placeholders.py" "$yaml_file" "$rendered"; then
+    rm -f "$rendered"
+    echo "render-workflow-placeholders.py failed for ${yaml_file}" >&2
+    return 1
+  fi
+  yaml_file="$rendered"
+
   want_name="$(awk -F': ' '/^name:/{print $2; exit}' "$yaml_file")"
   if [ -z "$want_name" ]; then
     echo "Could not read workflow name from ${yaml_file}" >&2
+    rm -f "$rendered"
     return 1
   fi
 
@@ -129,6 +147,7 @@ wf_upsert() {
     if [ "$code" = "200" ]; then
       valid="$(jq -r '.valid // empty' /tmp/wf-resp.json 2>/dev/null || true)"
       echo "  PUT ${role}/${key} id=${id} (valid=${valid})"
+      rm -f "$rendered"
       return 0
     fi
     echo "  WARN: PUT ${id} returned HTTP ${code}; recreating…" >&2
@@ -141,6 +160,7 @@ wf_upsert() {
   if [ "$code" != "200" ]; then
     echo "POST workflow failed HTTP ${code}" >&2
     cat /tmp/wf-resp.json >&2 || true
+    rm -f "$rendered"
     return 1
   fi
   valid="$(jq -r '.valid // false' /tmp/wf-resp.json)"
@@ -148,6 +168,7 @@ wf_upsert() {
   if [ "$valid" != "true" ]; then
     echo "Workflow saved but invalid=true not set (valid=$valid): $name" >&2
     jq . /tmp/wf-resp.json >&2 || true
+    rm -f "$rendered"
     return 1
   fi
   local merged
@@ -155,6 +176,7 @@ wf_upsert() {
   printf '%s\n' "$merged" >"$STATE"
   chmod 600 "$STATE"
   echo "  POST ${role}/${key} id=${new_id} (${name})"
+  rm -f "$rendered"
 }
 
 sec_kb="$(jq -r '.security.endpoints.kibana // empty' "$BOOT")"
