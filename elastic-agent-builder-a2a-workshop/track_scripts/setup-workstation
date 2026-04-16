@@ -11,6 +11,18 @@ apt-get install -y --no-install-recommends curl ca-certificates jq python3 nginx
 
 mkdir -p /root/elastic-workshop/{assets,agent-scaffolds,scripts,sample-data,indices}
 
+# Challenge lifecycle scripts run from a copy under /tmp; record the real track root for them.
+TR=""
+while IFS= read -r tf; do
+  if grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null; then
+    TR="$(dirname "$tf")"
+    break
+  fi
+done < <(find /opt/instruqt /root /srv /var/tmp -maxdepth 14 -type f -name track.yml 2>/dev/null)
+if [ -n "$TR" ] && [ -f "$TR/track.yml" ]; then
+  printf '%s\n' "$TR" >/root/elastic-workshop/.instruqt-track-root
+fi
+
 rm -f /etc/nginx/sites-enabled/default
 cat >/etc/nginx/sites-available/elastic-lab-kibana-proxy.conf <<'STUB'
 # Placeholder until learners run scripts/render-kibana-proxy.sh with Kibana URLs in .env

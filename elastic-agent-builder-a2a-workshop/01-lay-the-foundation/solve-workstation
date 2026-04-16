@@ -5,7 +5,21 @@ ROOT="/root/elastic-workshop"
 umask 077
 mkdir -p "$ROOT"
 
-TRACK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Resolve track root: Instruqt copies lifecycle scripts to /tmp; see track_scripts/setup-workstation.
+TRACK_ROOT=""
+if [ -f /root/elastic-workshop/.instruqt-track-root ]; then
+  TRACK_ROOT="$(head -1 /root/elastic-workshop/.instruqt-track-root | tr -d '\r\n')"
+fi
+if [ -z "${TRACK_ROOT:-}" ] || [ ! -f "$TRACK_ROOT/scripts/workshop-common.sh" ]; then
+  while IFS= read -r tf; do
+    grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null || continue
+    TRACK_ROOT="$(dirname "$tf")"
+    break
+  done < <(find /opt/instruqt /root /srv /var/tmp -maxdepth 14 -type f -name track.yml 2>/dev/null)
+fi
+if [ -z "${TRACK_ROOT:-}" ] || [ ! -f "$TRACK_ROOT/scripts/workshop-common.sh" ]; then
+  TRACK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+fi
 # shellcheck disable=SC1090
 source "$TRACK_ROOT/scripts/workshop-common.sh"
 sync_track_assets "${BASH_SOURCE[0]}"

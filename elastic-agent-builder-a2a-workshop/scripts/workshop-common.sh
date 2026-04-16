@@ -6,13 +6,45 @@ workshop_root() {
 }
 
 # Pass "${BASH_SOURCE[0]}" from the calling setup/check/solve script.
+# Instruqt runs challenge lifecycle scripts from a copy under /tmp (BASH_SOURCE is not inside the
+# track tree). track_scripts/setup-workstation writes /root/elastic-workshop/.instruqt-track-root;
+# otherwise fall back to $PWD, script-relative path, or a shallow find for this track's slug.
 track_root_from_challenge_script() {
   local origin="$1"
   local script_dir
+  local candidate=""
+  local marker
+  marker="$(workshop_root)/.instruqt-track-root"
+  if [ -n "${ELASTIC_WORKSHOP_TRACK_ROOT:-}" ] && [ -f "${ELASTIC_WORKSHOP_TRACK_ROOT}/track.yml" ]; then
+    echo "${ELASTIC_WORKSHOP_TRACK_ROOT}"
+    return 0
+  fi
+  if [ -f "$marker" ]; then
+    head -1 "$marker" | tr -d '\r\n'
+    return 0
+  fi
+  if [ -f "$(pwd)/../track.yml" ]; then
+    (cd "$(pwd)/.." && pwd)
+    return 0
+  fi
   script_dir="$(cd "$(dirname "$origin")" && pwd)"
   if [ -f "$script_dir/../track.yml" ]; then
-    cd "$script_dir/.." && pwd
+    (cd "$script_dir/.." && pwd)
     return 0
+  fi
+  if [[ "$origin" == /tmp/* ]] || [[ "$script_dir" == "/tmp" ]]; then
+    candidate="$(
+      find /opt/instruqt /root /srv /var/tmp -maxdepth 14 -type f -name track.yml 2>/dev/null | while read -r tf; do
+        if grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null; then
+          dirname "$tf"
+          break
+        fi
+      done
+    )"
+    if [ -n "$candidate" ] && [ -f "$candidate/track.yml" ]; then
+      echo "$candidate"
+      return 0
+    fi
   fi
   echo ""
 }
