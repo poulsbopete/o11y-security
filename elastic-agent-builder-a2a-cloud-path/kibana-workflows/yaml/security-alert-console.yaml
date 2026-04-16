@@ -11,8 +11,7 @@ steps:
   - name: log_alert
     type: console
     with:
-      message: "Rule '{{ event.alerts[0].kibana.alert.rule.name }}' fired"
-      details: "{{ event | json:2 }}"
+      message: "Rule '{{ event.alerts[0].kibana.alert.rule.name }}' fired\n{{ event | json:2 }}"
   - name: create_a_case
     type: kibana.createCaseDefaultSpace
     with:
