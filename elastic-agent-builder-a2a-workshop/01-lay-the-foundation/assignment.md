@@ -1,25 +1,32 @@
 ---
 slug: lay-the-foundation
+id: 8ocnhl0wsjmo
 type: challenge
-title: "Lay the Foundation"
-teaser: Create two Serverless projects and prove Elasticsearch API connectivity from the lab shell.
+title: Lay the Foundation
+teaser: Create two Serverless projects and prove Elasticsearch API connectivity from
+  the lab shell.
 tabs:
-  - title: Serverless Observability
-    type: service
-    hostname: workstation
-    port: 8080
-    protocol: http
-    new_window: true
-  - title: Serverless Security
-    type: service
-    hostname: workstation
-    port: 8081
-    protocol: http
-    new_window: true
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-    workdir: /root/elastic-workshop
+- id: hruyzar9dqsn
+  title: Serverless Observability
+  type: service
+  hostname: workstation
+  port: 8080
+  protocol: http
+  new_window: true
+- id: i2fyz27ttjto
+  title: Serverless Security
+  type: service
+  hostname: workstation
+  port: 8081
+  protocol: http
+  new_window: true
+- id: ipwlqlex1ab9
+  title: Terminal
+  type: terminal
+  hostname: workstation
+  workdir: /root/elastic-workshop
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Lay the Foundation

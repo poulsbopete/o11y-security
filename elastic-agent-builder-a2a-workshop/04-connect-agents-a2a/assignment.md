@@ -1,25 +1,31 @@
 ---
 slug: connect-agents-a2a
+id: wemsrpzczgdx
 type: challenge
-title: "Connect Agents: Implement A2A Communication"
+title: 'Connect Agents: Implement A2A Communication'
 teaser: Extend the Security workflow to call Observability and persist enriched incidents.
 tabs:
-  - title: Serverless Observability
-    type: service
-    hostname: workstation
-    port: 8080
-    protocol: http
-    new_window: true
-  - title: Serverless Security
-    type: service
-    hostname: workstation
-    port: 8081
-    protocol: http
-    new_window: true
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-    workdir: /root/elastic-workshop
+- id: u8eqzyzaz22t
+  title: Serverless Observability
+  type: service
+  hostname: workstation
+  port: 8080
+  protocol: http
+  new_window: true
+- id: 1rt3sxe7gx51
+  title: Serverless Security
+  type: service
+  hostname: workstation
+  port: 8081
+  protocol: http
+  new_window: true
+- id: ywywmlhstzm7
+  title: Terminal
+  type: terminal
+  hostname: workstation
+  workdir: /root/elastic-workshop
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Connect Agents: Implement A2A Communication

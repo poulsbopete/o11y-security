@@ -1,25 +1,31 @@
 ---
 slug: build-security-agent
+id: 79eyqiywnogd
 type: challenge
-title: "Build Your First Security Agent"
+title: Build Your First Security Agent
 teaser: Author a detection agent that emits standardized events to a dedicated index.
 tabs:
-  - title: Serverless Observability
-    type: service
-    hostname: workstation
-    port: 8080
-    protocol: http
-    new_window: true
-  - title: Serverless Security
-    type: service
-    hostname: workstation
-    port: 8081
-    protocol: http
-    new_window: true
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-    workdir: /root/elastic-workshop
+- id: nybnrw33asur
+  title: Serverless Observability
+  type: service
+  hostname: workstation
+  port: 8080
+  protocol: http
+  new_window: true
+- id: gcrpvtslsxzt
+  title: Serverless Security
+  type: service
+  hostname: workstation
+  port: 8081
+  protocol: http
+  new_window: true
+- id: zmpljnzxuzhe
+  title: Terminal
+  type: terminal
+  hostname: workstation
+  workdir: /root/elastic-workshop
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Build Your First Security Agent

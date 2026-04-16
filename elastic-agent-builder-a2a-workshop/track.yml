@@ -1,7 +1,8 @@
 slug: elastic-a2a-serverless-agent-builder
-type: track
-title: "Agent Builder A2A: Serverless Observability + Security Communication"
-teaser: Deploy Agent Builder agents across serverless Observability and Security, then wire API-to-API enrichment.
+id: zq70yyfn826u
+title: 'Agent Builder A2A: Serverless Observability + Security Communication'
+teaser: Deploy Agent Builder agents across serverless Observability and Security,
+  then wire API-to-API enrichment.
 description: |
   Interactive workshop for Elastic sellers and solutions architects. Attendees deploy two Agent Builder
   agents in separate serverless projects (Observability and Security), configure cross-cluster API calls,
@@ -13,18 +14,17 @@ description: |
   Serverless Security projects, and familiarity with Kibana Agent Builder at an intermediate level.
 
   **Base reference:** Elastic Autonomous Observability track patterns (dual environment, API-first wiring).
-
 icon: https://www.elastic.co/favicon.ico
 tags:
-  - elastic
-  - observability
-  - security
-  - agent-builder
-  - serverless
-  - a2a
-owner: elastic-field
-developers: []
-maintenance: false
+- security
+- elastic
+- serverless
+- a2a
+- observability
+- agent-builder
+owner: elastic
+developers:
+- peter.simkins@elastic.co
 show_timer: true
 skipping_enabled: true
 idle_timeout: 600
@@ -37,6 +37,9 @@ lab_config:
   loadingMessages: true
   theme:
     name: modern-dark
+  override_challenge_layout: false
+  hideStopButton: false
   default_layout: AssignmentRight
   default_layout_sidebar_size: 35
-  override_challenge_layout: false
+checksum: "5522430126336774006"
+enhanced_loading: false

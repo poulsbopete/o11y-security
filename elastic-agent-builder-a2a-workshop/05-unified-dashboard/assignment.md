@@ -1,25 +1,31 @@
 ---
 slug: unified-dashboard
+id: oyl2nze7v9ih
 type: challenge
-title: "Visualize & Respond: Build the Unified Dashboard"
+title: 'Visualize & Respond: Build the Unified Dashboard'
 teaser: Tell the joint Security + Observability story inside Kibana.
 tabs:
-  - title: Serverless Observability
-    type: service
-    hostname: workstation
-    port: 8080
-    protocol: http
-    new_window: true
-  - title: Serverless Security
-    type: service
-    hostname: workstation
-    port: 8081
-    protocol: http
-    new_window: true
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-    workdir: /root/elastic-workshop
+- id: xkmdm03gkoym
+  title: Serverless Observability
+  type: service
+  hostname: workstation
+  port: 8080
+  protocol: http
+  new_window: true
+- id: snjno0obkixv
+  title: Serverless Security
+  type: service
+  hostname: workstation
+  port: 8081
+  protocol: http
+  new_window: true
+- id: mlklpsyik2qm
+  title: Terminal
+  type: terminal
+  hostname: workstation
+  workdir: /root/elastic-workshop
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Visualize & Respond: Build the Unified Dashboard

@@ -1,25 +1,32 @@
 ---
 slug: build-observability-agent
+id: qfpusbhx8ar4
 type: challenge
-title: "Build Your Observability Agent (Context Provider)"
-teaser: Stand up an Observability-side agent that answers host + window questions over HTTP.
+title: Build Your Observability Agent (Context Provider)
+teaser: Stand up an Observability-side agent that answers host + window questions
+  over HTTP.
 tabs:
-  - title: Serverless Observability
-    type: service
-    hostname: workstation
-    port: 8080
-    protocol: http
-    new_window: true
-  - title: Serverless Security
-    type: service
-    hostname: workstation
-    port: 8081
-    protocol: http
-    new_window: true
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-    workdir: /root/elastic-workshop
+- id: a3zc6xgickaq
+  title: Serverless Observability
+  type: service
+  hostname: workstation
+  port: 8080
+  protocol: http
+  new_window: true
+- id: uezih5r8qhwz
+  title: Serverless Security
+  type: service
+  hostname: workstation
+  port: 8081
+  protocol: http
+  new_window: true
+- id: xcsvtzdddzna
+  title: Terminal
+  type: terminal
+  hostname: workstation
+  workdir: /root/elastic-workshop
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Build Your Observability Agent (Context Provider)

@@ -1,25 +1,31 @@
 ---
 slug: response-agent-optional
+id: 64rvhhirakis
 type: challenge
-title: "Challenge: Build a Response Agent (Optional)"
+title: 'Challenge: Build a Response Agent (Optional)'
 teaser: Close the loop with Slack, automation, or forensics storytelling.
 tabs:
-  - title: Serverless Observability
-    type: service
-    hostname: workstation
-    port: 8080
-    protocol: http
-    new_window: true
-  - title: Serverless Security
-    type: service
-    hostname: workstation
-    port: 8081
-    protocol: http
-    new_window: true
-  - title: Terminal
-    type: terminal
-    hostname: workstation
-    workdir: /root/elastic-workshop
+- id: juymjqvmxmyt
+  title: Serverless Observability
+  type: service
+  hostname: workstation
+  port: 8080
+  protocol: http
+  new_window: true
+- id: pmo9kmxhajqr
+  title: Serverless Security
+  type: service
+  hostname: workstation
+  port: 8081
+  protocol: http
+  new_window: true
+- id: e7k8ayj2jti0
+  title: Terminal
+  type: terminal
+  hostname: workstation
+  workdir: /root/elastic-workshop
+difficulty: ""
+enhanced_loading: null
 ---
 
 # Challenge: Build a Response Agent (Optional)
