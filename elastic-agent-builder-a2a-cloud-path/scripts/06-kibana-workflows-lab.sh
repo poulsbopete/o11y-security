@@ -32,14 +32,6 @@ YAML_DIR="$ROOT/kibana-workflows/yaml"
 
 load_dotenv "$ROOT/.env"
 
-WS_ENV="$ROOT/state/workshop.env"
-if [ -f "$WS_ENV" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "$WS_ENV"
-  set +a
-fi
-
 if [ "${A2A_SKIP_KIBANA_WORKFLOWS:-0}" = "1" ]; then
   echo "Skipping Kibana Workflows (A2A_SKIP_KIBANA_WORKFLOWS=1)."
   exit 0
@@ -51,6 +43,37 @@ if [ ! -f "$BOOT" ]; then
 fi
 
 export A2A_BOOTSTRAP_JSON="$BOOT"
+
+# Older workshop.env files (before 02 wrote converse URLs): append lab-derived endpoints.
+patch_workshop_a2a_endpoints() {
+  local ws="$ROOT/state/workshop.env"
+  [ -f "$ws" ] || return 0
+  local o11y_kb sec_kb o11y_line sec_line
+  o11y_kb="$(jq -r '.observability.endpoints.kibana // empty' "$BOOT")"
+  sec_kb="$(jq -r '.security.endpoints.kibana // empty' "$BOOT")"
+  if [ -z "$o11y_kb" ] || [ -z "$sec_kb" ]; then
+    return 0
+  fi
+  o11y_line="O11Y_AGENT_ENDPOINT=${o11y_kb%/}/api/agent_builder/converse"
+  sec_line="SECURITY_AGENT_ENDPOINT=${sec_kb%/}/api/agent_builder/converse"
+  if ! grep -q '^O11Y_AGENT_ENDPOINT=' "$ws"; then
+    printf '\n# Appended by scripts/06-kibana-workflows-lab.sh (lab cross-Kibana Agent Builder converse)\n%s\n' "$o11y_line" >>"$ws"
+    echo "  Appended O11Y_AGENT_ENDPOINT to ${ws}"
+  fi
+  if ! grep -q '^SECURITY_AGENT_ENDPOINT=' "$ws"; then
+    printf '\n# Appended by scripts/06-kibana-workflows-lab.sh\n%s\n' "$sec_line" >>"$ws"
+    echo "  Appended SECURITY_AGENT_ENDPOINT to ${ws}"
+  fi
+}
+patch_workshop_a2a_endpoints
+
+WS_ENV="$ROOT/state/workshop.env"
+if [ -f "$WS_ENV" ]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$WS_ENV"
+  set +a
+fi
 
 require_cmds "$CURL" jq python3
 
@@ -247,4 +270,4 @@ echo "  • Or in each Kibana: **Stack Management → Rules** → rule → **Act
 echo "  • The separate **… alert to Case** workflows are optional (case-only); do **not** attach them on the same rule as the log/audit workflow."
 echo "  • **Scheduled inject** (default **15m**) pushes workshop docs automatically; **manual inject** workflows run only when you click **Run** in **Workflows**."
 echo "  • To stop all background injectors: **A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS=1** (keep manual), or disable the scheduled workflow in Kibana."
-echo "  • **A2A HTTP steps:** by default **06** targets **/api/agent_builder/converse** on the other project’s Kibana (Basic auth from bootstrap). Override with **O11Y_AGENT_ENDPOINT** / **SECURITY_AGENT_ENDPOINT** + API keys in **workshop.env** for published/custom URLs."
+echo "  • **A2A URLs:** **02** writes **O11Y_AGENT_ENDPOINT** / **SECURITY_AGENT_ENDPOINT** (converse URLs from bootstrap). **06** appends them if your **workshop.env** predates that. Non-converse overrides use **ApiKey** auth from the same file."

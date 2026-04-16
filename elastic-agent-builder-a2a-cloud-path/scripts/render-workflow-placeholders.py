@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
 """Substitute A2A placeholders in workflow YAML before POST/PUT to Kibana.
 
-Env (from 06 after sourcing workshop.env):
-  A2A_BOOTSTRAP_JSON — absolute path to state/bootstrap.json (set by 06)
+Env:
+  A2A_BOOTSTRAP_JSON — path to state/bootstrap.json (required for converse defaults and Basic auth)
 
-Optional overrides in workshop.env:
-  O11Y_AGENT_ENDPOINT — if set, Security workflows POST here with ApiKey O11Y_API_KEY
-  O11Y_API_KEY — used only when O11Y_AGENT_ENDPOINT is set (published / custom URL)
-  SECURITY_AGENT_ENDPOINT — if set, Observability workflows POST here with SECURITY_* API key
-  SECURITY_AGENT_API_KEY or SECURITY_API_KEY — used when SECURITY_AGENT_ENDPOINT is set
+workshop.env (sourced by 06 before this runs) should normally include (written by 02 or appended by 06):
+  O11Y_AGENT_ENDPOINT — default {Observability Kibana}/api/agent_builder/converse
+  SECURITY_AGENT_ENDPOINT — default {Security Kibana}/api/agent_builder/converse
 
-Defaults (when overrides are unset and bootstrap.json is available):
-  Security → Observability: POST {Observability Kibana}/api/agent_builder/converse with Basic auth
-    (project admin from bootstrap). Body uses agent_id a2a-lab-observability-context.
-  Observability → Security: POST {Security Kibana}/api/agent_builder/converse with Basic auth.
-    Body uses agent_id a2a-lab-security-detection.
+Auth rules:
+  * URL path contains /api/agent_builder/converse → Basic auth for that project's Kibana admin (from bootstrap)
+  * Any other URL → ApiKey from O11Y_API_KEY or SECURITY_AGENT_API_KEY / SECURITY_API_KEY
 
-Placeholders in YAML:
-  __WF_O11Y_AGENT_ENDPOINT__, __WF_O11Y_AUTHORIZATION__
-  __WF_SECURITY_AGENT_ENDPOINT__, __WF_SECURITY_AUTHORIZATION__
+Placeholders: __WF_O11Y_AGENT_ENDPOINT__, __WF_O11Y_AUTHORIZATION__, __WF_SECURITY_*__
 """
 from __future__ import annotations
 
@@ -41,6 +35,52 @@ def basic_token(user: str, password: str) -> str:
     return base64.b64encode(raw).decode("ascii")
 
 
+def is_converse_url(url: str) -> bool:
+    return "/api/agent_builder/converse" in url
+
+
+def o11y_pair(boot: dict | None, explicit: str, api_key: str) -> tuple[str, str]:
+    if explicit:
+        url = explicit
+        if is_converse_url(url):
+            if not boot:
+                raise ValueError("O11Y_AGENT_ENDPOINT is converse URL but A2A_BOOTSTRAP_JSON bootstrap is missing")
+            u = boot["observability"]["credentials"]["username"]
+            p = boot["observability"]["credentials"]["password"]
+            auth = f"Basic {basic_token(u, p)}"
+        else:
+            auth = f"ApiKey {api_key}" if api_key else ""
+        return url, auth
+    if boot:
+        kb = boot["observability"]["endpoints"]["kibana"].rstrip("/")
+        url = f"{kb}/api/agent_builder/converse"
+        u = boot["observability"]["credentials"]["username"]
+        p = boot["observability"]["credentials"]["password"]
+        return url, f"Basic {basic_token(u, p)}"
+    raise ValueError("Cannot resolve Observability A2A URL (set O11Y_AGENT_ENDPOINT or fix bootstrap.json)")
+
+
+def security_pair(boot: dict | None, explicit: str, api_key: str) -> tuple[str, str]:
+    if explicit:
+        url = explicit
+        if is_converse_url(url):
+            if not boot:
+                raise ValueError("SECURITY_AGENT_ENDPOINT is converse URL but bootstrap is missing")
+            u = boot["security"]["credentials"]["username"]
+            p = boot["security"]["credentials"]["password"]
+            auth = f"Basic {basic_token(u, p)}"
+        else:
+            auth = f"ApiKey {api_key}" if api_key else ""
+        return url, auth
+    if boot:
+        kb = boot["security"]["endpoints"]["kibana"].rstrip("/")
+        url = f"{kb}/api/agent_builder/converse"
+        u = boot["security"]["credentials"]["username"]
+        p = boot["security"]["credentials"]["password"]
+        return url, f"Basic {basic_token(u, p)}"
+    raise ValueError("Cannot resolve Security A2A URL (set SECURITY_AGENT_ENDPOINT or fix bootstrap.json)")
+
+
 def main() -> int:
     if len(sys.argv) != 3:
         print("usage: render-workflow-placeholders.py <src.yaml> <dst.yaml>", file=sys.stderr)
@@ -51,45 +91,39 @@ def main() -> int:
 
     boot = read_bootstrap()
 
-    o11y_explicit = os.environ.get("O11Y_AGENT_ENDPOINT", "").strip()
-    o11y_key = os.environ.get("O11Y_API_KEY", "").strip()
-    if o11y_explicit:
-        o11y_url = o11y_explicit
-        o11y_auth = f"ApiKey {o11y_key}" if o11y_key else ""
-    elif boot:
-        kb = boot["observability"]["endpoints"]["kibana"].rstrip("/")
-        o11y_url = f"{kb}/api/agent_builder/converse"
-        u = boot["observability"]["credentials"]["username"]
-        p = boot["observability"]["credentials"]["password"]
-        o11y_auth = f"Basic {basic_token(u, p)}"
-    else:
-        o11y_url = "https://a2a-placeholder.invalid/missing-bootstrap-for-O11y-converse"
-        o11y_auth = ""
+    try:
+        o11y_url, o11y_auth = o11y_pair(
+            boot,
+            os.environ.get("O11Y_AGENT_ENDPOINT", "").strip(),
+            os.environ.get("O11Y_API_KEY", "").strip(),
+        )
+        sec_key = (
+            os.environ.get("SECURITY_AGENT_API_KEY", "").strip()
+            or os.environ.get("SECURITY_API_KEY", "").strip()
+        )
+        sec_url, sec_auth = security_pair(
+            boot,
+            os.environ.get("SECURITY_AGENT_ENDPOINT", "").strip(),
+            sec_key,
+        )
+    except ValueError as e:
+        print(f"render-workflow-placeholders: {e}", file=sys.stderr)
+        return 1
 
-    sec_explicit = os.environ.get("SECURITY_AGENT_ENDPOINT", "").strip()
-    sec_key = (
-        os.environ.get("SECURITY_AGENT_API_KEY", "").strip()
-        or os.environ.get("SECURITY_API_KEY", "").strip()
-    )
-    if sec_explicit:
-        sec_url = sec_explicit
-        sec_auth = f"ApiKey {sec_key}" if sec_key else ""
-    elif boot:
-        kb = boot["security"]["endpoints"]["kibana"].rstrip("/")
-        sec_url = f"{kb}/api/agent_builder/converse"
-        u = boot["security"]["credentials"]["username"]
-        p = boot["security"]["credentials"]["password"]
-        sec_auth = f"Basic {basic_token(u, p)}"
-    else:
-        sec_url = "https://a2a-placeholder.invalid/missing-bootstrap-for-Security-converse"
-        sec_auth = ""
+    if not o11y_auth:
+        print("render-workflow-placeholders: empty O11y Authorization (set O11Y_API_KEY for non-converse URLs)", file=sys.stderr)
+        return 1
+    if not sec_auth:
+        print(
+            "render-workflow-placeholders: empty Security Authorization (set SECURITY_API_KEY for non-converse URLs)",
+            file=sys.stderr,
+        )
+        return 1
 
     text = text.replace("__WF_O11Y_AGENT_ENDPOINT__", o11y_url)
     text = text.replace("__WF_O11Y_AUTHORIZATION__", o11y_auth)
     text = text.replace("__WF_SECURITY_AGENT_ENDPOINT__", sec_url)
     text = text.replace("__WF_SECURITY_AUTHORIZATION__", sec_auth)
-
-    # Legacy placeholder from earlier revisions (no-op if absent)
     text = text.replace("__WF_O11Y_API_KEY__", "")
     text = text.replace("__WF_SECURITY_AGENT_API_KEY__", "")
 
