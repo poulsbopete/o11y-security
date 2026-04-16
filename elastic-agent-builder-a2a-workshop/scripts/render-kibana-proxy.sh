@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Write nginx reverse-proxy listeners on 8080 (Observability Kibana) and 8081 (Security Kibana)
-# so one workstation host backs two Instruqt service tabs. Run with sudo after .env is filled.
+# so the es3-api lab host backs two Instruqt service tabs. Run with sudo after .env is filled.
 
 set -euo pipefail
 

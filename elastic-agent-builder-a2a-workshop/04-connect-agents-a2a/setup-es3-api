@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Resolve track root: Instruqt copies lifecycle scripts to /tmp; see track_scripts/setup-workstation.
+# Resolve track root: Instruqt copies lifecycle scripts to /tmp; see track_scripts/setup-es3-api.
 TRACK_ROOT=""
 if [ -f /root/elastic-workshop/.instruqt-track-root ]; then
   TRACK_ROOT="$(head -1 /root/elastic-workshop/.instruqt-track-root | tr -d '\r\n')"

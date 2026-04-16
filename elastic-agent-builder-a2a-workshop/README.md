@@ -2,7 +2,7 @@
 
 This directory is the **source tree** for the **Instruqt** workshop *Agent Builder A2A: Serverless Observability + Security Communication*. It contains `track.yml` (**track slug:** `elastic-a2a-serverless-agent-builder`), challenges **`01-`…`06-`**, index templates, sample data, scripts, and **agent scaffolds** used in assignments.
 
-**Lab UI:** each challenge exposes **Serverless Observability** and **Serverless Security** [service tabs](https://docs.instruqt.com/tracks/challenges/challenge-tabs) on the single **workstation** container. Nginx listens on **8080** / **8081** and reverse-proxies to the Kibana URLs in `.env`; after editing `.env`, run `sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh` (challenge **01** explains the flow). Ports **8080** and **8081** are declared in `config.yml` for Instruqt’s web proxy. Service tabs use the same shape as **[elastic-autonomous-observability](https://play.instruqt.com/manage/elastic/tracks/elastic-autonomous-observability)**: a **Dashboards** `path` plus **`custom_request_headers`** and **`custom_response_headers`** (each with `Content-Security-Policy` and the multiline `''` quoting Instruqt expects—**not** `custom_headers`, which the UI does not surface). **`scripts/render-kibana-proxy.sh`** mirrors that CSP on nginx (and strips upstream `Content-Security-Policy` / `X-Frame-Options`) so the lab stays usable if tab metadata is edited only in the UI.
+**Lab UI:** each challenge exposes **Serverless Observability** and **Serverless Security** [service tabs](https://docs.instruqt.com/tracks/challenges/challenge-tabs) on the **`es3-api`** sandbox host (same **`elastic/es3-api-v2`** virtual machine image as **[elastic-autonomous-observability](https://play.instruqt.com/manage/elastic/tracks/elastic-autonomous-observability)**). Nginx listens on **8080** / **8081** and reverse-proxies to the Kibana URLs in `.env`; after editing `.env`, run `sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh` (challenge **01** explains the flow). Egress for the browser proxy is covered by **`allow_external_ingress`** on the VM in [`config.yml`](./config.yml). Service tabs use the same shape as autonomous observability: a **Dashboards** `path` plus **`custom_request_headers`** and **`custom_response_headers`** (each with `Content-Security-Policy` and the multiline `''` quoting Instruqt expects—**not** `custom_headers`, which the UI does not surface). **`scripts/render-kibana-proxy.sh`** mirrors that CSP on nginx (and strips upstream `Content-Security-Policy` / `X-Frame-Options`) so the lab stays usable if tab metadata is edited only in the UI.
 
 **Team secrets:** sandbox bindings to team-level secrets must appear under `secrets:` in [`config.yml`](./config.yml) (names only; values stay in **Settings → Secrets** on Instruqt). This repo lists **`LLM_PROXY_PROD`** and **`ESS_CLOUD_API_KEY`** so a plain `instruqt track push` does not drop them—see [Add secrets to tracks](https://docs.instruqt.com/sandboxes/runtime/secrets). Lifecycle scripts receive each as an environment variable of the same name.
 
@@ -17,7 +17,7 @@ To **demo or facilitate** the track (screen layout, challenge highlights, option
 1. **Install the Instruqt CLI** and authenticate per [Instruqt documentation](https://docs.instruqt.com/).
 2. **Push the track** from this directory (or your fork): `instruqt track push` (or your org’s equivalent) so learners get the latest challenges.
 3. **Run the track** in a sandbox or workshop event. Learners use the **Terminal** tab and **Assignment** tab per challenge.
-4. **Follow challenges in order** — each folder has `assignment.md`, `setup-workstation`, `check-workstation`, and usually `solve-workstation`:
+4. **Follow challenges in order** — each folder has `assignment.md`, `setup-es3-api`, `check-es3-api`, and usually `solve-es3-api`:
 
    | # | Challenge | What you exercise |
    | - | --------- | ------------------- |
@@ -28,10 +28,10 @@ To **demo or facilitate** the track (screen layout, challenge highlights, option
    | 05 | [`05-unified-dashboard`](./05-unified-dashboard/assignment.md) | ES|QL / dashboard correlation (optional depth) |
    | 06 | [`06-response-agent-optional`](./06-response-agent-optional/assignment.md) | Optional response automation |
 
-5. **Click Check** after each challenge when the assignment says to — `check-workstation` validates the lab state.
-6. **Stuck?** Use **Show solution** only if the event policy allows it; compare with `solve-workstation` scripts.
+5. **Click Check** after each challenge when the assignment says to — `check-es3-api` validates the lab state.
+6. **Stuck?** Use **Show solution** only if the event policy allows it; compare with `solve-es3-api` scripts.
 
-**Instruqt note:** challenge `setup-*` / `solve-*` scripts are copied to `/tmp` at runtime. This track writes the real track path to **`/root/elastic-workshop/.instruqt-track-root`** during **`track_scripts/setup-workstation`**, then each challenge script reads it (with a **`find … track.yml`** fallback) before sourcing **`scripts/workshop-common.sh`**. For local debugging without Instruqt, set **`ELASTIC_WORKSHOP_TRACK_ROOT`** to your checkout of this folder.
+**Instruqt note:** challenge `setup-*` / `solve-*` scripts are copied to `/tmp` at runtime. This track writes the real track path to **`/root/elastic-workshop/.instruqt-track-root`** during **`track_scripts/setup-es3-api`**, then each challenge script reads it (with a **`find … track.yml`** fallback) before sourcing **`scripts/workshop-common.sh`**. For local debugging without Instruqt, set **`ELASTIC_WORKSHOP_TRACK_ROOT`** to your checkout of this folder.
 
 **Scaffolds** (copy/paste prompts and shapes for Agent Builder): [`agent-scaffolds/`](./agent-scaffolds/) — includes **[`alert-to-case-with-dual-project-audit.md`](./agent-scaffolds/alert-to-case-with-dual-project-audit.md)** for alert-driven workflows, dual-project audit text, and Security Cases.
 

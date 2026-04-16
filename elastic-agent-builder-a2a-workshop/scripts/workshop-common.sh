@@ -7,7 +7,7 @@ workshop_root() {
 
 # Pass "${BASH_SOURCE[0]}" from the calling setup/check/solve script.
 # Instruqt runs challenge lifecycle scripts from a copy under /tmp (BASH_SOURCE is not inside the
-# track tree). track_scripts/setup-workstation writes /root/elastic-workshop/.instruqt-track-root;
+# track tree). track_scripts/setup-es3-api writes /root/elastic-workshop/.instruqt-track-root;
 # otherwise fall back to $PWD, script-relative path, or a shallow find for this track's slug.
 track_root_from_challenge_script() {
   local origin="$1"

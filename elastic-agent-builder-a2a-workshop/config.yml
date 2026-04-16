@@ -1,13 +1,23 @@
 version: "3"
 # Team secrets (values live in Instruqt Settings → Secrets). Listing them here keeps
 # `instruqt track push` from dropping sandbox secret bindings — see runtime secrets docs.
+#
+# Host matches elastic-autonomous-observability: virtual machine `es3-api` on image
+# `elastic/es3-api-v2` (not a generic Docker container — Instruqt resolves this image for VMs only).
+virtualmachines:
+  - name: es3-api
+    image: elastic/es3-api-v2
+    shell: /bin/bash
+    environment:
+      PRODUCT_TIER: complete
+      PROJECT_TYPE: observability
+      REGIONS: aws-us-east-1
+    memory: 12288
+    cpus: 4
+    allow_external_ingress:
+      - http
+      - https
+      - high-ports
 secrets:
   - name: LLM_PROXY_PROD
   - name: ESS_CLOUD_API_KEY
-containers:
-  - name: workstation
-    image: ubuntu:22.04
-    shell: bash
-    memory: 1024
-    cpus: 1
-    ports: [8080, 8081]

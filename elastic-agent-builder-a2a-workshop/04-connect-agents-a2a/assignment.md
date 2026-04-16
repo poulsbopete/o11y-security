@@ -8,7 +8,7 @@ tabs:
 - id: u8eqzyzaz22t
   title: Serverless Observability
   type: service
-  hostname: workstation
+  hostname: es3-api
   path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8080
   protocol: http
@@ -25,7 +25,7 @@ tabs:
 - id: 1rt3sxe7gx51
   title: Serverless Security
   type: service
-  hostname: workstation
+  hostname: es3-api
   path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8081
   protocol: http
@@ -42,7 +42,7 @@ tabs:
 - id: ywywmlhstzm7
   title: Terminal
   type: terminal
-  hostname: workstation
+  hostname: es3-api
   workdir: /root/elastic-workshop
 difficulty: ""
 enhanced_loading: null

@@ -9,7 +9,7 @@ tabs:
 - id: a3zc6xgickaq
   title: Serverless Observability
   type: service
-  hostname: workstation
+  hostname: es3-api
   path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8080
   protocol: http
@@ -26,7 +26,7 @@ tabs:
 - id: uezih5r8qhwz
   title: Serverless Security
   type: service
-  hostname: workstation
+  hostname: es3-api
   path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8081
   protocol: http
@@ -43,7 +43,7 @@ tabs:
 - id: xcsvtzdddzna
   title: Terminal
   type: terminal
-  hostname: workstation
+  hostname: es3-api
   workdir: /root/elastic-workshop
 difficulty: ""
 enhanced_loading: null
@@ -55,7 +55,7 @@ This agent is the **eyes**: it pulls platform context without duplicating Securi
 
 ## Steps
 
-1. Open **Agent Builder** from the **Serverless Observability** tab (port **8080** on the lab workstation proxy).
+1. Open **Agent Builder** from the **Serverless Observability** tab (port **8080** on the lab nginx proxy).
 2. Implement the contract described in `/root/elastic-workshop/agent-scaffolds/observability-context-agent.md`.
 3. Expose an HTTPS endpoint your Security project can reach (public Agent Builder URL, reverse proxy, or approved integration pattern your team supports).
 4. Add `O11Y_AGENT_ENDPOINT` to `/root/elastic-workshop/.env` (include path through `/query` if that is how you modeled the route).

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="/root/elastic-workshop"
-# Resolve track root: Instruqt copies lifecycle scripts to /tmp; see track_scripts/setup-workstation.
+# Resolve track root: Instruqt copies lifecycle scripts to /tmp; see track_scripts/setup-es3-api.
 TRACK_ROOT=""
 if [ -f /root/elastic-workshop/.instruqt-track-root ]; then
   TRACK_ROOT="$(head -1 /root/elastic-workshop/.instruqt-track-root | tr -d '\r\n')"
@@ -32,7 +32,7 @@ set +a
 
 bash "$ROOT/scripts/apply-index-templates.sh" || true
 
-curl -sS -X POST "${SECURITY_ES_URL}/.elastic-agents-security-detections/_doc?refresh=wait_for" \
+curl -sS -X POST "${SECURITY_ES_URL}/.elastic-agents-security-a2a-enriched/_doc?refresh=wait_for" \
   -H "Authorization: ApiKey ${SECURITY_API_KEY}" \
   -H 'Content-Type: application/json' \
-  --data-binary @"$ROOT/sample-data/security-detection-example.json" >/dev/null
+  --data-binary @"$ROOT/sample-data/security-enriched-example.json" >/dev/null
