@@ -7,19 +7,47 @@ done
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-apt-get install -y --no-install-recommends curl ca-certificates jq python3
+apt-get install -y --no-install-recommends curl ca-certificates jq python3 nginx
 
 mkdir -p /root/elastic-workshop/{assets,agent-scaffolds,scripts,sample-data,indices}
+
+rm -f /etc/nginx/sites-enabled/default
+cat >/etc/nginx/sites-available/elastic-lab-kibana-proxy.conf <<'STUB'
+# Placeholder until learners run scripts/render-kibana-proxy.sh with Kibana URLs in .env
+server {
+    listen 8080 default_server;
+    listen [::]:8080 default_server;
+    server_name _;
+    default_type text/plain;
+    return 503 "Set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in /root/elastic-workshop/.env, then: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh\n";
+}
+server {
+    listen 8081 default_server;
+    listen [::]:8081 default_server;
+    server_name _;
+    default_type text/plain;
+    return 503 "Set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in /root/elastic-workshop/.env, then: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh\n";
+}
+STUB
+ln -sf /etc/nginx/sites-available/elastic-lab-kibana-proxy.conf /etc/nginx/sites-enabled/elastic-lab-kibana-proxy.conf
+nginx -t
+if pgrep -x nginx >/dev/null 2>&1; then
+  nginx -s reload
+else
+  nginx
+fi
 
 # Optional: pre-seed .env when Instruqt/org secrets are injected as host env vars (organizer-only).
 if [ -n "${O11Y_ES_URL:-}" ] && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_ES_URL:-}" ] && [ -n "${SECURITY_API_KEY:-}" ]; then
   umask 077
-  cat >/root/elastic-workshop/.env <<EOF
-O11Y_ES_URL=${O11Y_ES_URL}
-O11Y_API_KEY=${O11Y_API_KEY}
-SECURITY_ES_URL=${SECURITY_ES_URL}
-SECURITY_API_KEY=${SECURITY_API_KEY}
-EOF
+  {
+    echo "O11Y_ES_URL=${O11Y_ES_URL}"
+    echo "O11Y_API_KEY=${O11Y_API_KEY}"
+    echo "SECURITY_ES_URL=${SECURITY_ES_URL}"
+    echo "SECURITY_API_KEY=${SECURITY_API_KEY}"
+    [ -n "${O11Y_KIBANA_URL:-}" ] && echo "O11Y_KIBANA_URL=${O11Y_KIBANA_URL}"
+    [ -n "${SECURITY_KIBANA_URL:-}" ] && echo "SECURITY_KIBANA_URL=${SECURITY_KIBANA_URL}"
+  } >/root/elastic-workshop/.env
 fi
 
 touch /root/elastic-workshop/.workshop-bootstrap-complete

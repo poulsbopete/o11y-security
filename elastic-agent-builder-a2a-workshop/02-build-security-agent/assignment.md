@@ -4,6 +4,18 @@ type: challenge
 title: "Build Your First Security Agent"
 teaser: Author a detection agent that emits standardized events to a dedicated index.
 tabs:
+  - title: Serverless Observability
+    type: service
+    hostname: workstation
+    port: 8080
+    protocol: http
+    new_window: true
+  - title: Serverless Security
+    type: service
+    hostname: workstation
+    port: 8081
+    protocol: http
+    new_window: true
   - title: Terminal
     type: terminal
     hostname: workstation
@@ -16,7 +28,7 @@ This agent is the **brain**: it turns noisy endpoint activity into a crisp secur
 
 ## Steps
 
-1. Open **Kibana → Agent Builder** in the **Serverless Security** project.
+1. Open **Kibana → Agent Builder** from the **Serverless Security** tab (same reverse-proxy host as Observability; port **8081**).
 2. Create a **detection** style agent that:
    - Listens for endpoint-style authentication failures (`workshop-synth-endpoint-alerts` in the lab, or Fleet indices in the field).
    - Flags **high risk** when `failure_count > 5` in **1 minute** for a single `host.name`.

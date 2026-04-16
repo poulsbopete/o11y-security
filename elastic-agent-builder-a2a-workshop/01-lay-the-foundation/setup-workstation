@@ -8,3 +8,15 @@ source "$TRACK_ROOT/scripts/workshop-common.sh"
 sync_track_assets "${BASH_SOURCE[0]}"
 mkdir -p "$(workshop_root)/artifacts"
 cp -f "$TRACK_ROOT/assets/env.template" "$(workshop_root)/env.template"
+
+ENV_FILE="$(workshop_root)/.env"
+if [ -f "$ENV_FILE" ]; then
+  # shellcheck disable=SC1090
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+  if [ -n "${O11Y_KIBANA_URL:-}" ] && [ -n "${SECURITY_KIBANA_URL:-}" ]; then
+    bash "$(workshop_root)/scripts/render-kibana-proxy.sh" "$ENV_FILE"
+  fi
+fi

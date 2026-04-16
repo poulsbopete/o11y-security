@@ -57,7 +57,7 @@ This repository’s **Agent Builder A2A** lab is one concrete pattern on that pa
 
 | Path | What it is |
 | ---- | ----------- |
-| [`elastic-agent-builder-a2a-workshop/`](elastic-agent-builder-a2a-workshop/) | **Instruqt** track: `track.yml`, `config.yml`, challenges (`01-`…`06-`), index templates, sample NDJSON/JSON, lifecycle scripts (`setup-workstation`, `check-workstation`, `solve-workstation`), agent scaffolds. **How to run and exercise the track:** [`elastic-agent-builder-a2a-workshop/README.md`](elastic-agent-builder-a2a-workshop/README.md). |
+| [`elastic-agent-builder-a2a-workshop/`](elastic-agent-builder-a2a-workshop/) | **Instruqt** track (`elastic-a2a-serverless-agent-builder`): `track.yml`, `config.yml`, dual **Serverless** Kibana tabs via one **workstation** nginx proxy (ports 8080/8081), challenges (`01-`…`06-`), index templates, sample NDJSON/JSON, lifecycle scripts, agent scaffolds. **How to run:** [`elastic-agent-builder-a2a-workshop/README.md`](elastic-agent-builder-a2a-workshop/README.md). |
 | [`elastic-agent-builder-a2a-cloud-path/`](elastic-agent-builder-a2a-cloud-path/) | **Cloud path** (no Instruqt): **[elastic/agent-skills](https://github.com/elastic/agent-skills)** is the recommended prerequisite; use **`SKILLS-FIRST-WORKFLOW.md`** for provisioning + keys + Agent Builder via skills. Bash `scripts/` remain for CI/headless. See **`README.md`** (includes **Exercise the setup** for Skills + bash paths), **`AGENT_BUILDER.md`**. |
 | [`docs/`](docs/) | Short **GitHub Pages** slide deck (`index.html`) for the value prop; optional marketing aid, not the main lab. |
 | [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/) | **GitHub issue templates** — open **Security-side**, **Observability-side**, or **cross-domain A2A** issues so backlog stays split by persona (e.g. lateral movement / code-execution scenarios vs. SLO or service-impact work). |
@@ -70,7 +70,7 @@ This repository’s **Agent Builder A2A** lab is one concrete pattern on that pa
 2. Learners get a **workstation** container plus instructions to create **two** Elastic Cloud projects (or you pre-seed credentials via Instruqt secrets and track scripts).
 3. Challenges walk Kibana Agent Builder steps, A2A wiring, and a correlation dashboard.
 
-Start at: [`elastic-agent-builder-a2a-workshop/track.yml`](elastic-agent-builder-a2a-workshop/track.yml).
+Start at: [`elastic-agent-builder-a2a-workshop/track.yml`](elastic-agent-builder-a2a-workshop/track.yml) (Instruqt slug **`elastic-a2a-serverless-agent-builder`** — push as a **new** track in your org when you are ready).
 
 ### B) Elastic Cloud + Agent Skills (outside Instruqt)
 
@@ -105,7 +105,7 @@ A **6-slide** value deck lives in [`docs/index.html`](docs/index.html), with an 
 
 **https://poulsbopete.github.io/o11y-security/**
 
-**AE enablement:** copy-ready **AI prompts** for seller coaching (personas, discovery, objections) live under [`docs/prompts/`](docs/prompts/) and are linked from slides 3–4 and the footer.
+**AE enablement:** copy-ready **AI prompts** for seller coaching (personas, discovery, objections) live under [`docs/prompts/`](docs/prompts/) and are linked from slides 3–5 and the footer. Slide 4 text tracks the **`elastic-agent-builder-a2a-cloud-path`** lab (bidirectional alert workflows, scheduled inject off by default, ~60s HTTP caveat).
 
 Setup notes: [`docs/README.md`](docs/README.md).
 

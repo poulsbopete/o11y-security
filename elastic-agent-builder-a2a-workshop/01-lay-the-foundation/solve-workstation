@@ -12,12 +12,18 @@ sync_track_assets "${BASH_SOURCE[0]}"
 cp -f "$TRACK_ROOT/assets/env.template" "$ROOT/env.template"
 
 if [ -n "${O11Y_ES_URL:-}" ] && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_ES_URL:-}" ] && [ -n "${SECURITY_API_KEY:-}" ]; then
-  cat >"$ROOT/.env" <<EOF
-O11Y_ES_URL=${O11Y_ES_URL}
-O11Y_API_KEY=${O11Y_API_KEY}
-SECURITY_ES_URL=${SECURITY_ES_URL}
-SECURITY_API_KEY=${SECURITY_API_KEY}
-EOF
+  umask 077
+  {
+    echo "O11Y_ES_URL=${O11Y_ES_URL}"
+    echo "O11Y_API_KEY=${O11Y_API_KEY}"
+    echo "SECURITY_ES_URL=${SECURITY_ES_URL}"
+    echo "SECURITY_API_KEY=${SECURITY_API_KEY}"
+    [ -n "${O11Y_KIBANA_URL:-}" ] && echo "O11Y_KIBANA_URL=${O11Y_KIBANA_URL}"
+    [ -n "${SECURITY_KIBANA_URL:-}" ] && echo "SECURITY_KIBANA_URL=${SECURITY_KIBANA_URL}"
+  } >"$ROOT/.env"
+  if [ -n "${O11Y_KIBANA_URL:-}" ] && [ -n "${SECURITY_KIBANA_URL:-}" ]; then
+    bash "$ROOT/scripts/render-kibana-proxy.sh" "$ROOT/.env" || true
+  fi
   bash "$ROOT/scripts/apply-index-templates.sh" || true
   bash "$ROOT/scripts/load-sample-bulk.sh" || true
 fi

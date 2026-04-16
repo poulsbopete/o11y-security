@@ -5,3 +5,4 @@ containers:
     shell: bash
     memory: 1024
     cpus: 1
+    ports: [8080, 8081]

@@ -1,4 +1,4 @@
-slug: elastic-agent-builder-a2a-workshop
+slug: elastic-a2a-serverless-agent-builder
 type: track
 title: "Agent Builder A2A: Serverless Observability + Security Communication"
 teaser: Deploy Agent Builder agents across serverless Observability and Security, then wire API-to-API enrichment.

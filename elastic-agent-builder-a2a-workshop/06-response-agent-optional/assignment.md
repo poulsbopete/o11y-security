@@ -4,6 +4,18 @@ type: challenge
 title: "Challenge: Build a Response Agent (Optional)"
 teaser: Close the loop with Slack, automation, or forensics storytelling.
 tabs:
+  - title: Serverless Observability
+    type: service
+    hostname: workstation
+    port: 8080
+    protocol: http
+    new_window: true
+  - title: Serverless Security
+    type: service
+    hostname: workstation
+    port: 8081
+    protocol: http
+    new_window: true
   - title: Terminal
     type: terminal
     hostname: workstation

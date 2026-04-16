@@ -4,6 +4,18 @@ type: challenge
 title: "Visualize & Respond: Build the Unified Dashboard"
 teaser: Tell the joint Security + Observability story inside Kibana.
 tabs:
+  - title: Serverless Observability
+    type: service
+    hostname: workstation
+    port: 8080
+    protocol: http
+    new_window: true
+  - title: Serverless Security
+    type: service
+    hostname: workstation
+    port: 8081
+    protocol: http
+    new_window: true
   - title: Terminal
     type: terminal
     hostname: workstation

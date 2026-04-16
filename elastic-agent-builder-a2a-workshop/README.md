@@ -1,6 +1,8 @@
 # Agent Builder A2A — Workshop (Instruqt track source)
 
-This directory is the **source tree** for the **Instruqt** workshop *Agent Builder A2A: Serverless Observability + Security Communication*. It contains `track.yml`, challenges **`01-`…`06-`**, index templates, sample data, scripts, and **agent scaffolds** used in assignments.
+This directory is the **source tree** for the **Instruqt** workshop *Agent Builder A2A: Serverless Observability + Security Communication*. It contains `track.yml` (**track slug:** `elastic-a2a-serverless-agent-builder`), challenges **`01-`…`06-`**, index templates, sample data, scripts, and **agent scaffolds** used in assignments.
+
+**Lab UI:** each challenge exposes **Serverless Observability** and **Serverless Security** [service tabs](https://docs.instruqt.com/tracks/challenges/challenge-tabs) on the single **workstation** container. Nginx listens on **8080** / **8081** and reverse-proxies to the Kibana URLs in `.env`; after editing `.env`, run `sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh` (challenge **01** explains the flow). Ports **8080** and **8081** are declared in `config.yml` for Instruqt’s web proxy.
 
 **Cloud / Agent Skills path (no Instruqt):** use the sibling folder on GitHub — **[`elastic-agent-builder-a2a-cloud-path`](https://github.com/poulsbopete/o11y-security/tree/main/elastic-agent-builder-a2a-cloud-path)** — and its **[`README.md`](https://github.com/poulsbopete/o11y-security/blob/main/elastic-agent-builder-a2a-cloud-path/README.md)** (includes **Exercise the setup** for both **Path 1 — Skills** and **Path 2 — Bash**).
 
@@ -73,7 +75,7 @@ Use this section to **facilitate or record** a walkthrough. If you provisioned s
 ### Instruqt (facilitator-led)
 
 1. **Before the session** — push the track; confirm sandboxes resolve **two** Kibana URLs and credentials from challenge **01**.
-2. **Screen share** — **Assignment** (left) + **Terminal** (right); keep [`agent-scaffolds/`](./agent-scaffolds/) open in a third tab for copy/paste.
+2. **Screen share** — **Assignment** (left) + **Serverless Observability** / **Serverless Security** / **Terminal**; keep [`agent-scaffolds/`](./agent-scaffolds/) open in your browser for copy/paste.
 3. **Challenge 01** — “Two projects on purpose”; show cluster health and loaded **`workshop-synth-*`** data.
 4. **Challenges 02–03** — Security detection + Observability context agents (Agent Builder UI).
 5. **Challenge 04** — **Demo peak**: HTTP to Observability, merged enriched story; passing **Check** is your “A2A works” moment.

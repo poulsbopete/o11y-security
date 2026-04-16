@@ -14,11 +14,26 @@ set -a
 source "$ENV_FILE"
 set +a
 
-for var in O11Y_ES_URL O11Y_API_KEY SECURITY_ES_URL SECURITY_API_KEY; do
+for var in O11Y_ES_URL O11Y_API_KEY O11Y_KIBANA_URL SECURITY_ES_URL SECURITY_API_KEY SECURITY_KIBANA_URL; do
   if [ -z "${!var:-}" ]; then
     fail-message "Missing ${var} in /root/elastic-workshop/.env"
   fi
 done
+
+proxy_ok() {
+  local port="$1"
+  local name="$2"
+  local code
+  code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 "http://127.0.0.1:${port}/" || echo "000")
+  case "$code" in
+    503|000)
+      fail-message "${name} Kibana proxy (:${port}) is still the lab placeholder (HTTP ${code}). Set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in .env, then run: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh"
+      ;;
+  esac
+}
+
+proxy_ok 8080 "Observability"
+proxy_ok 8081 "Security"
 
 check_health() {
   local url="$1"
