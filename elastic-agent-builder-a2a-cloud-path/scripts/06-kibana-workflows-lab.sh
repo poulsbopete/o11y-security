@@ -12,6 +12,12 @@
 # Skip: A2A_SKIP_KIBANA_WORKFLOWS=1 in .env
 # Skip only the scheduled ingest injectors: A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS=1
 # Skip the on-demand manual synth inject workflows: A2A_SKIP_MANUAL_SYNTH_WORKFLOWS=1
+#
+# Optional overrides (after bootstrap.json is read):
+#   A2A_O11Y_KIBANA_URL / A2A_O11Y_KIBANA_USER / A2A_O11Y_KIBANA_PASSWORD
+#   A2A_SEC_KIBANA_URL  / A2A_SEC_KIBANA_USER  / A2A_SEC_KIBANA_PASSWORD
+# URLs may be the Kibana origin only, or a deep link (…/app/workflows is stripped).
+# Observability workflows only (no Security Kibana required): A2A_WORKFLOWS_OBSERVABILITY_ONLY=1
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -40,6 +46,15 @@ require_cmds "$CURL" jq
 
 umask 077
 mkdir -p "$ROOT/state"
+
+# Kibana API base: strip "/app/…" if someone pastes a Workflows UI URL.
+wf_normalize_kibana_base() {
+  local u="${1%/}"
+  case "$u" in
+    */app|*/app/*) printf '%s' "${u%%/app*}" ;;
+    *) printf '%s' "$u" ;;
+  esac
+}
 
 if [ ! -f "$STATE" ]; then
   echo '{"security":{},"observability":{}}' >"$STATE"
@@ -149,27 +164,43 @@ o11y_kb="$(jq -r '.observability.endpoints.kibana // empty' "$BOOT")"
 o11y_user="$(jq -r '.observability.credentials.username // empty' "$BOOT")"
 o11y_pass="$(jq -r '.observability.credentials.password // empty' "$BOOT")"
 
-if [ -z "$sec_kb" ] || [ -z "$sec_user" ] || [ -z "$sec_pass" ]; then
-  echo "Missing Security Kibana URL or credentials in bootstrap.json." >&2
-  exit 1
+if [ -n "${A2A_SEC_KIBANA_URL:-}" ]; then sec_kb="$A2A_SEC_KIBANA_URL"; fi
+if [ -n "${A2A_SEC_KIBANA_USER:-}" ]; then sec_user="$A2A_SEC_KIBANA_USER"; fi
+if [ -n "${A2A_SEC_KIBANA_PASSWORD:-}" ]; then sec_pass="$A2A_SEC_KIBANA_PASSWORD"; fi
+if [ -n "${A2A_O11Y_KIBANA_URL:-}" ]; then o11y_kb="$A2A_O11Y_KIBANA_URL"; fi
+if [ -n "${A2A_O11Y_KIBANA_USER:-}" ]; then o11y_user="$A2A_O11Y_KIBANA_USER"; fi
+if [ -n "${A2A_O11Y_KIBANA_PASSWORD:-}" ]; then o11y_pass="$A2A_O11Y_KIBANA_PASSWORD"; fi
+
+sec_kb="$(wf_normalize_kibana_base "$sec_kb")"
+o11y_kb="$(wf_normalize_kibana_base "$o11y_kb")"
+
+if [ "${A2A_WORKFLOWS_OBSERVABILITY_ONLY:-0}" != "1" ]; then
+  if [ -z "$sec_kb" ] || [ -z "$sec_user" ] || [ -z "$sec_pass" ]; then
+    echo "Missing Security Kibana URL or credentials (bootstrap.json or A2A_SEC_KIBANA_*)." >&2
+    exit 1
+  fi
 fi
 if [ -z "$o11y_kb" ] || [ -z "$o11y_user" ] || [ -z "$o11y_pass" ]; then
-  echo "Missing Observability Kibana URL or credentials in bootstrap.json." >&2
+  echo "Missing Observability Kibana URL or credentials (bootstrap.json or A2A_O11Y_KIBANA_*)." >&2
   exit 1
 fi
 
-echo "== Kibana Workflows: Security project =="
-wf_upsert security alert_console "$YAML_DIR/security-alert-console.yaml" "$sec_kb" "$sec_user" "$sec_pass"
-wf_upsert security alert_to_case "$YAML_DIR/security-alert-to-case.yaml" "$sec_kb" "$sec_user" "$sec_pass"
-if [ "${A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS:-0}" != "1" ]; then
-  wf_upsert security scheduled_inject "$YAML_DIR/security-scheduled-synth-inject.yaml" "$sec_kb" "$sec_user" "$sec_pass"
+if [ "${A2A_WORKFLOWS_OBSERVABILITY_ONLY:-0}" != "1" ]; then
+  echo "== Kibana Workflows: Security project =="
+  wf_upsert security alert_console "$YAML_DIR/security-alert-console.yaml" "$sec_kb" "$sec_user" "$sec_pass"
+  wf_upsert security alert_to_case "$YAML_DIR/security-alert-to-case.yaml" "$sec_kb" "$sec_user" "$sec_pass"
+  if [ "${A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS:-0}" != "1" ]; then
+    wf_upsert security scheduled_inject "$YAML_DIR/security-scheduled-synth-inject.yaml" "$sec_kb" "$sec_user" "$sec_pass"
+  else
+    echo "Skipping scheduled Security synth inject (A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS=1)."
+  fi
+  if [ "${A2A_SKIP_MANUAL_SYNTH_WORKFLOWS:-0}" != "1" ]; then
+    wf_upsert security synth_inject_manual "$YAML_DIR/security-synth-inject-manual.yaml" "$sec_kb" "$sec_user" "$sec_pass"
+  else
+    echo "Skipping manual Security synth inject (A2A_SKIP_MANUAL_SYNTH_WORKFLOWS=1)."
+  fi
 else
-  echo "Skipping scheduled Security synth inject (A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS=1)."
-fi
-if [ "${A2A_SKIP_MANUAL_SYNTH_WORKFLOWS:-0}" != "1" ]; then
-  wf_upsert security synth_inject_manual "$YAML_DIR/security-synth-inject-manual.yaml" "$sec_kb" "$sec_user" "$sec_pass"
-else
-  echo "Skipping manual Security synth inject (A2A_SKIP_MANUAL_SYNTH_WORKFLOWS=1)."
+  echo "== Kibana Workflows: Security project (skipped, A2A_WORKFLOWS_OBSERVABILITY_ONLY=1) =="
 fi
 
 echo "== Kibana Workflows: Observability project =="
