@@ -209,6 +209,10 @@ fi
 
 if [ "${A2A_WORKFLOWS_OBSERVABILITY_ONLY:-0}" != "1" ]; then
   echo "== Kibana Workflows: Security project =="
+  if [ -z "${O11Y_AGENT_ENDPOINT:-}" ]; then
+    echo "  WARN: O11Y_AGENT_ENDPOINT is unset in state/workshop.env — Security alert workflows keep a placeholder http URL;" >&2
+    echo "        the a2a_call_observability_agent step fails at runtime (ENOTFOUND) until you publish the Observability agent, set the URL, and re-run this script." >&2
+  fi
   wf_upsert security alert_console "$YAML_DIR/security-alert-console.yaml" "$sec_kb" "$sec_user" "$sec_pass"
   wf_upsert security alert_to_case "$YAML_DIR/security-alert-to-case.yaml" "$sec_kb" "$sec_user" "$sec_pass"
   if [ "${A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS:-0}" != "1" ]; then
@@ -226,6 +230,10 @@ else
 fi
 
 echo "== Kibana Workflows: Observability project =="
+if [ -z "${SECURITY_AGENT_ENDPOINT:-}" ]; then
+  echo "  WARN: SECURITY_AGENT_ENDPOINT is unset in state/workshop.env — Observability alert workflows keep a placeholder http URL;" >&2
+  echo "        the a2a_call_security_agent step fails at runtime until you publish the Security agent URL (optional SECURITY_AGENT_API_KEY) and re-run this script." >&2
+fi
 wf_upsert observability alert_console "$YAML_DIR/observability-alert-console.yaml" "$o11y_kb" "$o11y_user" "$o11y_pass"
 wf_upsert observability alert_to_case "$YAML_DIR/observability-alert-to-case.yaml" "$o11y_kb" "$o11y_user" "$o11y_pass"
 if [ "${A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS:-0}" != "1" ]; then
@@ -245,3 +253,4 @@ echo "  • Or in each Kibana: **Stack Management → Rules** → rule → **Act
 echo "  • The separate **… alert to Case** workflows are optional (case-only); do **not** attach them on the same rule as the log/audit workflow."
 echo "  • **Scheduled inject** (default **15m**) pushes workshop docs automatically; **manual inject** workflows run only when you click **Run** in **Workflows**."
 echo "  • To stop all background injectors: **A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS=1** (keep manual), or disable the scheduled workflow in Kibana."
+echo "  • **A2A HTTP steps:** set **O11Y_AGENT_ENDPOINT** (and **O11Y_API_KEY** from 02) plus **SECURITY_AGENT_ENDPOINT** in **state/workshop.env**, then re-run **06** — else alert workflows keep placeholder URLs and the first http step fails with ENOTFOUND."
