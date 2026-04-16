@@ -50,6 +50,13 @@ def parse(raw: str) -> tuple[str, int]:
 
 def server_block(listen: int, host_header: str, proxy_host: str, proxy_port: int) -> str:
     scheme = "https" if proxy_port == 443 else "http"
+    # Same policy string as Instruqt service-tab CSP: Elastic CDN + inline styles for Kibana in iframes.
+    csp = (
+        "script-src 'self' https://kibana.estccdn.com; "
+        "worker-src blob: 'self'; "
+        "style-src 'unsafe-inline' 'self' https://kibana.estccdn.com; "
+        "style-src-elem 'unsafe-inline' 'self' https://kibana.estccdn.com"
+    )
     return f"""
 server {{
     listen {listen} default_server;
@@ -63,6 +70,10 @@ server {{
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header Content-Security-Policy "{csp}";
+        proxy_hide_header Content-Security-Policy;
+        proxy_hide_header X-Frame-Options;
+        add_header Content-Security-Policy "{csp}" always;
         proxy_buffering off;
         proxy_read_timeout 360s;
         proxy_send_timeout 360s;

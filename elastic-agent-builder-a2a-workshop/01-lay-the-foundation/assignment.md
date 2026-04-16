@@ -10,16 +10,26 @@ tabs:
   title: Serverless Observability
   type: service
   hostname: workstation
+  path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8080
   protocol: http
-  new_window: true
+  custom_response_headers:
+  - key: Content-Security-Policy
+    value: 'script-src ''self'' https://kibana.estccdn.com; worker-src blob: ''self'';
+      style-src ''unsafe-inline'' ''self'' https://kibana.estccdn.com; style-src-elem
+      ''unsafe-inline'' ''self'' https://kibana.estccdn.com'
 - id: i2fyz27ttjto
   title: Serverless Security
   type: service
   hostname: workstation
+  path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8081
   protocol: http
-  new_window: true
+  custom_response_headers:
+  - key: Content-Security-Policy
+    value: 'script-src ''self'' https://kibana.estccdn.com; worker-src blob: ''self'';
+      style-src ''unsafe-inline'' ''self'' https://kibana.estccdn.com; style-src-elem
+      ''unsafe-inline'' ''self'' https://kibana.estccdn.com'
 - id: ipwlqlex1ab9
   title: Terminal
   type: terminal
@@ -33,7 +43,7 @@ enhanced_loading: null
 
 In production, Security and Observability often run on separate clusters. This workshop keeps that split while teaching agents to cooperate over HTTPS APIs.
 
-The **Serverless Observability** and **Serverless Security** tabs are both served through the same **workstation** host: nginx listens on **8080** (Observability Kibana) and **8081** (Security Kibana) and reverse-proxies to the real Cloud URLs you put in `.env`. If Kibana blocks embedded frames, each tab opens in a **new browser window** while still using the lab proxy.
+The **Serverless Observability** and **Serverless Security** tabs are both served through the same **workstation** host: nginx listens on **8080** (Observability Kibana) and **8081** (Security Kibana) and reverse-proxies to the real Cloud URLs you put in `.env`. Each tab opens the **Dashboards** list with **Content-Security-Policy** headers on the Instruqt proxy (request + response) so Kibana can load **inside the lab** (including `kibana.estccdn.com`).
 
 ## What you will do
 
@@ -73,4 +83,4 @@ This track mirrors real field architecture: independent control planes, one-way 
 
 ===
 
-When both health calls return `"status": "green"` or `"yellow"`, and the **Serverless** tabs load Kibana (you may need to sign in with the same credentials you use in Cloud), click **Check**.
+When both health calls return `"status": "green"` or `"yellow"`, and the **Serverless** tabs show Kibana **Dashboards** (sign in with the same credentials you use in Elastic Cloud if prompted), click **Check**.
