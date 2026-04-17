@@ -5,11 +5,23 @@ until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
   sleep 1
 done
 
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -y
-apt-get install -y --no-install-recommends curl ca-certificates jq python3 nginx
+# Only apt-install when missing — speeds hot starts and avoids a long "done" window where
+# learners click Start again thinking the lab hung (track setup must finish before play).
+if ! command -v nginx >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1 || ! command -v python3 >/dev/null 2>&1; then
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update -y
+  apt-get install -y --no-install-recommends curl ca-certificates jq python3 nginx
+fi
 
 mkdir -p /root/elastic-workshop/{assets,agent-scaffolds,scripts,sample-data,indices}
+
+_track_yml_ok() {
+  local tf="$1"
+  [ -f "$tf" ] || return 1
+  grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null && return 0
+  grep -qE '^id:[[:space:]]*zq70yyfn826u' "$tf" 2>/dev/null && return 0
+  return 1
+}
 
 # Challenge lifecycle scripts run from /tmp; resolve the mounted track and copy scripts locally.
 TS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
@@ -20,21 +32,33 @@ if [ -f "$TS_DIR/../scripts/instruqt-track-root.inc.bash" ]; then
   TR="$(elastic_workshop_resolve_track_root "${BASH_SOURCE[0]:-$0}")" || TR=""
 fi
 if [ -z "$TR" ] || [ ! -f "$TR/track.yml" ]; then
+  if [ -d /terraform ]; then
+    echo "[elastic-workshop] resolving track under /terraform …"
+    while IFS= read -r tf; do
+      _track_yml_ok "$tf" || continue
+      TR="$(dirname "$tf")"
+      break
+    done < <(find /terraform -maxdepth 40 -type f -name track.yml 2>/dev/null)
+  fi
+fi
+if [ -z "$TR" ] || [ ! -f "$TR/track.yml" ]; then
+  echo "[elastic-workshop] resolving track under common roots …"
   while IFS= read -r tf; do
-    grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null || continue
+    _track_yml_ok "$tf" || continue
     TR="$(dirname "$tf")"
     break
-  done < <(find /opt/instruqt /opt/elastic /opt /var/lib/instruqt /srv /usr/local /home /root /mnt /var/tmp /tmp /usr/share /snap -maxdepth 24 -type f -name track.yml 2>/dev/null)
+  done < <(find /opt/instruqt /opt/elastic /opt /var/lib/instruqt /srv /usr/local /home /root /mnt /var/tmp /tmp /usr/share /snap /workspace /challenges -maxdepth 28 -type f -name track.yml 2>/dev/null)
 fi
 if [ -z "$TR" ] || [ ! -f "$TR/track.yml" ]; then
   while IFS= read -r tf; do
-    grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null || continue
+    _track_yml_ok "$tf" || continue
     TR="$(dirname "$tf")"
     break
-  done < <(find / -maxdepth 10 -type f -name track.yml 2>/dev/null)
+  done < <(find / -maxdepth 22 -type f -name track.yml 2>/dev/null)
 fi
 if [ -z "$TR" ] || [ ! -f "$TR/scripts/workshop-common.sh" ]; then
   echo "FATAL: could not resolve workshop track root (missing track or scripts/)." >&2
+  echo "FATAL: hint: set ELASTIC_WORKSHOP_TRACK_ROOT for debugging; check /terraform for track.yml." >&2
   exit 1
 fi
 printf '%s\n' "$TR" >/root/elastic-workshop/.instruqt-track-root
