@@ -15,11 +15,64 @@ fi
 
 mkdir -p /root/elastic-workshop/{assets,agent-scaffolds,scripts,sample-data,indices}
 
+_SENTINEL='ELASTIC_INSTRUQT_TRACK_SLUG:elastic-a2a-serverless-agent-builder'
+
 _track_yml_ok() {
   local tf="$1"
   [ -f "$tf" ] || return 1
   grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null && return 0
-  grep -qE '^id:[[:space:]]*zq70yyfn826u' "$tf" 2>/dev/null && return 0
+  grep -qE '^id:[[:space:]]*"?zq70yyfn826u"?' "$tf" 2>/dev/null && return 0
+  return 1
+}
+
+_track_yml_find() {
+  find "$@" \( -type f \( -name track.yml -o -name track.yaml \) \) 2>/dev/null
+}
+
+_resolve_via_workshop_common_sentinel() {
+  local wf="" tr="" base=""
+  local roots=(
+    /opt/instruqt
+    /opt/elastic
+    /opt
+    /var/lib/instruqt
+    /var/lib
+    /srv
+    /usr/local
+    /home
+    /root
+    /mnt
+    /media
+    /var/tmp
+    /tmp
+    /usr/share
+    /snap
+    /workspace
+    /challenges
+    /instruqt
+    /run
+  )
+  for base in "${roots[@]}"; do
+    [ -d "$base" ] || continue
+    while IFS= read -r wf; do
+      [ -f "$wf" ] || continue
+      grep -qF "$_SENTINEL" "$wf" 2>/dev/null || continue
+      tr="$(cd "$(dirname "$wf")/.." && pwd)"
+      if [ -f "$tr/scripts/workshop-common.sh" ]; then
+        echo "$tr"
+        return 0
+      fi
+    done < <(find "$base" -maxdepth 48 -type f -name workshop-common.sh 2>/dev/null)
+  done
+  while IFS= read -r wf; do
+    [ -f "$wf" ] || continue
+    grep -qF "$_SENTINEL" "$wf" 2>/dev/null || continue
+    tr="$(cd "$(dirname "$wf")/.." && pwd)"
+    if [ -f "$tr/scripts/workshop-common.sh" ]; then
+      echo "$tr"
+      return 0
+    fi
+  done < <(find / -maxdepth 38 -type f -name workshop-common.sh 2>/dev/null)
   return 1
 }
 
@@ -31,36 +84,58 @@ if [ -f "$TS_DIR/../scripts/instruqt-track-root.inc.bash" ]; then
   source "$TS_DIR/../scripts/instruqt-track-root.inc.bash"
   TR="$(elastic_workshop_resolve_track_root "${BASH_SOURCE[0]:-$0}")" || TR=""
 fi
-if [ -z "$TR" ] || [ ! -f "$TR/track.yml" ]; then
+
+_bundle_ok() {
+  local d="${1:-}"
+  [ -n "$d" ] && [ -f "$d/scripts/workshop-common.sh" ]
+}
+
+if ! _bundle_ok "$TR"; then
   if [ -d /terraform ]; then
     echo "[elastic-workshop] resolving track under /terraform …"
     while IFS= read -r tf; do
       _track_yml_ok "$tf" || continue
-      TR="$(dirname "$tf")"
+      cand="$(dirname "$tf")"
+      _bundle_ok "$cand" || continue
+      TR="$cand"
       break
-    done < <(find /terraform -maxdepth 40 -type f -name track.yml 2>/dev/null)
+    done < <(_track_yml_find /terraform -maxdepth 45)
   fi
 fi
-if [ -z "$TR" ] || [ ! -f "$TR/track.yml" ]; then
+
+if ! _bundle_ok "$TR"; then
   echo "[elastic-workshop] resolving track under common roots …"
   while IFS= read -r tf; do
     _track_yml_ok "$tf" || continue
-    TR="$(dirname "$tf")"
+    cand="$(dirname "$tf")"
+    _bundle_ok "$cand" || continue
+    TR="$cand"
     break
-  done < <(find /opt/instruqt /opt/elastic /opt /var/lib/instruqt /srv /usr/local /home /root /mnt /var/tmp /tmp /usr/share /snap /workspace /challenges -maxdepth 28 -type f -name track.yml 2>/dev/null)
+  done < <(_track_yml_find /opt/instruqt /opt/elastic /opt /var/lib/instruqt /srv /usr/local /home /root /mnt /media /var/tmp /tmp /usr/share /snap /workspace /challenges /instruqt -maxdepth 32)
 fi
-if [ -z "$TR" ] || [ ! -f "$TR/track.yml" ]; then
+
+if ! _bundle_ok "$TR"; then
+  echo "[elastic-workshop] shallow scan for track.yml under / …"
   while IFS= read -r tf; do
     _track_yml_ok "$tf" || continue
-    TR="$(dirname "$tf")"
+    cand="$(dirname "$tf")"
+    _bundle_ok "$cand" || continue
+    TR="$cand"
     break
-  done < <(find / -maxdepth 22 -type f -name track.yml 2>/dev/null)
+  done < <(_track_yml_find / -maxdepth 30)
 fi
-if [ -z "$TR" ] || [ ! -f "$TR/scripts/workshop-common.sh" ]; then
-  echo "FATAL: could not resolve workshop track root (missing track or scripts/)." >&2
-  echo "FATAL: hint: set ELASTIC_WORKSHOP_TRACK_ROOT for debugging; check /terraform for track.yml." >&2
+
+if ! _bundle_ok "$TR"; then
+  echo "[elastic-workshop] resolving track via workshop-common.sh sentinel …"
+  TR="$(_resolve_via_workshop_common_sentinel)" || TR=""
+fi
+
+if ! _bundle_ok "$TR"; then
+  echo "FATAL: could not resolve workshop track root (no track.yml + scripts/ and no sentinel workshop-common.sh)." >&2
+  echo "FATAL: set ELASTIC_WORKSHOP_TRACK_ROOT on the host for debugging." >&2
   exit 1
 fi
+
 printf '%s\n' "$TR" >/root/elastic-workshop/.instruqt-track-root
 cp -a "$TR/scripts/." /root/elastic-workshop/scripts/
 if [ -d "$TR/assets" ]; then

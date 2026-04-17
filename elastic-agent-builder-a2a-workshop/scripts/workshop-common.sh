@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Shared helpers for Instruqt challenge scripts.
+# ELASTIC_INSTRUQT_TRACK_SLUG:elastic-a2a-serverless-agent-builder
 
 _wc_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$_wc_dir/instruqt-track-root.inc.bash" ]; then
