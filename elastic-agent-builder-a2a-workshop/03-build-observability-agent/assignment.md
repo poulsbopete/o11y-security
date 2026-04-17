@@ -12,7 +12,6 @@ tabs:
   hostname: es3-api
   path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8080
-  protocol: http
   custom_request_headers:
   - key: Content-Security-Policy
     value: 'script-src ''self'' https://kibana.estccdn.com; worker-src blob: ''self'';
@@ -29,7 +28,6 @@ tabs:
   hostname: es3-api
   path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8081
-  protocol: http
   custom_request_headers:
   - key: Content-Security-Policy
     value: 'script-src ''self'' https://kibana.estccdn.com; worker-src blob: ''self'';

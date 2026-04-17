@@ -12,7 +12,6 @@ tabs:
   hostname: es3-api
   path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8080
-  protocol: http
   custom_request_headers:
   - key: Content-Security-Policy
     value: 'script-src ''self'' https://kibana.estccdn.com; worker-src blob: ''self'';
@@ -29,7 +28,6 @@ tabs:
   hostname: es3-api
   path: /app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!f,value:30000),time:(from:now-30m,to:now))
   port: 8081
-  protocol: http
   custom_request_headers:
   - key: Content-Security-Policy
     value: 'script-src ''self'' https://kibana.estccdn.com; worker-src blob: ''self'';
@@ -54,6 +52,8 @@ enhanced_loading: null
 In production, Security and Observability often run on separate clusters. This workshop keeps that split while teaching agents to cooperate over HTTPS APIs.
 
 The **Serverless Observability** and **Serverless Security** tabs are both served through the same **es3-api** lab host: nginx listens on **8080** (Observability Kibana) and **8081** (Security Kibana) and reverse-proxies to the real Cloud URLs you put in `.env`. Each tab opens the **Dashboards** list with **Content-Security-Policy** headers on the Instruqt proxy (request + response) so Kibana can load **inside the lab** (including `kibana.estccdn.com`).
+
+> **Before steps 3–4:** both Kibana tabs show only the lab **setup line** (nginx is still a placeholder). That is expected—unlike tracks that **create** a Serverless project for you during bootstrap, this lab is **BYO Elastic Cloud**. Use **Terminal** first to fill **`.env`** and run **`render-kibana-proxy.sh`**; then reload the tab or switch tabs once so Kibana loads.
 
 ## What you will do
 
