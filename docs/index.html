@@ -304,7 +304,8 @@
             <ul style="margin-top: 1rem;">
               <li><strong>Left lanes</strong> — keep collection specialized; avoid duplicating analytics in both stacks.</li>
               <li><strong>MCP / Agent Builder</strong> — detections, triage, workflow automation, and the enriched case document analysts ship.</li>
-              <li><strong>Cross-project call</strong> — Workflows use native <strong>HTTP</strong> to the peer Kibana <strong>converse</strong> endpoint (Basic or API key). Kibana’s outbound connector is still capped near <strong>~60s</strong>, so the lab uses a short <strong>[A2A_WF]</strong> path on the Observability agent for Security-initiated peer review.</li>
+              <li><strong>Cross-project call (A2A)</strong> — Workflows use native <strong>HTTP</strong> to the peer Kibana <strong>converse</strong> endpoint (Basic or API key). Kibana’s outbound connector is still capped near <strong>~60s</strong>, so the lab uses a short <strong>[A2A_WF]</strong> path on the Observability agent for Security-initiated peer review.</li>
+              <li><strong>Cross-project search (CPS)</strong> — in Elastic Cloud you can <strong>link</strong> Serverless projects and search or analyze data across them from one project (e.g. Observability linked to Security). Shown as <strong>tech preview</strong> in the Elastic UI. <strong>Either</strong> wire correlation with <strong>A2A via MCP / Agent Builder + workflows</strong> (explicit APIs, agents, cases) <strong>or</strong> lean on <strong>CPS</strong> when the priority is unified discovery across linked projects—often both make sense for different personas.</li>
             </ul>
           </div>
         </section>
@@ -354,7 +355,7 @@
             <h2>Workshop: two serverless projects, one correlation story</h2>
             <p class="lead">
               The <strong>cloud-path</strong> scripts provision two Serverless projects, seed <code style="font-size:0.92em;">workshop-synth-*</code> data, create Agent Builder agents, and <strong>PUT</strong> the workflow YAML shown on slide 4.
-              The <strong>Instruqt</strong> track <code style="font-size:0.88em;">elastic-a2a-serverless-agent-builder</code> teaches the same A2A story in-browser: <strong>Serverless Observability</strong> and <strong>Serverless Security</strong> each get a lab tab, both reverse-proxied through the single <strong>workstation</strong> host (nginx on <strong>8080</strong> / <strong>8081</strong>) after learners paste their Cloud Kibana URLs into <code style="font-size:0.88em;">.env</code>.
+              The <strong>Instruqt</strong> track <code style="font-size:0.88em;">elastic-a2a-serverless-agent-builder</code> teaches the same A2A story in-browser: <strong>Serverless Observability</strong> and <strong>Serverless Security</strong> each get a lab tab, both reverse-proxied through the <strong>es3-api</strong> lab host (nginx on <strong>8080</strong> / <strong>8081</strong>) after learners paste their Cloud Kibana URLs into <code style="font-size:0.88em;">.env</code>.
             </p>
             <ul>
               <li><strong>Instruqt</strong> — facilitator-led UI + checks; source in <code style="font-size:0.88em;">elastic-agent-builder-a2a-workshop/</code>.</li>
