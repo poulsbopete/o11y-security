@@ -1,52 +1,28 @@
 #!/usr/bin/env bash
 # Shared helpers for Instruqt challenge scripts.
 
+_wc_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$_wc_dir/instruqt-track-root.inc.bash" ]; then
+  # shellcheck disable=SC1091
+  source "$_wc_dir/instruqt-track-root.inc.bash"
+fi
+
 workshop_root() {
   echo "/root/elastic-workshop"
 }
 
 # Pass "${BASH_SOURCE[0]}" from the calling setup/check/solve script.
 # Instruqt runs challenge lifecycle scripts from a copy under /tmp (BASH_SOURCE is not inside the
-# track tree). track_scripts/setup-es3-api writes /root/elastic-workshop/.instruqt-track-root;
-# otherwise fall back to $PWD, script-relative path, or a shallow find for this track's slug.
+# track tree). Prefer marker + shared resolver in instruqt-track-root.inc.bash — never fall back
+# to dirname /tmp/.. → /.
 track_root_from_challenge_script() {
   local origin="$1"
-  local script_dir
-  local candidate=""
-  local marker
-  marker="$(workshop_root)/.instruqt-track-root"
-  if [ -n "${ELASTIC_WORKSHOP_TRACK_ROOT:-}" ] && [ -f "${ELASTIC_WORKSHOP_TRACK_ROOT}/track.yml" ]; then
-    echo "${ELASTIC_WORKSHOP_TRACK_ROOT}"
+  if declare -F elastic_workshop_resolve_track_root >/dev/null 2>&1; then
+    elastic_workshop_resolve_track_root "$origin" || true
     return 0
-  fi
-  if [ -f "$marker" ]; then
-    head -1 "$marker" | tr -d '\r\n'
-    return 0
-  fi
-  if [ -f "$(pwd)/../track.yml" ]; then
-    (cd "$(pwd)/.." && pwd)
-    return 0
-  fi
-  script_dir="$(cd "$(dirname "$origin")" && pwd)"
-  if [ -f "$script_dir/../track.yml" ]; then
-    (cd "$script_dir/.." && pwd)
-    return 0
-  fi
-  if [[ "$origin" == /tmp/* ]] || [[ "$script_dir" == "/tmp" ]]; then
-    candidate="$(
-      find /opt/instruqt /root /srv /var/tmp -maxdepth 14 -type f -name track.yml 2>/dev/null | while read -r tf; do
-        if grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null; then
-          dirname "$tf"
-          break
-        fi
-      done
-    )"
-    if [ -n "$candidate" ] && [ -f "$candidate/track.yml" ]; then
-      echo "$candidate"
-      return 0
-    fi
   fi
   echo ""
+  return 0
 }
 
 sync_track_assets() {
@@ -58,6 +34,7 @@ sync_track_assets() {
     return 0
   fi
   mkdir -p "$(workshop_root)"/{assets,agent-scaffolds,scripts,sample-data,indices}
+  [ -d "$tr/assets" ] && cp -a "$tr/assets/." "$(workshop_root)/assets/"
   [ -d "$tr/sample-data" ] && cp -a "$tr/sample-data/." "$(workshop_root)/sample-data/"
   [ -d "$tr/indices" ] && cp -a "$tr/indices/." "$(workshop_root)/indices/"
   [ -d "$tr/agent-scaffolds" ] && cp -a "$tr/agent-scaffolds/." "$(workshop_root)/agent-scaffolds/"

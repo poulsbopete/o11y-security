@@ -31,7 +31,7 @@ To **demo or facilitate** the track (screen layout, challenge highlights, option
 5. **Click Check** after each challenge when the assignment says to — `check-es3-api` validates the lab state.
 6. **Stuck?** Use **Show solution** only if the event policy allows it; compare with `solve-es3-api` scripts.
 
-**Instruqt note:** challenge `setup-*` / `solve-*` scripts are copied to `/tmp` at runtime. This track writes the real track path to **`/root/elastic-workshop/.instruqt-track-root`** during **`track_scripts/setup-es3-api`**, then each challenge script reads it (with a **`find … track.yml`** fallback) before sourcing **`scripts/workshop-common.sh`**. For local debugging without Instruqt, set **`ELASTIC_WORKSHOP_TRACK_ROOT`** to your checkout of this folder.
+**Instruqt note:** challenge `setup-*` / `solve-*` scripts are copied to **`/tmp`** at runtime, so they must not resolve the track via `dirname` of that copy (that resolves to **`/`**). **`track_scripts/setup-es3-api`** locates the mounted track (wide **`find … track.yml`** plus **`scripts/instruqt-track-root.inc.bash`**), writes **`/root/elastic-workshop/.instruqt-track-root`**, and **`cp -a`s `scripts/`** (including **`workshop-common.sh`** and the resolver) into **`/root/elastic-workshop/scripts/`**; challenge scripts **`source /root/elastic-workshop/scripts/workshop-common.sh`** only. For local debugging without Instruqt, set **`ELASTIC_WORKSHOP_TRACK_ROOT`** to your checkout of this folder.
 
 **Scaffolds** (copy/paste prompts and shapes for Agent Builder): [`agent-scaffolds/`](./agent-scaffolds/) — includes **[`alert-to-case-with-dual-project-audit.md`](./agent-scaffolds/alert-to-case-with-dual-project-audit.md)** for alert-driven workflows, dual-project audit text, and Security Cases.
 

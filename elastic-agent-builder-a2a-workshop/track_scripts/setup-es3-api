@@ -11,16 +11,36 @@ apt-get install -y --no-install-recommends curl ca-certificates jq python3 nginx
 
 mkdir -p /root/elastic-workshop/{assets,agent-scaffolds,scripts,sample-data,indices}
 
-# Challenge lifecycle scripts run from a copy under /tmp; record the real track root for them.
+# Challenge lifecycle scripts run from /tmp; resolve the mounted track and copy scripts locally.
+TS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 TR=""
-while IFS= read -r tf; do
-  if grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null; then
+if [ -f "$TS_DIR/../scripts/instruqt-track-root.inc.bash" ]; then
+  # shellcheck disable=SC1091
+  source "$TS_DIR/../scripts/instruqt-track-root.inc.bash"
+  TR="$(elastic_workshop_resolve_track_root "${BASH_SOURCE[0]:-$0}")" || TR=""
+fi
+if [ -z "$TR" ] || [ ! -f "$TR/track.yml" ]; then
+  while IFS= read -r tf; do
+    grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null || continue
     TR="$(dirname "$tf")"
     break
-  fi
-done < <(find /opt/instruqt /root /srv /var/tmp -maxdepth 14 -type f -name track.yml 2>/dev/null)
-if [ -n "$TR" ] && [ -f "$TR/track.yml" ]; then
-  printf '%s\n' "$TR" >/root/elastic-workshop/.instruqt-track-root
+  done < <(find /opt/instruqt /opt/elastic /opt /var/lib/instruqt /srv /usr/local /home /root /mnt /var/tmp /tmp /usr/share /snap -maxdepth 24 -type f -name track.yml 2>/dev/null)
+fi
+if [ -z "$TR" ] || [ ! -f "$TR/track.yml" ]; then
+  while IFS= read -r tf; do
+    grep -q 'elastic-a2a-serverless-agent-builder' "$tf" 2>/dev/null || continue
+    TR="$(dirname "$tf")"
+    break
+  done < <(find / -maxdepth 10 -type f -name track.yml 2>/dev/null)
+fi
+if [ -z "$TR" ] || [ ! -f "$TR/scripts/workshop-common.sh" ]; then
+  echo "FATAL: could not resolve workshop track root (missing track or scripts/)." >&2
+  exit 1
+fi
+printf '%s\n' "$TR" >/root/elastic-workshop/.instruqt-track-root
+cp -a "$TR/scripts/." /root/elastic-workshop/scripts/
+if [ -d "$TR/assets" ]; then
+  cp -a "$TR/assets/." /root/elastic-workshop/assets/
 fi
 
 rm -f /etc/nginx/sites-enabled/default
