@@ -90,6 +90,29 @@ elastic_workshop_resolve_track_root() {
 
   if [ -n "$origin" ] && [ -e "$origin" ]; then
     script_dir="$(cd "$(dirname "$origin")" && pwd)"
+    # Track lifecycle scripts run from the mounted bundle: …/<track>/track_scripts/setup-es3-api
+    # (unlike /tmp copies for challenge scripts). Parent of track_scripts is always the track root.
+    if [ "$(basename "$script_dir")" = "track_scripts" ]; then
+      cand="$(cd "$script_dir/.." && pwd)"
+      if [ -f "$cand/scripts/workshop-common.sh" ]; then
+        echo "$cand"
+        return 0
+      fi
+    fi
+    cand="$(cd "$script_dir/.." && pwd)"
+    if [ -f "$cand/scripts/workshop-common.sh" ] && grep -qF "$ELASTIC_INSTRUQT_SENTINEL" "$cand/scripts/workshop-common.sh" 2>/dev/null; then
+      echo "$cand"
+      return 0
+    fi
+    _d="$script_dir"
+    for _i in {1..12}; do
+      _d="$(dirname "$_d")"
+      [ "$_d" = / ] && break
+      if [ -f "$_d/scripts/workshop-common.sh" ] && grep -qF "$ELASTIC_INSTRUQT_SENTINEL" "$_d/scripts/workshop-common.sh" 2>/dev/null; then
+        echo "$_d"
+        return 0
+      fi
+    done
     if [ -f "$script_dir/../track.yml" ] && elastic_workshop_track_yml_matches "$script_dir/../track.yml"; then
       cand="$(cd "$script_dir/.." && pwd)"
       if [ -f "$cand/scripts/workshop-common.sh" ]; then
