@@ -249,6 +249,11 @@ if [ -n "${O11Y_ES_URL:-}" ] && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_E
     [ -n "${O11Y_KIBANA_URL:-}" ] && echo "O11Y_KIBANA_URL=${O11Y_KIBANA_URL}"
     [ -n "${SECURITY_KIBANA_URL:-}" ] && echo "SECURITY_KIBANA_URL=${SECURITY_KIBANA_URL}"
   } >/root/elastic-workshop/.env
+  # Same outcome as elastic-autonomous-observability (Kibana tabs work without learner manual step)
+  # when both HTTPS Kibana base URLs are present in the injected environment.
+  if [ -n "${O11Y_KIBANA_URL:-}" ] && [ -n "${SECURITY_KIBANA_URL:-}" ]; then
+    bash /root/elastic-workshop/scripts/render-kibana-proxy.sh /root/elastic-workshop/.env
+  fi
 fi
 
 touch /root/elastic-workshop/.workshop-bootstrap-complete
