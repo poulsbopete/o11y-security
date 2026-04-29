@@ -2,6 +2,7 @@ name: A2A Lab — Security synth inject (manual)
 description: >
   On-demand (Run in Workflows UI): injects one failed authentication-style event into
   workshop-synth-endpoint-alerts for demos without waiting for the 15m schedule.
+  Document includes **workshop.demo_stream: database** for dual-mission dashboards and ES|QL.
   Does not call Observability—only Elasticsearch writes on this Security project.
   The lab’s Security↔O11y A2A is the enrichment agent calling the published Observability agent over HTTPS (O11Y_AGENT_ENDPOINT); see AGENT_BUILDER.md.
 enabled: true
@@ -24,6 +25,9 @@ steps:
         "@timestamp": "{{ \"now\" | date: \"%Y-%m-%dT%H:%M:%SZ\" }}"
         host:
           name: prod-db-01
+        workshop:
+          demo_stream: database
+          narrative: workflow_inject
         event:
           category:
             - authentication
