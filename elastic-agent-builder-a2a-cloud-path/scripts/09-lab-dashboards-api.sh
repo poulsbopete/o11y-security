@@ -2,9 +2,8 @@
 # Create or update lab dashboards via **POST/PUT /api/dashboards** (Dashboards as code API).
 # Do **not** use ?apiVersion= — on Serverless, that query string is rejected.
 #
-# Security / Observability: markdown (ES|QL + **navigation** + optional **HTML diagram** Security/O11y→MCP)
-# plus **Lens-style metric** tiles (`vis` + `data_view_spec`) — counts, unique values,
-# and max/avg on numeric workshop fields.
+# Security / Observability: two boards each — (1) original workshop + MCP diagram,
+# (2) **Dual mission** — `workshop.demo_stream` ES|QL copy + metric tiles (web / database / OS narrative).
 #
 # Requires: curl, jq, bash, state/bootstrap.json.
 # Writes: state/kibana-dashboards-lab.json (dashboard ids for updates).
@@ -37,7 +36,7 @@ require_cmds "$CURL" jq
 umask 077
 mkdir -p "$ROOT/state"
 if [ ! -f "$STATE" ]; then
-  echo '{"security":null,"observability":null}' >"$STATE"
+  echo '{"security":null,"observability":null,"dual_security":null,"dual_observability":null}' >"$STATE"
   chmod 600 "$STATE"
 fi
 
@@ -55,7 +54,7 @@ reset_dashboard_state_if_projects_changed() {
   if [ -n "$prev_s" ] && [ -n "$prev_o" ] && { [ "$prev_s" != "$cur_s" ] || [ "$prev_o" != "$cur_o" ]; }; then
     echo "  Bootstrap project id(s) changed — clearing stale dashboard ids in $(basename "$state")."
     merged="$(jq --arg cs "$cur_s" --arg co "$cur_o" \
-      '.security = null | .observability = null | ._bootstrap_security_project = $cs | ._bootstrap_observability_project = $co' "$state")"
+      '.security = null | .observability = null | .dual_security = null | .dual_observability = null | ._bootstrap_security_project = $cs | ._bootstrap_observability_project = $co' "$state")"
     printf '%s\n' "$merged" >"$state"
     chmod 600 "$state"
   else
@@ -128,8 +127,13 @@ merge_dashboard_body_with_saved_panel_ids() {
 
 dash_upsert() {
   local role="$1" base="$2" user="$3" pass="$4" title="$5" body_json="$6"
+  local state_key_opt="${7:-}"
   local id code key tmp_body tmp_out merged original_body
-  key="$([ "$role" = security ] && echo security || echo observability)"
+  if [ -n "$state_key_opt" ]; then
+    key="$state_key_opt"
+  else
+    key="$([ "$role" = security ] && echo security || echo observability)"
+  fi
   original_body="$body_json"
 
   dedupe_dashboards_for_title "$base" "$user" "$pass" "$title" "$(jq -r --arg k "$key" '.[$k] // empty' "$STATE")"
@@ -313,6 +317,77 @@ read -r -d '' O11Y_NAV <<'EOF' || true
 **Workflows:** after **`06`**, attach **A2A Lab — O11y alert log** on each lab rule — it **logs and opens an Observability case** in one workflow (ids in `state/kibana-workflows-lab.json`). Do not attach the separate case-only workflow on the same rule.
 EOF
 
+DUAL_SEC_TITLE="A2A Lab — Dual mission (Security Kibana)"
+DUAL_O11Y_TITLE="A2A Lab — Dual mission (Observability Kibana)"
+
+read -r -d '' DUAL_SEC_INTRO <<'EOF' || true
+## Same telemetry, two missions
+
+**`workshop.demo_stream`** tags rows as **web** (HTTP-style traces), **database** (auth failures on the DB host), or **os** (host metrics). In this lab, metrics and traces are **mirrored** into this Security Elasticsearch project so **ES|QL in this Kibana** can query all three shapes for the “vase or face” story.
+
+**Focus host:** `prod-db-01`
+EOF
+
+read -r -d '' DUAL_SEC_MD <<'EOF' || true
+### ES|QL — Dev Tools (this project)
+
+**Web — failed transactions**
+
+```
+FROM workshop-synth-traces
+| WHERE host.name == "prod-db-01" AND workshop.demo_stream == "web" AND event.outcome == "failure"
+| STATS fails = COUNT(*)
+| LIMIT 10
+```
+
+**Database — auth-style failures**
+
+```
+FROM workshop-synth-endpoint-alerts
+| WHERE host.name == "prod-db-01" AND workshop.demo_stream == "database"
+| STATS c = COUNT(*)
+| LIMIT 10
+```
+
+**OS — saturation**
+
+```
+FROM workshop-synth-metrics
+| WHERE host.name == "prod-db-01" AND workshop.demo_stream == "os"
+| STATS peak_cpu = MAX(system.cpu.total.norm.pct)
+| LIMIT 10
+```
+EOF
+
+read -r -d '' DUAL_O11Y_INTRO <<'EOF' || true
+## Same telemetry, two missions (Ops lens)
+
+Filter **`workshop.demo_stream`** in Discover or ES|QL for **web** (latency, status, errors) vs **os** (CPU, memory). **Database / auth** signals for this workshop live in **Security** (`workshop-synth-endpoint-alerts`); open the companion dashboard **A2A Lab — Dual mission (Security Kibana)** there.
+
+**Focus host:** `prod-db-01`
+EOF
+
+read -r -d '' DUAL_O11Y_MD <<'EOF' || true
+### ES|QL — traces & metrics (canonical copy on Observability ES)
+
+**Web**
+
+```
+FROM workshop-synth-traces
+| WHERE host.name == "prod-db-01" AND workshop.demo_stream == "web"
+| STATS c = COUNT(*) BY event.outcome
+```
+
+**OS**
+
+```
+FROM workshop-synth-metrics
+| WHERE host.name == "prod-db-01" AND workshop.demo_stream == "os"
+| STATS peak_cpu = MAX(system.cpu.total.norm.pct)
+| LIMIT 10
+```
+EOF
+
 # HTML diagram (markdown panel): Security + Observability → MCP. Kibana markdown allows common inline styles.
 read -r -d '' MCP_DIAGRAM <<'EOF' || true
 ### Security + Observability → MCP
@@ -461,13 +536,127 @@ O11Y_BODY="$(jq -n \
     ]
   }')"
 
+SEC_DUAL_BODY="$(jq -n \
+  --arg title "$DUAL_SEC_TITLE" \
+  --arg intro "$DUAL_SEC_INTRO" \
+  --arg md "$DUAL_SEC_MD" \
+  '{
+    title: $title,
+    time_range: {from: "now-7d", to: "now"},
+    panels: [
+      {type: "markdown", grid: {x: 0, y: 0, w: 48, h: 8}, config: {content: $intro}},
+      {type: "markdown", grid: {x: 0, y: 8, w: 48, h: 14}, config: {content: $md}},
+      {
+        type: "vis",
+        grid: {x: 0, y: 22, w: 12, h: 8},
+        config: {
+          type: "metric",
+          data_source: {type: "data_view_spec", index_pattern: "workshop-synth-endpoint-alerts", time_field: "@timestamp"},
+          metrics: [{type: "primary", operation: "count", label: "Database / auth docs"}]
+        }
+      },
+      {
+        type: "vis",
+        grid: {x: 12, y: 22, w: 12, h: 8},
+        config: {
+          type: "metric",
+          data_source: {type: "data_view_spec", index_pattern: "workshop-synth-traces", time_field: "@timestamp"},
+          metrics: [{type: "primary", operation: "count", label: "Web / trace docs"}]
+        }
+      },
+      {
+        type: "vis",
+        grid: {x: 24, y: 22, w: 12, h: 8},
+        config: {
+          type: "metric",
+          data_source: {type: "data_view_spec", index_pattern: "workshop-synth-metrics", time_field: "@timestamp"},
+          metrics: [{type: "primary", operation: "count", label: "OS / metric docs"}]
+        }
+      },
+      {
+        type: "vis",
+        grid: {x: 36, y: 22, w: 12, h: 8},
+        config: {
+          type: "metric",
+          data_source: {type: "data_view_spec", index_pattern: "workshop-synth-traces", time_field: "@timestamp"},
+          metrics: [{type: "primary", operation: "max", field: "transaction.duration.us", label: "Max txn (µs)"}]
+        }
+      }
+    ]
+  }')"
+
+O11Y_DUAL_BODY="$(jq -n \
+  --arg title "$DUAL_O11Y_TITLE" \
+  --arg intro "$DUAL_O11Y_INTRO" \
+  --arg md "$DUAL_O11Y_MD" \
+  '{
+    title: $title,
+    time_range: {from: "now-7d", to: "now"},
+    panels: [
+      {type: "markdown", grid: {x: 0, y: 0, w: 48, h: 8}, config: {content: $intro}},
+      {type: "markdown", grid: {x: 0, y: 8, w: 48, h: 12}, config: {content: $md}},
+      {
+        type: "vis",
+        grid: {x: 0, y: 20, w: 16, h: 8},
+        config: {
+          type: "metric",
+          data_source: {type: "data_view_spec", index_pattern: "workshop-synth-traces", time_field: "@timestamp"},
+          metrics: [{type: "primary", operation: "count", label: "Trace docs"}]
+        }
+      },
+      {
+        type: "vis",
+        grid: {x: 16, y: 20, w: 16, h: 8},
+        config: {
+          type: "metric",
+          data_source: {type: "data_view_spec", index_pattern: "workshop-synth-metrics", time_field: "@timestamp"},
+          metrics: [{type: "primary", operation: "count", label: "Metric docs"}]
+        }
+      },
+      {
+        type: "vis",
+        grid: {x: 32, y: 20, w: 16, h: 8},
+        config: {
+          type: "metric",
+          data_source: {type: "data_view_spec", index_pattern: "workshop-synth-traces", time_field: "@timestamp"},
+          metrics: [{type: "primary", operation: "max", field: "transaction.duration.us", label: "Max txn (µs)"}]
+        }
+      },
+      {
+        type: "vis",
+        grid: {x: 0, y: 28, w: 24, h: 8},
+        config: {
+          type: "metric",
+          data_source: {type: "data_view_spec", index_pattern: "workshop-synth-metrics", time_field: "@timestamp"},
+          metrics: [{type: "primary", operation: "max", field: "system.cpu.total.norm.pct", label: "Peak CPU"}]
+        }
+      },
+      {
+        type: "vis",
+        grid: {x: 24, y: 28, w: 24, h: 8},
+        config: {
+          type: "metric",
+          data_source: {type: "data_view_spec", index_pattern: "workshop-synth-metrics", time_field: "@timestamp"},
+          metrics: [{type: "primary", operation: "max", field: "system.memory.actual.used.pct", label: "Peak memory %"}]
+        }
+      }
+    ]
+  }')"
+
 echo "== Dashboards API: Security Kibana =="
 dash_upsert security "$sec_kb" "$sec_user" "$sec_pass" "$SEC_TITLE" "$SEC_BODY"
 
 echo "== Dashboards API: Observability Kibana =="
 dash_upsert observability "$o11y_kb" "$o11y_user" "$o11y_pass" "$O11Y_TITLE" "$O11Y_BODY"
 
+echo "== Dashboards API: Dual mission — Security Kibana =="
+dash_upsert security "$sec_kb" "$sec_user" "$sec_pass" "$DUAL_SEC_TITLE" "$SEC_DUAL_BODY" dual_security
+
+echo "== Dashboards API: Dual mission — Observability Kibana =="
+dash_upsert observability "$o11y_kb" "$o11y_user" "$o11y_pass" "$DUAL_O11Y_TITLE" "$O11Y_DUAL_BODY" dual_observability
+
 echo "Wrote ${STATE}"
-echo "Security dashboard id: $(jq -r '.security // "?"' "$STATE")  Observability id: $(jq -r '.observability // "?"' "$STATE")"
+echo "Security workshop id: $(jq -r '.security // "?"' "$STATE")  Observability workshop id: $(jq -r '.observability // "?"' "$STATE")"
+echo "Dual mission — Security id: $(jq -r '.dual_security // "?"' "$STATE")  Dual mission — Observability id: $(jq -r '.dual_observability // "?"' "$STATE")"
 echo "Open **Analytics → Dashboards** on each Kibana and search for titles starting with **A2A Lab**."
 echo "API: POST /api/dashboards (create), PUT /api/dashboards/{id} (update). Do not append ?apiVersion= on Serverless."

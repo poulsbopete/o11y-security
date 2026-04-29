@@ -4,6 +4,15 @@ Facilitator notes for the **same telemetry, two missions** story (Observability 
 
 This narrative is intentionally **plain**—three ubiquitous log planes, two readouts—so it lands for **Serverless** and **self-managed** customers alike.
 
+## Analytics dashboards
+
+After **`scripts/09-lab-dashboards-api.sh`**, open **Analytics → Dashboards** in each Kibana and search **`A2A Lab`**. You get:
+
+- **A2A Lab — Security workshop** / **A2A Lab — Observability workshop** — original MCP + KPI strip.
+- **A2A Lab — Dual mission (Security Kibana)** / **A2A Lab — Dual mission (Observability Kibana)** — copy-paste ES|QL for **`workshop.demo_stream`** plus metric tiles (Security board counts traces + metrics mirrored onto Security ES).
+
+Dashboard ids are stored in **`state/kibana-dashboards-lab.json`** (gitignored).
+
 ## Field tag
 
 Synthetic documents include:
@@ -22,14 +31,19 @@ workshop.demo_stream = web | database | os
 
 ## Suggested arc (3–4 minutes, inside the longer lab)
 
-1. **Observability Kibana → Discover** — Data view on `workshop-synth-metrics` and `workshop-synth-traces`. Filter `host.name: prod-db-01` and `workshop.demo_stream: web` (or `os`). Narrate **SLO pain**: high CPU, slow or failing HTTP transactions.
-2. **Security Kibana → Discover** — `workshop-synth-endpoint-alerts`, same host, `workshop.demo_stream: database`. Narrate **risk**: repeated auth failures, suspicious source IPs.
-3. **Tie together** — Run **`simulate-cross-domain-load.sh`** (or cloud-path **`scripts/10-lab-simulate-traffic.sh`**) so all three streams move in the same window; refresh Discover in both projects.
-4. **Optional** — Open **Agent Builder** on each side and ask for “last 15 minutes on `prod-db-01`” with an explicit **Ops** vs **Sec** prompt.
+1. **Analytics → Dashboards** — Open **A2A Lab — Dual mission (… Kibana)** on each project (after **`09-lab-dashboards-api.sh`**) for ES|QL copy blocks and KPI tiles.
+2. **Observability Kibana → Discover** — Data view on `workshop-synth-metrics` and `workshop-synth-traces`. Filter `host.name: prod-db-01` and `workshop.demo_stream: web` (or `os`). Narrate **SLO pain**: high CPU, slow or failing HTTP transactions.
+3. **Security Kibana → Discover** — `workshop-synth-endpoint-alerts`, same host, `workshop.demo_stream: database`. Narrate **risk**: repeated auth failures, suspicious source IPs.
+4. **Tie together** — Run **`simulate-cross-domain-load.sh`** (or cloud-path **`scripts/10-lab-simulate-traffic.sh`**) so all three streams move in the same window; refresh Discover in both projects.
+5. **Optional** — Open **Agent Builder** on each side and ask for “last 15 minutes on `prod-db-01`” with an explicit **Ops** vs **Sec** prompt.
 
 ## ES|QL snippets (Dev Tools)
 
-Observability cluster:
+**Where to run them:** After **`load-sample-bulk.sh`** (or cloud-path **`03-populate-indices.sh`**), `workshop-synth-metrics` and `workshop-synth-traces` exist on **both** Elasticsearch endpoints (Observability is canonical; Security gets a **mirror copy** so **Security Kibana → ES|QL** is not empty). `workshop-synth-endpoint-alerts` lives on **Security** only.
+
+If you see **`Unknown index [workshop-synth-traces]`** in Security Kibana, re-run **`03-populate-indices.sh`** or **`load-sample-bulk.sh`** on a checkout **after** the mirror change, or set `WORKSHOP_SKIP_MIRROR_O11Y_INDICES_TO_SECURITY=1` only when you intentionally want traces/metrics **only** on Observability.
+
+**Traces (web):**
 
 ```esql
 FROM workshop-synth-traces
@@ -37,6 +51,8 @@ FROM workshop-synth-traces
 | SORT @timestamp DESC
 | LIMIT 20
 ```
+
+**Metrics (os):**
 
 ```esql
 FROM workshop-synth-metrics
@@ -46,7 +62,7 @@ FROM workshop-synth-metrics
 | LIMIT 20
 ```
 
-Security cluster:
+**Endpoint-style auth failures (database host story) — Security index:**
 
 ```esql
 FROM workshop-synth-endpoint-alerts

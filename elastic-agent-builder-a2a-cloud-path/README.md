@@ -38,7 +38,7 @@ These mirror the same Cloud + Elasticsearch operations when you **do not** have 
 | Create lab **Kibana Workflows** (alert → **console + Case** in one workflow; optional Case-only; **scheduled** 15m synth inject **disabled by default** + **manual** inject per project) on **both** Kibanas | `scripts/06-kibana-workflows-lab.sh` |
 | Create **Elasticsearch query** lab rules (so you get **alerts** from `workshop-synth-*` without new ingest) | `scripts/07-lab-alert-rules.sh` |
 | **Optional:** run lab workflows once with a **synthetic** alert payload (`/api/workflows/test`) | `scripts/08-synthetic-workflow-test.sh` |
-| Create lab **Dashboards** via **Dashboards API** (`POST`/`PUT` `/api/dashboards` — no `?apiVersion=`) | `scripts/09-lab-dashboards-api.sh` |
+| Create lab **Dashboards** via **Dashboards API** (`POST`/`PUT` `/api/dashboards` — no `?apiVersion=`) — **two boards per project**: original **A2A Lab — … workshop** plus **A2A Lab — Dual mission (… Kibana)** (`workshop.demo_stream` ES|QL + metric tiles) | `scripts/09-lab-dashboards-api.sh` |
 | **Optional:** simulate cross-domain **ingest** (fresh `workshop-synth-*` docs → lab rules/workflows) | `scripts/10-lab-simulate-traffic.sh` |
 | Print Kibana URLs + next steps | `scripts/04-print-next-steps.sh` |
 | All of the above | `scripts/run-all.sh` |
