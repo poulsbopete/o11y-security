@@ -39,7 +39,7 @@ Expose an HTTP endpoint (Agent Builder webhook / custom integration) that accept
 
 ## Lab data
 
-Synthetic documents are loaded into `workshop-synth-metrics` and `workshop-synth-traces` by `scripts/load-sample-bulk.sh` so the agent has material to summarize even before full APM wiring.
+Synthetic documents are loaded into `workshop-synth-metrics` and `workshop-synth-traces` by `scripts/load-sample-bulk.sh` so the agent has material to summarize even before full APM wiring. Bulk docs include **`workshop.demo_stream`** (`web` on traces, `os` on metrics) for the dual-mission facilitator narrative—see **[`../elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md`](../elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md)**.
 
 ## API documentation artifact
 

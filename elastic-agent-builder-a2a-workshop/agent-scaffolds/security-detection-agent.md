@@ -4,7 +4,7 @@ Use **Agent Builder** in the **Serverless Security** Kibana project.
 
 ## Inputs
 
-- Primary signal: Endpoint / authentication failures (Fleet indices or `workshop-synth-endpoint-alerts` for lab bulk data).
+- Primary signal: Endpoint / authentication failures (Fleet indices or `workshop-synth-endpoint-alerts` for lab bulk data; documents use **`workshop.demo_stream: database`** on the dual-mission path).
 - Window: rolling **1 minute** per host.
 
 ## Logic (pseudocode)

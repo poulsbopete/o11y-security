@@ -89,6 +89,7 @@ Use this section to **facilitate or record** a walkthrough. If you provisioned s
 5. **Challenge 04** — **Demo peak**: HTTP to Observability, merged enriched story; passing **Check** is your “A2A works” moment.
 6. **Challenge 05** (optional) — ES|QL / dashboard: “one narrative for execs.”
 7. **Optional live pressure** — if policy allows Elasticsearch egress from the sandbox, run **[`scripts/simulate-cross-domain-load.sh`](./scripts/simulate-cross-domain-load.sh)** with `ELASTIC_WORKSHOP_*` set (same env shape as cloud-path `workshop.env`), then re-show **Discover** or Dev Tools.
+8. **Same logs, two missions (optional)** — in Discover, filter **`workshop.demo_stream`** (`web`, `os`, `database`) on **`prod-db-01`** and narrate Observability vs Security questions; script: **[`../elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md`](../elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md)**.
 
 ### Your own Elastic (no Instruqt)
 
@@ -102,5 +103,5 @@ Use the **same narrative** as **[cloud-path README → Demo the setup](../elasti
 | ------ | ------- |
 | [`scripts/apply-index-templates.sh`](./scripts/apply-index-templates.sh) | PUT index templates on Security cluster |
 | [`scripts/load-sample-bulk.sh`](./scripts/load-sample-bulk.sh) | `_bulk` sample data into `workshop-synth-*` |
-| [`scripts/simulate-cross-domain-load.sh`](./scripts/simulate-cross-domain-load.sh) | Parallel load: auth failures (Security) + metrics/traces (Observability) |
+| [`scripts/simulate-cross-domain-load.sh`](./scripts/simulate-cross-domain-load.sh) | Parallel load: auth failures (Security) + metrics/traces (Observability); adds **`workshop.demo_stream`** (`database` / `os` / `web`) |
 | [`scripts/workshop-common.sh`](./scripts/workshop-common.sh) | Helpers for Instruqt lifecycle scripts |

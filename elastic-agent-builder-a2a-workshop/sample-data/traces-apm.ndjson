@@ -1,4 +1,4 @@
 {"index":{"_index":"workshop-synth-traces"}}
-{"@timestamp":"2026-04-13T15:22:00Z","service":{"name":"inventory-api"},"host":{"name":"prod-db-01"},"transaction":{"duration":{"us":2400000}},"event":{"outcome":"failure"},"http":{"response":{"status_code":500}}}
+{"@timestamp":"2026-04-13T15:22:00Z","service":{"name":"inventory-api"},"host":{"name":"prod-db-01"},"workshop":{"demo_stream":"web","narrative":"dual_mission_lab"},"transaction":{"duration":{"us":2400000}},"event":{"outcome":"failure"},"http":{"response":{"status_code":500}}}
 {"index":{"_index":"workshop-synth-traces"}}
-{"@timestamp":"2026-04-13T15:21:30Z","service":{"name":"inventory-api"},"host":{"name":"prod-db-01"},"transaction":{"duration":{"us":890000}},"event":{"outcome":"success"},"http":{"response":{"status_code":200}}}
+{"@timestamp":"2026-04-13T15:21:30Z","service":{"name":"inventory-api"},"host":{"name":"prod-db-01"},"workshop":{"demo_stream":"web","narrative":"dual_mission_lab"},"transaction":{"duration":{"us":890000}},"event":{"outcome":"success"},"http":{"response":{"status_code":200}}}

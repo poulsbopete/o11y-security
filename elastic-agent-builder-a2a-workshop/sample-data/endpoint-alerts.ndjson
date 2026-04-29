@@ -1,12 +1,12 @@
 {"index":{"_index":"workshop-synth-endpoint-alerts"}}
-{"@timestamp":"2026-04-13T15:21:10Z","host":{"name":"prod-db-01"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.22"},"message":"failed login attempt 1"}
+{"@timestamp":"2026-04-13T15:21:10Z","host":{"name":"prod-db-01"},"workshop":{"demo_stream":"database","narrative":"dual_mission_lab"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.22"},"message":"failed login attempt 1"}
 {"index":{"_index":"workshop-synth-endpoint-alerts"}}
-{"@timestamp":"2026-04-13T15:21:22Z","host":{"name":"prod-db-01"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.45"},"message":"failed login attempt 2"}
+{"@timestamp":"2026-04-13T15:21:22Z","host":{"name":"prod-db-01"},"workshop":{"demo_stream":"database","narrative":"dual_mission_lab"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.45"},"message":"failed login attempt 2"}
 {"index":{"_index":"workshop-synth-endpoint-alerts"}}
-{"@timestamp":"2026-04-13T15:21:33Z","host":{"name":"prod-db-01"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.77"},"message":"failed login attempt 3"}
+{"@timestamp":"2026-04-13T15:21:33Z","host":{"name":"prod-db-01"},"workshop":{"demo_stream":"database","narrative":"dual_mission_lab"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.77"},"message":"failed login attempt 3"}
 {"index":{"_index":"workshop-synth-endpoint-alerts"}}
-{"@timestamp":"2026-04-13T15:21:44Z","host":{"name":"prod-db-01"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.88"},"message":"failed login attempt 4"}
+{"@timestamp":"2026-04-13T15:21:44Z","host":{"name":"prod-db-01"},"workshop":{"demo_stream":"database","narrative":"dual_mission_lab"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.88"},"message":"failed login attempt 4"}
 {"index":{"_index":"workshop-synth-endpoint-alerts"}}
-{"@timestamp":"2026-04-13T15:21:55Z","host":{"name":"prod-db-01"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.10"},"message":"failed login attempt 5"}
+{"@timestamp":"2026-04-13T15:21:55Z","host":{"name":"prod-db-01"},"workshop":{"demo_stream":"database","narrative":"dual_mission_lab"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"198.51.100.10"},"message":"failed login attempt 5"}
 {"index":{"_index":"workshop-synth-endpoint-alerts"}}
-{"@timestamp":"2026-04-13T15:22:00Z","host":{"name":"prod-db-01"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"203.0.113.50"},"message":"failed login attempt 6"}
+{"@timestamp":"2026-04-13T15:22:00Z","host":{"name":"prod-db-01"},"workshop":{"demo_stream":"database","narrative":"dual_mission_lab"},"event":{"category":["authentication"],"outcome":"failure","type":["start"]},"user":{"name":"svc-batch"},"source":{"ip":"203.0.113.50"},"message":"failed login attempt 6"}

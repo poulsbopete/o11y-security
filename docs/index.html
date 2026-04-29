@@ -261,18 +261,37 @@
   <div class="deck" id="deck">
     <div class="viewport" id="viewport">
       <div class="strip" id="strip" role="region" aria-roledescription="carousel" aria-label="Value proposition slides">
-        <section class="slide" id="s1" aria-label="Slide 1 of 6">
+        <section class="slide" id="s1" aria-label="Slide 1 of 7">
           <div class="inner">
             <p class="kicker">Why this matters</p>
             <h1>Security sees an alert. Observability holds the truth about impact.</h1>
             <p class="lead">
               In real deployments, Security and Observability often live in separate serverless projects and clusters.
               That separation is healthy for ownership—but it becomes a liability when analysts must guess whether an incident is noisy or business-critical.
+              Under the same pattern, <strong>common log planes</strong> (web, database, OS) are often ingested once and read with two completely different lenses.
             </p>
           </div>
         </section>
 
-        <section class="slide" id="s2" aria-label="Slide 2 of 6">
+        <section class="slide" id="s2" aria-label="Slide 2 of 7">
+          <div class="inner">
+            <p class="kicker">Same telemetry, different purpose</p>
+            <h1>Do you see a vase or a face?</h1>
+            <p class="lead">
+              Practical buyer story: three ubiquitous sources, two missions. The lab seeds <code style="font-size:0.92em;">workshop-synth-*</code> with <code style="font-size:0.92em;">workshop.demo_stream</code> values <strong style="color: var(--accent2);">web</strong>, <strong style="color: var(--accent2);">database</strong>, and <strong style="color: var(--accent2);">os</strong> so facilitators can filter the same documents in Discover for Observability vs Security talking points—Serverless <em>or</em> self-managed.
+            </p>
+            <ul>
+              <li><strong>Web / application</strong> — O11y: latency, status codes, saturation. Security: injection, traversal, auth abuse, application-layer DoS.</li>
+              <li><strong>Database</strong> — O11y: slow queries, lock contention, dependency health. Security: unusual access paths, privilege changes, exfiltration patterns.</li>
+              <li><strong>OS / host</strong> — O11y: CPU, memory, disk, fleet stability. Security: logon anomalies, lateral movement, persistence.</li>
+            </ul>
+            <p class="hint" style="margin-top:1rem;">
+              Facilitator doc: <a class="prompt-lib" href="https://github.com/poulsbopete/o11y-security/blob/main/elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md">DUAL-MISSION-DEMO.md →</a>
+            </p>
+          </div>
+        </section>
+
+        <section class="slide" id="s3" aria-label="Slide 3 of 7">
           <div class="inner">
             <p class="kicker">The pattern</p>
             <h2>Agent Builder: let each domain keep its expertise</h2>
@@ -287,7 +306,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s3" aria-label="Slide 3 of 6">
+        <section class="slide" id="s4" aria-label="Slide 4 of 7">
           <div class="inner wide">
             <p class="kicker">Reference workflow</p>
             <h2>Two data planes, one place to decide</h2>
@@ -310,12 +329,12 @@
           </div>
         </section>
 
-        <section class="slide slide--lab-shots" id="s4" aria-label="Slide 4 of 6">
+        <section class="slide slide--lab-shots" id="s5" aria-label="Slide 5 of 7">
           <div class="inner wide">
             <p class="kicker">From the cloud-path lab</p>
             <h2>Kibana Workflows and Cases</h2>
             <p class="lead" style="margin-bottom: 0.5rem;">
-              <code style="font-size:0.88em;">elastic-agent-builder-a2a-cloud-path</code> pushes <strong>workshop</strong> workflows to <strong>both</strong> Kibanas: <strong>manual</strong> synth inject (Run on demand), <strong>scheduled</strong> 15m injectors (<strong>disabled</strong> in YAML until you enable the toggle), and <strong>alert</strong> workflows that log, call the peer project via <strong>HTTP converse</strong>, then open a Case with drill text plus the model reply.
+              <code style="font-size:0.88em;">elastic-agent-builder-a2a-cloud-path</code> pushes <strong>workshop</strong> workflows to <strong>both</strong> Kibanas: <strong>manual</strong> synth inject (Run on demand), <strong>scheduled</strong> 15m injectors (<strong>disabled</strong> in YAML until you enable the toggle), and <strong>alert</strong> workflows that log, call the peer project via <strong>HTTP converse</strong>, then open a Case with drill text plus the model reply. Pair with slide 2: filter Discover on <code style="font-size:0.88em;">workshop.demo_stream</code> while narrating Ops vs Sec questions on the same host.
             </p>
             <div class="slide-figures-stack">
               <figure class="slide-figure">
@@ -330,7 +349,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s5" aria-label="Slide 5 of 6">
+        <section class="slide" id="s6" aria-label="Slide 6 of 7">
           <div class="inner">
             <p class="kicker">Value for sellers &amp; customers</p>
             <h2>Faster decisions, clearer ROI, a path to response</h2>
@@ -349,12 +368,12 @@
           </div>
         </section>
 
-        <section class="slide" id="s6" aria-label="Slide 6 of 6">
+        <section class="slide" id="s7" aria-label="Slide 7 of 7">
           <div class="inner">
             <p class="kicker">Hands-on</p>
             <h2>Workshop: two serverless projects, one correlation story</h2>
             <p class="lead">
-              The <strong>cloud-path</strong> scripts provision two Serverless projects, seed <code style="font-size:0.92em;">workshop-synth-*</code> data, create Agent Builder agents, and <strong>PUT</strong> the workflow YAML shown on slide 4.
+              The <strong>cloud-path</strong> scripts provision two Serverless projects, seed <code style="font-size:0.92em;">workshop-synth-*</code> data (with <code style="font-size:0.92em;">workshop.demo_stream</code> for the dual-mission story), create Agent Builder agents, and <strong>PUT</strong> the workflow YAML shown on slide 5.
               The <strong>Instruqt</strong> track <code style="font-size:0.88em;">elastic-a2a-serverless-agent-builder</code> teaches the same A2A story in-browser: <strong>Serverless Observability</strong> and <strong>Serverless Security</strong> each get a lab tab, both reverse-proxied through the <strong>es3-api</strong> lab host (nginx on <strong>8080</strong> / <strong>8081</strong>) after learners paste their Cloud Kibana URLs into <code style="font-size:0.88em;">.env</code>.
             </p>
             <ul>
@@ -384,7 +403,7 @@
       <div class="controls-left">
         <button type="button" class="btn" id="prev" aria-label="Previous slide">← Prev</button>
         <button type="button" class="btn" id="next" aria-label="Next slide">Next →</button>
-        <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 6</span>
+        <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 7</span>
       </div>
       <div class="dots" id="dots" aria-label="Jump to slide"></div>
       <span class="brand"><a class="prompt-lib" href="./prompts/">AE prompts</a> · Observability ↔ Security</span>

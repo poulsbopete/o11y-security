@@ -35,7 +35,7 @@ These mirror the same Cloud + Elasticsearch operations when you **do not** have 
 | Create scoped **Elasticsearch** API keys (admin bootstrap only) | `scripts/02-create-es-api-keys.sh` |
 | Apply templates + load `workshop-synth-*` data | `scripts/03-populate-indices.sh` |
 | Create lab Agent Builder agents (both Kibanas: Security detection + A2A enrichment + Observability context) | `scripts/05-agent-builder-lab-agents.sh` |
-| Create lab **Kibana Workflows** (alert → **console + Case** in one workflow; optional Case-only; **scheduled** 15m + **manual** synth inject per project) on **both** Kibanas | `scripts/06-kibana-workflows-lab.sh` |
+| Create lab **Kibana Workflows** (alert → **console + Case** in one workflow; optional Case-only; **scheduled** 15m synth inject **disabled by default** + **manual** inject per project) on **both** Kibanas | `scripts/06-kibana-workflows-lab.sh` |
 | Create **Elasticsearch query** lab rules (so you get **alerts** from `workshop-synth-*` without new ingest) | `scripts/07-lab-alert-rules.sh` |
 | **Optional:** run lab workflows once with a **synthetic** alert payload (`/api/workflows/test`) | `scripts/08-synthetic-workflow-test.sh` |
 | Create lab **Dashboards** via **Dashboards API** (`POST`/`PUT` `/api/dashboards` — no `?apiVersion=`) | `scripts/09-lab-dashboards-api.sh` |
@@ -43,7 +43,9 @@ These mirror the same Cloud + Elasticsearch operations when you **do not** have 
 | Print Kibana URLs + next steps | `scripts/04-print-next-steps.sh` |
 | All of the above | `scripts/run-all.sh` |
 
-Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.example`). Step **05** additionally needs **Node.js 18+** and the **`agent-builder.js`** file from the [kibana-agent-builder](https://github.com/elastic/agent-skills/tree/main/skills/kibana/agent-builder) skill (see `env.example` for overrides and skip flags). Step **06** uses the same Kibana bootstrap credentials as **05**; YAML lives under [`kibana-workflows/yaml/`](./kibana-workflows/yaml/). Step **07** **auto-attaches** the lab **alert console** workflow to each `.es-query` rule when **`state/kibana-workflows-lab.json`** exists (after **06**), using the same system connector the UI uses (**`system-connector-.workflows`**). You can still add or change actions in the UI; avoid attaching the separate Case-only workflow on the same rule. Set **`A2A_SKIP_ATTACH_WORKFLOW_RULE_ACTIONS=1`** to skip API attachment. **Scheduled** inject workflows (default **15m**) plus **manual** inject workflows (**Run** in **Workflows**) push `workshop-synth-*` docs—no rule action needed; disable the schedule with **`A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS=1`**. Lab rules use **`A2A_LAB_RULE_INTERVAL`** (default **5m** in **07**) to reduce Case noise. **ES|QL** or Dev Tools queries **do not** create Kibana alerting alerts — use **07** for rules that fire on existing workshop data, **10** to bulk more workshop traffic (so rules keep matching), or **08** to run workflows once with a **synthetic** alert payload (not the same as a rule-generated alert). Step **09** creates **Analytics dashboards** on each Kibana using **`POST /api/dashboards`** and **`PUT /api/dashboards/{id}`** (do **not** pass `?apiVersion=` on Serverless — Kibana returns 400).
+**Facilitator narrative (same logs, two missions):** after bulk load, synthetic docs include **`workshop.demo_stream`** (`web` \| `database` \| `os`) so you can demo **Web / DB / OS** talking points in Discover—see **[`DUAL-MISSION-DEMO.md`](./DUAL-MISSION-DEMO.md)**.
+
+Prereqs for scripts: `curl`, `jq`, `bash`, and `EC_API_KEY` in `.env` (see `env.example`). Step **05** additionally needs **Node.js 18+** and the **`agent-builder.js`** file from the [kibana-agent-builder](https://github.com/elastic/agent-skills/tree/main/skills/kibana/agent-builder) skill (see `env.example` for overrides and skip flags). Step **06** uses the same Kibana bootstrap credentials as **05**; YAML lives under [`kibana-workflows/yaml/`](./kibana-workflows/yaml/). Step **07** **auto-attaches** the lab **alert console** workflow to each `.es-query` rule when **`state/kibana-workflows-lab.json`** exists (after **06**), using the same system connector the UI uses (**`system-connector-.workflows`**). You can still add or change actions in the UI; avoid attaching the separate Case-only workflow on the same rule. Set **`A2A_SKIP_ATTACH_WORKFLOW_RULE_ACTIONS=1`** to skip API attachment. **Scheduled** inject workflows (**15m**, **`enabled: false`** in YAML until you turn them on in **Workflows**) plus **manual** inject workflows (**Run** in **Workflows**) push `workshop-synth-*` docs—no rule action needed; skip pushing scheduled YAML entirely with **`A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS=1`**. Lab rules use **`A2A_LAB_RULE_INTERVAL`** (default **5m** in **07**) to reduce Case noise. **ES|QL** or Dev Tools queries **do not** create Kibana alerting alerts — use **07** for rules that fire on existing workshop data, **10** to bulk more workshop traffic (so rules keep matching), or **08** to run workflows once with a **synthetic** alert payload (not the same as a rule-generated alert). Step **09** creates **Analytics dashboards** on each Kibana using **`POST /api/dashboards`** and **`PUT /api/dashboards/{id}`** (do **not** pass `?apiVersion=` on Serverless — Kibana returns 400).
 
 ## What stays manual (unless you use a skill)
 
@@ -180,8 +182,8 @@ Walk a buyer, SA, or exec through what this repo already stands up (two Serverle
 
 ### Suggested arc (~8–12 minutes)
 
-1. **Framing** — Slides or one sentence: projects are split **on purpose**; A2A means **API-first enrichment**, not copying all analytics into Security.
-2. **Evidence in Elasticsearch** — **Security** Kibana → **Dev Tools** (Console only): run the **`GET workshop-synth-endpoint-alerts/_search`** example from **Exercise the setup → Path 2 → step 6** above. **Observability** Kibana → same pattern for **`workshop-synth-metrics`** / **`workshop-synth-traces`**.
+1. **Framing** — Slides or one sentence: projects are split **on purpose**; A2A means **API-first enrichment**, not copying all analytics into Security. Optional **60-second detour**: same host, three log “shapes”—**`workshop.demo_stream: web`** (traces / HTTP pain), **`os`** (metrics), **`database`** (auth failures on the DB host)—see **[`DUAL-MISSION-DEMO.md`](./DUAL-MISSION-DEMO.md)**.
+2. **Evidence in Elasticsearch** — **Security** Kibana → **Dev Tools** (Console only): run the **`GET workshop-synth-endpoint-alerts/_search`** example from **Exercise the setup → Path 2 → step 6** above (documents include **`workshop.demo_stream`**). **Observability** Kibana → same pattern for **`workshop-synth-metrics`** / **`workshop-synth-traces`**.
 3. **Correlated spike** — from repo root, generate parallel Security + Observability load, then refresh Dev Tools / **Discover**:
 
    ```bash
@@ -196,7 +198,7 @@ Walk a buyer, SA, or exec through what this repo already stands up (two Serverle
 
 ### Exec / sponsor cut (~3 minutes)
 
-Slides → one **Dev Tools** query on Security → one line on **same host** spiking in Security + Observability (load script or narrative) → **Agents** list → “HTTP + workflow is the next commitment step.”
+Slides (**vase or face** slide for Web/DB/OS) → one **Dev Tools** query on Security → one line on **same host** spiking in Security + Observability (load script or narrative) → **Agents** list → “HTTP + workflow is the next commitment step.”
 
 ## Tightening API key privileges
 

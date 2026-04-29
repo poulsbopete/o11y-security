@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Simulate correlated load across Security + Observability clusters:
-#   Security: burst of failed authentication events (workshop-synth-endpoint-alerts)
-#   Observability: high CPU/memory metrics + failed traces (same host.name) on workshop-synth-*
+#   Security: burst of failed authentication events (workshop-synth-endpoint-alerts), workshop.demo_stream=database
+#   Observability: high CPU/memory metrics (demo_stream=os) + traces (demo_stream=web), same host.name on workshop-synth-*
 #
 # Uses the same credentials as load-sample-bulk.sh (ELASTIC_WORKSHOP_ENV_FILE).
 #
@@ -98,6 +98,7 @@ write_security_burst() {
       '{
         "@timestamp": $ts,
         "host": {"name": $host},
+        "workshop": {"demo_stream": "database", "narrative": "dual_mission_lab"},
         "event": {"category": ["authentication"], "outcome": "failure", "type": ["start"]},
         "user": {"name": $user},
         "source": {"ip": ("198.51.100." + ($ip_last | tostring))},
@@ -125,6 +126,7 @@ write_o11y_burst() {
       '{
         "@timestamp": $ts,
         "host.name": $host,
+        "workshop": {"demo_stream": "os", "narrative": "dual_mission_lab"},
         "system.cpu.total.norm.pct": ($cpu | tonumber),
         "system.memory.actual.used.pct": ($mem | tonumber),
         "system.diskio.read.bytes": ($disk | tonumber)
@@ -151,6 +153,7 @@ write_o11y_burst() {
         "@timestamp": $ts,
         "service": {"name": $svc},
         "host": {"name": $host},
+        "workshop": {"demo_stream": "web", "narrative": "dual_mission_lab"},
         "transaction": {"duration": {"us": $dur}},
         "event": {"outcome": $oc},
         "http": {"response": {"status_code": $code}}
@@ -201,9 +204,9 @@ done
 
 echo ""
 echo "Done. Query examples (Dev Tools / ES|QL):"
-echo "  Security:   FROM workshop-synth-endpoint-alerts | WHERE host.name == \"${HOST}\" | STATS c = COUNT(*) BY @timestamp | SORT @timestamp DESC | LIMIT 20"
-echo "  Metrics:    FROM workshop-synth-metrics | WHERE host.name == \"${HOST}\" | STATS max_cpu = MAX(system.cpu.total.norm.pct) BY @timestamp | SORT @timestamp DESC | LIMIT 20"
-echo "  Traces:     FROM workshop-synth-traces | WHERE host.name == \"${HOST}\" AND event.outcome == \"failure\" | STATS fails = COUNT(*) | LIMIT 10"
+echo "  Security (database host story): FROM workshop-synth-endpoint-alerts | WHERE host.name == \"${HOST}\" AND workshop.demo_stream == \"database\" | STATS c = COUNT(*) BY @timestamp | SORT @timestamp DESC | LIMIT 20"
+echo "  OS signals:   FROM workshop-synth-metrics | WHERE host.name == \"${HOST}\" AND workshop.demo_stream == \"os\" | STATS max_cpu = MAX(system.cpu.total.norm.pct) BY @timestamp | SORT @timestamp DESC | LIMIT 20"
+echo "  Web / API:    FROM workshop-synth-traces | WHERE host.name == \"${HOST}\" AND workshop.demo_stream == \"web\" AND event.outcome == \"failure\" | STATS fails = COUNT(*) | LIMIT 10"
 echo ""
 echo "Note: ES|QL and Dev Tools searches do **not** create Kibana **alerting** alerts or run alert-triggered **Workflows**."
 echo "For lab rules on workshop indices, use cloud-path **scripts/07-lab-alert-rules.sh** (Observability rules use consumer **observability** so matches show under **Observability → Alerts**)."
