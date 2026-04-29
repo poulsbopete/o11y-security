@@ -4,6 +4,16 @@ Facilitator notes for the **same telemetry, two missions** story (Observability 
 
 This narrative is intentionally **plain**—three ubiquitous log planes, two readouts—so it lands for **Serverless** and **self-managed** customers alike.
 
+## Observability & Security Cases (alert workflows)
+
+**New titles only appear on newly opened cases.** Older rows (e.g. “Resource saturation”, “Error budget burn”) were created by the previous Liquid templates. After **`06-kibana-workflows-lab.sh`** refreshes **A2A Lab — O11y alert log** / **O11y alert to Case** / **alert audit (console)** / **alert to Security Case**, the next time a lab rule fires you should see:
+
+- **Traces** rule → suffix **Web / API — …** in the case title.
+- **Metrics** rule → **OS / host — …**
+- **Endpoint** rule (Security) → **Database / auth — …** or **Database — …**
+
+Existing cases are not renamed in place.
+
 ## Analytics dashboards
 
 After **`scripts/09-lab-dashboards-api.sh`**, open **Analytics → Dashboards** in each Kibana and search **`A2A Lab`**. You get:
