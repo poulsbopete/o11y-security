@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Simulate correlated load across Security + Observability clusters:
 #   Security: burst of failed authentication events (workshop-synth-endpoint-alerts), workshop.demo_stream=database
-#   Observability: high CPU/memory metrics (demo_stream=os) + traces (demo_stream=web), same host.name on workshop-synth-*
+#   Observability + mirrored Security copy: metrics (demo_stream=os) + traces (demo_stream=web), same host.name
+#   (O11y burst is posted to **both** clusters unless WORKSHOP_SKIP_MIRROR_O11Y_INDICES_TO_SECURITY=1)
 #
 # Uses the same credentials as load-sample-bulk.sh (ELASTIC_WORKSHOP_ENV_FILE).
 #
@@ -12,6 +13,7 @@
 #   SIMULATE_HOST         — host.name / host.name (default: prod-db-01)
 #   SIMULATE_SERVICE      — APM service name in traces (default: inventory-api)
 #   SIMULATE_DRY_RUN      — if 1, print sizes only, no POST
+#   WORKSHOP_SKIP_MIRROR_O11Y_INDICES_TO_SECURITY — if 1, do not copy metrics+traces bulk to Security ES (default: mirror)
 #
 # Example (from repo root, after workshop.env exists):
 #   export ELASTIC_WORKSHOP_ROOT="$(pwd)/elastic-agent-builder-a2a-workshop"
@@ -180,18 +182,30 @@ while [ "$r" -le "$ROUNDS" ]; do
   if [ "$DRY" = "1" ]; then
     bulk_ndjson "$SECURITY_ES_URL" "$SECURITY_API_KEY" "$sec_f" &
     bulk_ndjson "$O11Y_ES_URL" "$O11Y_API_KEY" "$o11y_f" &
+    if [ "${WORKSHOP_SKIP_MIRROR_O11Y_INDICES_TO_SECURITY:-0}" != "1" ]; then
+      bulk_ndjson "$SECURITY_ES_URL" "$SECURITY_API_KEY" "$o11y_f" &
+    fi
     wait
   else
     bulk_ndjson "$SECURITY_ES_URL" "$SECURITY_API_KEY" "$sec_f" &
     pid1=$!
     bulk_ndjson "$O11Y_ES_URL" "$O11Y_API_KEY" "$o11y_f" &
     pid2=$!
+    pid3=""
+    if [ "${WORKSHOP_SKIP_MIRROR_O11Y_INDICES_TO_SECURITY:-0}" != "1" ]; then
+      bulk_ndjson "$SECURITY_ES_URL" "$SECURITY_API_KEY" "$o11y_f" &
+      pid3=$!
+    fi
     s1=0
     s2=0
+    s3=0
     wait "$pid1" || s1=$?
     wait "$pid2" || s2=$?
-    if [ "$s1" -ne 0 ] || [ "$s2" -ne 0 ]; then
-      echo "Round $r failed (Security exit=$s1 Observability exit=$s2)." >&2
+    if [ -n "$pid3" ]; then
+      wait "$pid3" || s3=$?
+    fi
+    if [ "$s1" -ne 0 ] || [ "$s2" -ne 0 ] || [ "$s3" -ne 0 ]; then
+      echo "Round $r failed (Security endpoint=$s1 O11y metrics+traces=$s2 Security mirror=$s3)." >&2
       exit 1
     fi
   fi
@@ -203,8 +217,8 @@ while [ "$r" -le "$ROUNDS" ]; do
 done
 
 echo ""
-echo "Done. Query examples (Dev Tools / ES|QL):"
-echo "  Security (database host story): FROM workshop-synth-endpoint-alerts | WHERE host.name == \"${HOST}\" AND workshop.demo_stream == \"database\" | STATS c = COUNT(*) BY @timestamp | SORT @timestamp DESC | LIMIT 20"
+echo "Done. Query examples (Dev Tools / ES|QL — same queries work in **Security** or **Observability** Kibana after mirror):"
+echo "  Database host story: FROM workshop-synth-endpoint-alerts | WHERE host.name == \"${HOST}\" AND workshop.demo_stream == \"database\" | STATS c = COUNT(*) BY @timestamp | SORT @timestamp DESC | LIMIT 20"
 echo "  OS signals:   FROM workshop-synth-metrics | WHERE host.name == \"${HOST}\" AND workshop.demo_stream == \"os\" | STATS max_cpu = MAX(system.cpu.total.norm.pct) BY @timestamp | SORT @timestamp DESC | LIMIT 20"
 echo "  Web / API:    FROM workshop-synth-traces | WHERE host.name == \"${HOST}\" AND workshop.demo_stream == \"web\" AND event.outcome == \"failure\" | STATS fails = COUNT(*) | LIMIT 10"
 echo ""

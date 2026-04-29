@@ -102,6 +102,6 @@ Use the **same narrative** as **[cloud-path README → Demo the setup](../elasti
 | Script | Purpose |
 | ------ | ------- |
 | [`scripts/apply-index-templates.sh`](./scripts/apply-index-templates.sh) | PUT index templates on Security cluster |
-| [`scripts/load-sample-bulk.sh`](./scripts/load-sample-bulk.sh) | `_bulk` sample data into `workshop-synth-*` |
+| [`scripts/load-sample-bulk.sh`](./scripts/load-sample-bulk.sh) | `_bulk` sample data into `workshop-synth-*` (mirrors metrics + traces to **Security** ES too unless `WORKSHOP_SKIP_MIRROR_O11Y_INDICES_TO_SECURITY=1`) |
 | [`scripts/simulate-cross-domain-load.sh`](./scripts/simulate-cross-domain-load.sh) | Parallel load: auth failures (Security) + metrics/traces (Observability); adds **`workshop.demo_stream`** (`database` / `os` / `web`) |
 | [`scripts/workshop-common.sh`](./scripts/workshop-common.sh) | Helpers for Instruqt lifecycle scripts |
