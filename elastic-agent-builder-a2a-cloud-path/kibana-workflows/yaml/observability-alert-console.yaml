@@ -2,7 +2,7 @@ name: A2A Lab — O11y alert log
 description: >
   Workshop demo — logs alert context, **POSTs to Security Agent Builder /converse** (default URL + Basic auth from
   bootstrap.json at push time; optional **SECURITY_AGENT_ENDPOINT** + API key in workshop.env), then opens an Observability
-  case with the model reply embedded. Avoid also attaching **O11y alert to Case** on the same rule.
+  case with the model reply embedded. Native `http` is capped near Kibana’s default connector timeout (~60s). Avoid also attaching **O11y alert to Case** on the same rule.
 enabled: true
 tags:
   - a2a-lab
@@ -25,8 +25,10 @@ steps:
       body: |
         {
           "agent_id": "a2a-lab-security-detection",
-          "input": "Observability alert peer review — host {{ event.alerts[0].host.name }}; rule: {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. From a security detection stance, note whether this warrants SOC escalation vs operational handling only."
+          "input": "Observability alert peer review — host {{ event.alerts[0].host.name }}; rule: {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. **Stay under ~45s wall clock:** reason mostly from this alert; avoid long investigations; at most one optional tight query (`LIMIT 50`) if essential. ≤6 bullets: SOC vs ops-only."
         }
+    on-failure:
+      continue: true
   - name: create_a_case
     type: kibana.createCaseDefaultSpace
     with:
@@ -48,6 +50,9 @@ steps:
 
         **Security agent response (raw)**:
         {{ steps.a2a_call_security_agent.output }}
+        {% if steps.a2a_call_security_agent.error %}
+        **Peer HTTP step error** (case still opened): {{ steps.a2a_call_security_agent.error }}
+        {% endif %}
 
         | Field | Value |
         | --- | --- |

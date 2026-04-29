@@ -1,7 +1,8 @@
 name: A2A Lab — O11y alert to Case
 description: >
   Case-only Observability workflow — **HTTP to Security Agent Builder /converse** then create case (defaults from **bootstrap.json**
-  via **06**; optional **SECURITY_AGENT_ENDPOINT** in workshop.env). Prefer **A2A Lab — O11y alert log** on rules instead
+  via **06**; optional **SECURITY_AGENT_ENDPOINT** in workshop.env). Native `http` is still limited to Kibana’s default
+  connector timeout (~60s); prompts avoid heavy tool use. Prefer **A2A Lab — O11y alert log** on rules instead
   (it logs + creates a case). Do not attach both workflows to the same rule or you will get duplicate cases.
 enabled: true
 tags:
@@ -21,8 +22,10 @@ steps:
       body: |
         {
           "agent_id": "a2a-lab-security-detection",
-          "input": "Observability alert peer review — host {{ event.alerts[0].host.name }}; rule: {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. From a security detection stance, note whether this warrants SOC escalation vs operational handling only."
+          "input": "Observability alert peer review — host {{ event.alerts[0].host.name }}; rule: {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. **Stay under ~45s wall clock:** reason mostly from this alert; avoid long investigations; at most one optional tight query (`LIMIT 50`) if essential. ≤6 bullets: SOC vs ops-only."
         }
+    on-failure:
+      continue: true
   - name: create_a_case
     type: kibana.createCaseDefaultSpace
     with:
@@ -43,6 +46,9 @@ steps:
 
         **Security agent response (raw)**:
         {{ steps.a2a_call_security_agent.output }}
+        {% if steps.a2a_call_security_agent.error %}
+        **Peer HTTP step error** (case still opened): {{ steps.a2a_call_security_agent.error }}
+        {% endif %}
 
         ## Backlog (GitHub)
         Open **Issues → New issue** in this workshop repo → **Observability-side scenario** or **Cross-domain A2A**; paste the **Alert id** below.

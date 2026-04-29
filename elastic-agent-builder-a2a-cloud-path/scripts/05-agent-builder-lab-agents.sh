@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # After Serverless projects are up and workshop data exists, create lab Agent Builder
 # agents via the official kibana-agent-builder CLI (Elastic Agent Skills).
+# When an agent already exists, instructions are re-synced from the repo on every run
+# (so edits to agent-instructions/*.txt reach Kibana without manual UI edits).
 #
 # Requires: Node.js 18+ with fetch(), jq, curl.
 # Optional: AGENT_BUILDER_JS path to agent-builder.js; else common install paths are tried.
@@ -153,7 +155,9 @@ upsert_agent() {
   tools_file="$4"
   instr_file="$5"
   if agent_exists "$aid"; then
-    echo "  Agent ${aid} already exists."
+    echo "  Agent ${aid} already exists; syncing instructions from ${instr_file}…"
+    instr="$(cat "$instr_file")"
+    run_ab update-agent --id "$aid" --instructions "$instr"
     return 0
   fi
   local tools_csv instr

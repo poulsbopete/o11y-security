@@ -2,7 +2,8 @@ name: A2A Lab — alert audit (console)
 description: >
   Workshop demo — logs alert payload, **POSTs to Observability Agent Builder /converse** (default URL + Basic auth from
   bootstrap.json at push time; optional **O11Y_AGENT_ENDPOINT** + **O11Y_API_KEY** in workshop.env for a custom URL),
-  then opens an Elastic Security case with the model reply embedded. Avoid also attaching **alert to Security Case** on the same rule.
+  then opens an Elastic Security case with the model reply embedded. Native `http` is capped near Kibana’s default
+  connector timeout (~60s). Avoid also attaching **alert to Security Case** on the same rule.
 enabled: true
 tags:
   - a2a-lab
@@ -25,8 +26,10 @@ steps:
       body: |
         {
           "agent_id": "a2a-lab-observability-context",
-          "input": "Security alert peer review — host {{ event.alerts[0].host.name }}; rule: {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. Summarize workshop-synth-metrics and workshop-synth-traces for ~15m; state whether signals suggest coordinated security concern vs ops-only noise."
+          "input": "[A2A_WF] Security alert peer review — host {{ event.alerts[0].host.name }}; rule: {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}."
         }
+    on-failure:
+      continue: true
   - name: create_a_case
     type: kibana.createCaseDefaultSpace
     with:
@@ -49,6 +52,9 @@ steps:
 
         **Observability agent response (raw)**:
         {{ steps.a2a_call_observability_agent.output }}
+        {% if steps.a2a_call_observability_agent.error %}
+        **Peer HTTP step error** (case still opened): {{ steps.a2a_call_observability_agent.error }}
+        {% endif %}
 
         | Field | Value |
         | --- | --- |

@@ -4,7 +4,8 @@ description: >
   metrics doc into workshop-synth-* so dashboards and rules see fresh activity without flooding Cases.
   Use **A2A Lab — O11y synth inject (manual)** for on-demand runs. Timestamps use Liquid **"now"** (ISO) for Elasticsearch.
   Not the A2A bridge: no Security HTTP/agent steps—only O11y index writes. Bridge = Security enrichment agent → O11Y_AGENT_ENDPOINT (AGENT_BUILDER.md).
-enabled: true
+  Pushed **disabled** by default — turn on in Workflows when you want the 15m schedule.
+enabled: false
 tags:
   - a2a-lab
   - scheduled

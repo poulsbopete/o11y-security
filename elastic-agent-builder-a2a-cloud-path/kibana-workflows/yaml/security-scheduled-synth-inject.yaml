@@ -4,7 +4,8 @@ description: >
   workshop-synth-endpoint-alerts. Use **A2A Lab — Security synth inject (manual)** for on-demand runs.
   Timestamps use Liquid **"now"** (ISO) for Elasticsearch.
   Not cross-project A2A: no outbound call to Observability here. A2A = Security Agent Builder enrichment → O11Y_AGENT_ENDPOINT (AGENT_BUILDER.md).
-enabled: true
+  Pushed **disabled** by default — turn on in Workflows when you want the 15m schedule.
+enabled: false
 tags:
   - a2a-lab
   - scheduled
