@@ -5,6 +5,8 @@
 # This does **not** replace **ingest + alerting rules**: it does not bulk new docs or force a rule
 # schedule. To push traffic so **07** lab rules match fresh data, run **10-lab-simulate-traffic.sh**.
 #
+# Synthetic payloads use the **real lab rule name substrings** (traces / endpoint) so case titles
+# exercise the dual-mission Liquid in the alert workflows. Alert UUID last digit selects the drill variant.
 # The **console** lab workflows (**A2A Lab — O11y alert log** / **alert audit (console)**) each run
 # **console + createCase**; this script therefore creates **real** Security / Observability cases
 # unless you skip it.
@@ -39,9 +41,27 @@ SYNTH_INPUTS="$(jq -n '{
       {
         kibana: {
           alert: {
-            rule: {name: "A2A Lab synthetic (workflow test)", uuid: "00000000-0000-0000-0000-000000000001"},
-            reason: "Synthetic inputs from scripts/08-synthetic-workflow-test.sh",
+            rule: {name: "A2A Lab — workshop data (traces)", uuid: "00000000-0000-0000-0000-00000000000a"},
+            reason: "Synthetic inputs from scripts/08-synthetic-workflow-test.sh (dual-mission title check: traces → Web / API)",
             uuid: "00000000-0000-0000-0000-000000000002",
+            status: "active"
+          }
+        },
+        host: {name: "prod-db-01"}
+      }
+    ]
+  }
+}')"
+
+SYNTH_INPUTS_SEC="$(jq -n '{
+  event: {
+    alerts: [
+      {
+        kibana: {
+          alert: {
+            rule: {name: "A2A Lab — workshop data (endpoint alerts)", uuid: "00000000-0000-0000-0000-000000000001"},
+            reason: "Synthetic inputs from scripts/08-synthetic-workflow-test.sh (dual-mission title check: endpoint → Database)",
+            uuid: "00000000-0000-0000-0000-000000000003",
             status: "active"
           }
         },
@@ -53,9 +73,10 @@ SYNTH_INPUTS="$(jq -n '{
 
 wf_test() {
   local base="$1" user="$2" pass="$3" wf_id="$4" label="$5"
+  local inputs_json="${6:-$SYNTH_INPUTS}"
   local tmp code
   tmp="$(mktemp)"
-  jq -n --arg wid "$wf_id" --argjson inputs "$SYNTH_INPUTS" '{workflowId:$wid, inputs:$inputs}' >"$tmp"
+  jq -n --arg wid "$wf_id" --argjson inputs "$inputs_json" '{workflowId:$wid, inputs:$inputs}' >"$tmp"
   code="$("$CURL" -sS -o /tmp/wt.json -w "%{http_code}" -u "${user}:${pass}" \
     -H "kbn-xsrf: true" -H "Content-Type: application/json" \
     -X POST "${base%/}/api/workflows/test" -d @"$tmp")" || true
@@ -77,7 +98,7 @@ o11y_user="$(jq -r '.observability.credentials.username // empty' "$BOOT")"
 o11y_pass="$(jq -r '.observability.credentials.password // empty' "$BOOT")"
 
 echo "== Synthetic workflow test: Security (console + case in one workflow) =="
-wf_test "$sec_kb" "$sec_user" "$sec_pass" "$(jq -r '.security.alert_console' "$WF_STATE")" "Security alert audit (console)"
+wf_test "$sec_kb" "$sec_user" "$sec_pass" "$(jq -r '.security.alert_console' "$WF_STATE")" "Security alert audit (console)" "$SYNTH_INPUTS_SEC"
 
 if [ "${A2A_TEST_WORKFLOWS_INCLUDE_CASES:-0}" = "1" ]; then
   wf_test "$sec_kb" "$sec_user" "$sec_pass" "$(jq -r '.security.alert_to_case' "$WF_STATE")" "Security case-only (extra)"
