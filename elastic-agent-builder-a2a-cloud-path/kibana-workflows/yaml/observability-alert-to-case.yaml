@@ -44,10 +44,10 @@ steps:
         ## A2A — Security peer check (O11y → Security, HTTP)
         **POST** to Security `api/agent_builder/converse` (defaults from **bootstrap.json** when **06** runs, or **SECURITY_AGENT_ENDPOINT** override). Use this block to sanity-check that the Observability signal is **not** hiding obvious security concerns.
 
-        **Security agent response (raw)**:
-        {{ steps.a2a_call_security_agent.output | json:2 }}
+        **Security agent response (raw)** — capped for Kibana case **description** limit (30,000 chars):
+        {{ steps.a2a_call_security_agent.output | json:2 | slice: 0, 16000 }}
         {% if steps.a2a_call_security_agent.error %}
-        **Peer HTTP step error** (case still opened): {{ steps.a2a_call_security_agent.error | json:2 }}
+        **Peer HTTP step error** (case still opened): {{ steps.a2a_call_security_agent.error | json:2 | slice: 0, 4000 }}
         {% endif %}
 
         __WF_SIMULATED_VENDOR_A2A_CASE_SECTION__
