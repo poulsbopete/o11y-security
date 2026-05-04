@@ -2,6 +2,13 @@
 # Create or update lab Kibana Workflows (YAML) on both Serverless Kibanas via
 # POST /api/workflows/workflow and PUT /api/workflows/workflow/{id}.
 #
+# Elastic Agent Skills alignment (install: github.com/elastic/agent-skills):
+#   - kibana-alerting-rules — attach a workflow to a rule using the workflow id as the action
+#     connector id; params: {} so alert context flows into the workflow; every mutating Kibana
+#     request needs header kbn-xsrf: true; only enabled workflows appear in the rule picker.
+#   - kibana-connectors references/workflows.md — alert trigger YAML, {{ event.alerts[0].* }}
+#     fields, step patterns; Kibana Workflows remain preview on Serverless (APIs may change).
+#
 # Requires: curl, jq, bash. Uses bootstrap admin credentials (same as 05).
 #
 # Writes: state/kibana-workflows-lab.json (workflow ids for idempotent updates).
