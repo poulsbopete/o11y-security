@@ -277,4 +277,4 @@ echo "  • Or in each Kibana: **Stack Management → Rules** → rule → **Act
 echo "  • The separate **… alert to Case** workflows are optional (case-only); do **not** attach them on the same rule as the log/audit workflow."
 echo "  • **Scheduled inject** (**15m**) is **disabled** in YAML by default — enable the workflow in **Workflows** for automatic pushes; **manual inject** runs only when you click **Run**."
 echo "  • To stop all background injectors: **A2A_SKIP_SCHEDULED_SYNTH_WORKFLOWS=1** (keep manual), or disable the scheduled workflow in Kibana."
-echo "  • **A2A URLs:** **02** writes **O11Y_AGENT_ENDPOINT** / **SECURITY_AGENT_ENDPOINT** (converse URLs from bootstrap). **06** appends them if your **workshop.env** predates that. Non-converse overrides use **ApiKey** auth from the same file."
+echo "  • **Manual synth inject** now chains **POST /api/workflows/test** so **alert log** / **alert audit (console)** run once per Run (no 5m rule wait); failures on that hop are non-fatal (`on-failure: continue`)."

@@ -4,6 +4,8 @@
 #
 # This does **not** replace **ingest + alerting rules**: it does not bulk new docs or force a rule
 # schedule. To push traffic so **07** lab rules match fresh data, run **10-lab-simulate-traffic.sh**.
+# **Manual synth inject** workflows (after **06**) also POST `/api/workflows/test` once per Run so the
+# alert-console workflow fires immediately without waiting for the rule interval.
 #
 # Synthetic payloads use the **real lab rule name substrings** (traces / endpoint) so case titles
 # exercise the dual-mission Liquid in the alert workflows. Alert UUID last digit selects the drill variant.

@@ -2,8 +2,10 @@ name: A2A Lab — O11y synth inject (manual)
 description: >
   On-demand (Run in Workflows UI): injects one failed trace and one high-CPU metrics doc into
   workshop-synth-* for demos without waiting for the 15m schedule. Same steps as the scheduled injector.
+  **Then POSTs `/api/workflows/test`** so **A2A Lab — O11y alert log** runs once with a synthetic alert payload (instant
+  Case + console path; no waiting for the **5m** rule schedule). Best-effort: HTTP step uses `on-failure: continue`.
   Documents include **workshop.demo_stream** (**web** on traces, **os** on metrics) for dual-mission dashboards and ES|QL.
-  Does not call Security or perform A2A—only Elasticsearch writes on this Observability project.
+  Does not call Security Kibana directly—only this project’s Elasticsearch + Kibana workflow test API.
   The Security↔O11y bridge for this lab is the Security enrichment agent HTTPS call to the published Observability agent (O11Y_AGENT_ENDPOINT); see AGENT_BUILDER.md.
 enabled: true
 tags:
@@ -56,3 +58,38 @@ steps:
           narrative: workflow_inject
         labels:
           a2a_injected: manual-workflow
+  - name: run_o11y_alert_log_once
+    type: http
+    with:
+      url: "__WF_O11Y_KIBANA_BASE__/api/workflows/test"
+      method: POST
+      headers:
+        Content-Type: application/json
+        kbn-xsrf: "true"
+        Authorization: "__WF_O11Y_AUTHORIZATION__"
+      body: |
+        {
+          "workflowId": "__WF_O11Y_ALERT_CONSOLE_WORKFLOW_ID__",
+          "inputs": {
+            "event": {
+              "alerts": [
+                {
+                  "kibana": {
+                    "alert": {
+                      "rule": {
+                        "name": "A2A Lab — workshop data (traces)",
+                        "uuid": "00000000-0000-0000-0000-000000000030"
+                      },
+                      "reason": "Chained after manual O11y synth inject — one-shot /api/workflows/test (see scripts/08-synthetic-workflow-test.sh).",
+                      "uuid": "00000000-0000-0000-0000-000000000031",
+                      "status": "active"
+                    }
+                  },
+                  "host": { "name": "prod-db-01" }
+                }
+              ]
+            }
+          }
+        }
+    on-failure:
+      continue: true

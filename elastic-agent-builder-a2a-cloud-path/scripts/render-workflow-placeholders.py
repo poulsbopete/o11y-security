@@ -13,7 +13,10 @@ Auth rules:
   * Any other URL → ApiKey from O11Y_API_KEY or SECURITY_AGENT_API_KEY / SECURITY_API_KEY
 
 Placeholders: __WF_O11Y_AGENT_ENDPOINT__, __WF_O11Y_AUTHORIZATION__, __WF_SECURITY_*__,
-  __WF_SIMULATED_VENDOR_A2A_CASE_SECTION__ (multi-line markdown from kibana-workflows/snippets/)
+  __WF_SIMULATED_VENDOR_A2A_CASE_SECTION__ (multi-line markdown from kibana-workflows/snippets/),
+  __WF_O11Y_KIBANA_BASE__, __WF_SEC_KIBANA_BASE__ (Kibana origins from bootstrap),
+  __WF_O11Y_ALERT_CONSOLE_WORKFLOW_ID__, __WF_SEC_ALERT_CONSOLE_WORKFLOW_ID__ (from state/kibana-workflows-lab.json;
+  required when present in YAML — run scripts/06 so alert-console workflows are registered first in the same run)
 """
 from __future__ import annotations
 
@@ -150,6 +153,50 @@ def main() -> int:
     text = text.replace("__WF_SECURITY_AGENT_API_KEY__", "")
 
     text = text.replace("__WF_SIMULATED_VENDOR_A2A_CASE_SECTION__", simulated_vendor_a2a_snippet(src))
+
+    boot_path = os.environ.get("A2A_BOOTSTRAP_JSON", "").strip()
+    wf_o11y = ""
+    wf_sec = ""
+    if boot_path:
+        wf_state_path = Path(boot_path).resolve().parent / "kibana-workflows-lab.json"
+        if wf_state_path.is_file():
+            try:
+                wfd = json.loads(wf_state_path.read_text(encoding="utf-8"))
+                wf_o11y = (wfd.get("observability") or {}).get("alert_console") or ""
+                wf_sec = (wfd.get("security") or {}).get("alert_console") or ""
+            except (json.JSONDecodeError, OSError) as e:
+                print(f"render-workflow-placeholders: could not read {wf_state_path}: {e}", file=sys.stderr)
+                return 1
+    if boot:
+        text = text.replace(
+            "__WF_O11Y_KIBANA_BASE__",
+            boot["observability"]["endpoints"]["kibana"].rstrip("/"),
+        )
+        text = text.replace(
+            "__WF_SEC_KIBANA_BASE__",
+            boot["security"]["endpoints"]["kibana"].rstrip("/"),
+        )
+    else:
+        text = text.replace("__WF_O11Y_KIBANA_BASE__", "")
+        text = text.replace("__WF_SEC_KIBANA_BASE__", "")
+
+    if "__WF_O11Y_ALERT_CONSOLE_WORKFLOW_ID__" in text:
+        if not wf_o11y:
+            print(
+                "render-workflow-placeholders: missing observability alert_console id in "
+                "state/kibana-workflows-lab.json (run **06** so that workflow is created before manual inject YAML).",
+                file=sys.stderr,
+            )
+            return 1
+        text = text.replace("__WF_O11Y_ALERT_CONSOLE_WORKFLOW_ID__", wf_o11y)
+    if "__WF_SEC_ALERT_CONSOLE_WORKFLOW_ID__" in text:
+        if not wf_sec:
+            print(
+                "render-workflow-placeholders: missing security alert_console id in state/kibana-workflows-lab.json.",
+                file=sys.stderr,
+            )
+            return 1
+        text = text.replace("__WF_SEC_ALERT_CONSOLE_WORKFLOW_ID__", wf_sec)
 
     with open(dst, "w", encoding="utf-8") as f:
         f.write(text)

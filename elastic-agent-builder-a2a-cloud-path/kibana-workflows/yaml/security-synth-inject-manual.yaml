@@ -2,8 +2,10 @@ name: A2A Lab — Security synth inject (manual)
 description: >
   On-demand (Run in Workflows UI): injects one failed authentication-style event into
   workshop-synth-endpoint-alerts for demos without waiting for the 15m schedule.
+  **Then POSTs `/api/workflows/test`** so **A2A Lab — alert audit (console)** runs once with a synthetic alert payload
+  (instant Case + console on Security; no scheduler wait). Best-effort: HTTP step uses `on-failure: continue`.
   Document includes **workshop.demo_stream: database** for dual-mission dashboards and ES|QL.
-  Does not call Observability—only Elasticsearch writes on this Security project.
+  Does not call Observability Kibana—only this project’s Elasticsearch + Kibana workflow test API.
   The lab’s Security↔O11y A2A is the enrichment agent calling the published Observability agent over HTTPS (O11Y_AGENT_ENDPOINT); see AGENT_BUILDER.md.
 enabled: true
 tags:
@@ -41,3 +43,38 @@ steps:
         message: manual workflow auth failure (lab inject)
         labels:
           a2a_injected: manual-workflow
+  - name: run_security_alert_audit_once
+    type: http
+    with:
+      url: "__WF_SEC_KIBANA_BASE__/api/workflows/test"
+      method: POST
+      headers:
+        Content-Type: application/json
+        kbn-xsrf: "true"
+        Authorization: "__WF_SECURITY_AUTHORIZATION__"
+      body: |
+        {
+          "workflowId": "__WF_SEC_ALERT_CONSOLE_WORKFLOW_ID__",
+          "inputs": {
+            "event": {
+              "alerts": [
+                {
+                  "kibana": {
+                    "alert": {
+                      "rule": {
+                        "name": "A2A Lab — workshop data (endpoint alerts)",
+                        "uuid": "00000000-0000-0000-0000-000000000040"
+                      },
+                      "reason": "Chained after manual Security synth inject — one-shot /api/workflows/test (see scripts/08-synthetic-workflow-test.sh).",
+                      "uuid": "00000000-0000-0000-0000-000000000041",
+                      "status": "active"
+                    }
+                  },
+                  "host": { "name": "prod-db-01" }
+                }
+              ]
+            }
+          }
+        }
+    on-failure:
+      continue: true
