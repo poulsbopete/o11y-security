@@ -12,7 +12,8 @@ Auth rules:
   * URL path contains /api/agent_builder/converse → Basic auth for that project's Kibana admin (from bootstrap)
   * Any other URL → ApiKey from O11Y_API_KEY or SECURITY_AGENT_API_KEY / SECURITY_API_KEY
 
-Placeholders: __WF_O11Y_AGENT_ENDPOINT__, __WF_O11Y_AUTHORIZATION__, __WF_SECURITY_*__
+Placeholders: __WF_O11Y_AGENT_ENDPOINT__, __WF_O11Y_AUTHORIZATION__, __WF_SECURITY_*__,
+  __WF_SIMULATED_VENDOR_A2A_CASE_SECTION__ (multi-line markdown from kibana-workflows/snippets/)
 """
 from __future__ import annotations
 
@@ -20,6 +21,7 @@ import base64
 import json
 import os
 import sys
+from pathlib import Path
 
 
 def read_bootstrap() -> dict | None:
@@ -37,6 +39,26 @@ def basic_token(user: str, password: str) -> str:
 
 def is_converse_url(url: str) -> bool:
     return "/api/agent_builder/converse" in url
+
+
+def simulated_vendor_a2a_snippet(src_yaml: str, indent: str = "        ") -> str:
+    """Load workshop markdown for fake multi-vendor A2A rows.
+
+    The placeholder sits on a YAML line already indented (e.g. ``        __WF_...__``); only
+    continuation lines need the same indent prefix.
+    """
+    path = Path(src_yaml).resolve().parent.parent / "snippets" / "simulated-vendor-a2a-case-section.md"
+    if not path.is_file():
+        return f"{indent}_Simulated vendor A2A snippet missing: expected {path}_"
+    raw = path.read_text(encoding="utf-8").strip("\n")
+    if not raw:
+        return f"{indent}_Simulated vendor A2A snippet is empty._"
+    lines = raw.split("\n")
+    if not lines:
+        return f"{indent}_Simulated vendor A2A snippet is empty._"
+    # First line follows the YAML line's indent (prefix before the placeholder token).
+    out: list[str] = [lines[0]] + [indent + (ln if ln else "") for ln in lines[1:]]
+    return "\n".join(out)
 
 
 def o11y_pair(boot: dict | None, explicit: str, api_key: str) -> tuple[str, str]:
@@ -126,6 +148,8 @@ def main() -> int:
     text = text.replace("__WF_SECURITY_AUTHORIZATION__", sec_auth)
     text = text.replace("__WF_O11Y_API_KEY__", "")
     text = text.replace("__WF_SECURITY_AGENT_API_KEY__", "")
+
+    text = text.replace("__WF_SIMULATED_VENDOR_A2A_CASE_SECTION__", simulated_vendor_a2a_snippet(src))
 
     with open(dst, "w", encoding="utf-8") as f:
         f.write(text)

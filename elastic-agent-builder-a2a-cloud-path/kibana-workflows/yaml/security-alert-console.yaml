@@ -57,6 +57,8 @@ steps:
         **Peer HTTP step error** (case still opened): {{ steps.a2a_call_observability_agent.error }}
         {% endif %}
 
+        __WF_SIMULATED_VENDOR_A2A_CASE_SECTION__
+
         | Field | Value |
         | --- | --- |
         | **Rule** | {{ event.alerts[0].kibana.alert.rule.name }} |
