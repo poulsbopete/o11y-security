@@ -52,9 +52,9 @@ steps:
         context**—not a substitute for SIEM verdicts.
 
         **Observability agent response (raw)**:
-        {{ steps.a2a_call_observability_agent.output }}
+        {{ steps.a2a_call_observability_agent.output | json:2 }}
         {% if steps.a2a_call_observability_agent.error %}
-        **Peer HTTP step error** (case still opened): {{ steps.a2a_call_observability_agent.error }}
+        **Peer HTTP step error** (case still opened): {{ steps.a2a_call_observability_agent.error | json:2 }}
         {% endif %}
 
         __WF_SIMULATED_VENDOR_A2A_CASE_SECTION__
