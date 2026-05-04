@@ -1,9 +1,8 @@
 name: A2A Lab — O11y alert to Case
 description: >
-  Case-only Observability workflow — **HTTP to Security Agent Builder /converse** then create case (defaults from **bootstrap.json**
-  via **06**; optional **SECURITY_AGENT_ENDPOINT** in workshop.env). Native `http` is still limited to Kibana’s default
-  connector timeout (~60s); prompts avoid heavy tool use. Prefer **A2A Lab — O11y alert log** on rules instead
-  (it logs + creates a case). Do not attach both workflows to the same rule or you will get duplicate cases.
+  **[A2A lab refresh]** Case-only Observability — **HTTP to Security Agent Builder /converse** then create case.
+  Case body: peer output **JSON**, simulated vendor A2A block, drill text. Defaults from **bootstrap.json** via **06**;
+  optional **SECURITY_AGENT_ENDPOINT**. Prefer **A2A Lab — O11y alert log** on rules. Do not attach both workflows to one rule.
 enabled: true
 tags:
   - a2a-lab

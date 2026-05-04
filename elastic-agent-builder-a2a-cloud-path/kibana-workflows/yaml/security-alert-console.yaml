@@ -1,9 +1,8 @@
 name: A2A Lab — alert audit (console)
 description: >
-  Workshop demo — logs alert payload, **POSTs to Observability Agent Builder /converse** (default URL + Basic auth from
-  bootstrap.json at push time; optional **O11Y_AGENT_ENDPOINT** + **O11Y_API_KEY** in workshop.env for a custom URL),
-  then opens an Elastic Security case with the model reply embedded. Native `http` is capped near Kibana’s default
-  connector timeout (~60s). Avoid also attaching **alert to Security Case** on the same rule.
+  **[A2A lab refresh]** Workshop demo — logs alert payload, **POSTs to Observability Agent Builder /converse**
+  (bootstrap.json and converse defaults at push; optional **O11Y_AGENT_ENDPOINT** + **O11Y_API_KEY** in workshop.env), then opens a Security case with peer response **JSON** (`json:2`) and **simulated multi-vendor A2A**
+  rows in the description. Native `http` ~60s cap. Do not also attach **alert to Security Case** on the same rule.
 enabled: true
 tags:
   - a2a-lab

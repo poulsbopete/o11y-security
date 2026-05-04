@@ -1,8 +1,9 @@
 name: A2A Lab — O11y alert log
 description: >
-  Workshop demo — logs alert context, **POSTs to Security Agent Builder /converse** (default URL + Basic auth from
-  bootstrap.json at push time; optional **SECURITY_AGENT_ENDPOINT** + API key in workshop.env), then opens an Observability
-  case with the model reply embedded. Native `http` is capped near Kibana’s default connector timeout (~60s). Avoid also attaching **O11y alert to Case** on the same rule.
+  **[A2A lab refresh]** Workshop demo — logs alert context, **POSTs to Security Agent Builder /converse**
+  (bootstrap.json and converse defaults at push; optional **SECURITY_AGENT_ENDPOINT** + API key in workshop.env), then opens an Observability case whose
+  description embeds peer agent output as **JSON** (`json:2`) plus **simulated multi-vendor A2A** corroboration tables (synthetic lab copy).
+  Native `http` ~60s cap. Do not also attach **O11y alert to Case** on the same rule.
 enabled: true
 tags:
   - a2a-lab
