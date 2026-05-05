@@ -50,10 +50,26 @@ steps:
         This workflow **POSTs** to **Security** `api/agent_builder/converse` (defaults from **bootstrap.json** when **06** runs;
         or **SECURITY_AGENT_ENDPOINT** + API key override). The Security agent is prompted for **bottom-line conclusions** in everyday language (not raw Observability jargon), optional **one** tight data pull, then a few decisive bullets—use it to judge whether Ops noise still warrants SOC attention.
 
-        **Security agent response (raw)** — capped for Kibana case **description** limit (30,000 chars); full reply may be longer:
-        {{ steps.a2a_call_security_agent.output | json:2 | slice: 0, 16000 }}
+        **Security peer — converse response** — HTTP status `{{ steps.a2a_call_security_agent.output.status }}` (envelope headers omitted below).
+
+        ```json
+        {% assign peer_body = steps.a2a_call_security_agent.output.body %}
+        {% if peer_body %}
+        {{ peer_body | json:2 | slice: 0, 22000 }}
+        {% else %}
+        {{ steps.a2a_call_security_agent.output | json:2 | slice: 0, 12000 }}
+        {% endif %}
+        ```
         {% if steps.a2a_call_security_agent.error %}
-        **Peer HTTP step error** (case still opened): {{ steps.a2a_call_security_agent.error | json:2 | slice: 0, 4000 }}
+        **Peer HTTP step error** (case still opened):
+        ```json
+        {% assign err_body = steps.a2a_call_security_agent.error.body %}
+        {% if err_body %}
+        {{ err_body | json:2 | slice: 0, 4000 }}
+        {% else %}
+        {{ steps.a2a_call_security_agent.error | json:2 | slice: 0, 4000 }}
+        {% endif %}
+        ```
         {% endif %}
 
         __WF_SIMULATED_VENDOR_A2A_CASE_SECTION__

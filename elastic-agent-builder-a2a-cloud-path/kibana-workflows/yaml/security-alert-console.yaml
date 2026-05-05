@@ -49,10 +49,26 @@ steps:
         This workflow **POSTs** to **Observability** `api/agent_builder/converse` (default: URL + Basic auth from **bootstrap.json**
         when **06** runs; or **O11Y_AGENT_ENDPOINT** + **O11Y_API_KEY** for a custom published URL). The Observability agent is prompted for **plain-language conclusions** (bottom line, what telemetry supports, bullets, one next step) for readers who are **not** daily SOC analysts—so you get ops-shaped interpretation, not a substitute for SIEM verdicts.
 
-        **Observability agent response (raw)** — capped for Kibana case **description** limit (30,000 chars); full reply may be longer:
-        {{ steps.a2a_call_observability_agent.output | json:2 | slice: 0, 16000 }}
+        **Observability peer — converse response** — HTTP status `{{ steps.a2a_call_observability_agent.output.status }}` (envelope headers omitted below).
+
+        ```json
+        {% assign peer_body = steps.a2a_call_observability_agent.output.body %}
+        {% if peer_body %}
+        {{ peer_body | json:2 | slice: 0, 22000 }}
+        {% else %}
+        {{ steps.a2a_call_observability_agent.output | json:2 | slice: 0, 12000 }}
+        {% endif %}
+        ```
         {% if steps.a2a_call_observability_agent.error %}
-        **Peer HTTP step error** (case still opened): {{ steps.a2a_call_observability_agent.error | json:2 | slice: 0, 4000 }}
+        **Peer HTTP step error** (case still opened):
+        ```json
+        {% assign err_body = steps.a2a_call_observability_agent.error.body %}
+        {% if err_body %}
+        {{ err_body | json:2 | slice: 0, 4000 }}
+        {% else %}
+        {{ steps.a2a_call_observability_agent.error | json:2 | slice: 0, 4000 }}
+        {% endif %}
+        ```
         {% endif %}
 
         __WF_SIMULATED_VENDOR_A2A_CASE_SECTION__
