@@ -1,5 +1,5 @@
 ---
-description: After substantive repo edits, commit and push to origin so Vercel and collaborators stay current.
+description: After substantive repo edits, commit and push to origin; push A2A lab workflows to both Serverless Kibanas when lab files change.
 alwaysApply: true
 ---
 
@@ -13,3 +13,19 @@ When you finish a task that changes tracked project files (code, config, or depe
 4. Push to the tracked remote branch (usually `git push origin main` or the current upstream).
 
 If the user only asked a question and made no file changes, do not create empty commits. If push fails, report the error and fix auth/remote issues if possible.
+
+# Serverless Kibana — always push lab workflows (both projects)
+
+When you change anything that affects **Kibana Workflows** or their rendering on the **A2A lab** (Observability + Security Serverless), **push to both Kibanas** after the git push succeeds (same task, before considering the work done):
+
+- **Trigger paths (non-exhaustive):** `elastic-agent-builder-a2a-cloud-path/kibana-workflows/**`, `elastic-agent-builder-a2a-cloud-path/scripts/render-workflow-placeholders.py`, `elastic-agent-builder-a2a-cloud-path/scripts/06-kibana-workflows-lab.sh`, `elastic-agent-builder-a2a-cloud-path/scripts/push-kibana-workflows.sh`, workflow-embedded snippets under that tree, or **agent instruction** files that the published lab agents use (`elastic-agent-builder-a2a-cloud-path/agent-instructions/**` when those agents are part of the demo).
+
+**Command** (from repo root or the cloud path):
+
+```bash
+cd elastic-agent-builder-a2a-cloud-path && ./scripts/push-kibana-workflows.sh
+```
+
+**Requirements:** `state/bootstrap.json` from provisioning, Kibana admin creds available the same way **`06-kibana-workflows-lab.sh`** expects (e.g. sourced from `elastic-agent-builder-a2a-cloud-path/.env` / `state/workshop.env`). Respect **`A2A_SKIP_KIBANA_WORKFLOWS=1`** — if set, skip the Kibana push and say so.
+
+If the workflow push fails (missing bootstrap, auth, or network), **report the error**; the git push is still valid. Do not skip attempting the serverless push when the user asked for lab workflow or agent-instruction changes and the environment should have credentials.
