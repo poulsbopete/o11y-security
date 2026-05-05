@@ -26,7 +26,7 @@ steps:
       body: |
         {
           "agent_id": "a2a-lab-security-detection",
-          "input": "Observability alert peer review — host {{ event.alerts[0].host.name }}; rule: {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. **Stay under ~45s wall clock:** reason mostly from this alert; avoid long investigations; at most one optional tight query (`LIMIT 50`) if essential. ≤6 bullets: SOC vs ops-only."
+          "input": "[A2A_WF] You are writing for a reader who understands security but is **not** an SRE — they do not know how to read raw Observability jargon. // Context — host {{ event.alerts[0].host.name }}; rule {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. // Output: (1) **Bottom line** — 2–3 sentences in everyday language: what is probably going on for users or systems, your confidence (low / medium / high), and whether this looks like normal ops noise vs worth escalating to SOC. (2) **What the data implies** — translate any workshop metrics/traces you touch into cause → effect (latency vs errors vs capacity vs dependency); explain terms when you use them. (3) **Conclusions** — at most 3 decisive bullets only; no raw JSON walls. (4) **One concrete next step** for a mixed Security/Ops audience. // Stay under ~45s wall clock; at most one optional ES|QL with LIMIT 50; skip long tool chains."
         }
     on-failure:
       continue: true
@@ -48,7 +48,7 @@ steps:
 
         ## A2A — Security peer check (O11y → Security, HTTP)
         This workflow **POSTs** to **Security** `api/agent_builder/converse` (defaults from **bootstrap.json** when **06** runs;
-        or **SECURITY_AGENT_ENDPOINT** + API key override). Treat the reply as a **triage hint** for whether Observability-only signals warrant SOC attention.
+        or **SECURITY_AGENT_ENDPOINT** + API key override). The Security agent is prompted for **bottom-line conclusions** in everyday language (not raw Observability jargon), optional **one** tight data pull, then a few decisive bullets—use it to judge whether Ops noise still warrants SOC attention.
 
         **Security agent response (raw)** — capped for Kibana case **description** limit (30,000 chars); full reply may be longer:
         {{ steps.a2a_call_security_agent.output | json:2 | slice: 0, 16000 }}
