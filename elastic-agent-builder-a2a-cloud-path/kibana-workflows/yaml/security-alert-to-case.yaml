@@ -21,9 +21,12 @@ steps:
       body: |
         {
           "agent_id": "a2a-lab-observability-context",
-          "input": "[A2A_WF] You are writing for a reader who lives in Observability/SRE but is **not** a daily SOC analyst — they need plain-language conclusions, not acronym soup. // Context — host {{ event.alerts[0].host.name }}; rule {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. // Output: (1) **Bottom line** — 2–3 sentences: how serious this looks in plain words (misconfig / maintenance / suspicious / unknown) and why. (2) **What the telemetry supports** — tie workshop metrics/traces patterns to that story; name the signal shapes (CPU spike, error burst, slow dependency, etc.) without dumping raw JSON. (3) **Conclusions** — at most 3 decisive bullets. (4) **One next step** — what to open in APM, Discover, or host view next. // Stay under ~45s wall clock; at most one optional ES|QL with LIMIT 50; skip long investigations."
+          "input": "[A2A_WF] **NO ES|QL OR TOOLS** — Kibana HTTP ~**60s** hard cap; tools risk timeout. Use **only** host, rule, reason. // host {{ event.alerts[0].host.name }}; rule {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. // (1) **Bottom line** — misconfig vs maintenance vs suspicious vs unknown. (2) **What endpoint wording suggests** — hypotheses only. (3) **≤3 bullets**. (4) **One next step**. **≤200 words.**"
         }
     on-failure:
+      retry:
+        max-attempts: 2
+        delay: "5s"
       continue: true
   - name: create_a_case
     type: kibana.createCaseDefaultSpace
@@ -42,7 +45,7 @@ steps:
         _Picked from the last hex digit of the alert UUID (stable for this alert); **endpoint** workshop rules map to **Database / auth** drills._
 
         ## A2A — Observability peer check (Security → O11y, HTTP)
-        **POST** to Observability `api/agent_builder/converse` (defaults from **bootstrap.json** when **06** runs, or **O11Y_AGENT_ENDPOINT** override). The Observability agent answers with **everyday-language conclusions** and optional **one** tight workshop query—aimed at someone who runs the stack but is not buried in detection logic—so you can compare ops stress vs security risk.
+        **POST** to Observability `api/agent_builder/converse` (defaults from **bootstrap.json** when **06** runs, or **O11Y_AGENT_ENDPOINT** override). The Observability agent answers with **everyday-language conclusions** (**~60s** HTTP cap, **no tools** for `[A2A_WF]`)—aimed at someone who runs the stack but is not buried in detection logic—so you can compare ops stress vs security risk.
 
         **Observability peer — assistant reply** (HTTP `{{ steps.a2a_call_observability_agent.output.status }}` · run `{{ steps.a2a_call_observability_agent.output.data.status }}` · `time_to_last_token` {{ steps.a2a_call_observability_agent.output.data.time_to_last_token }}ms)
 
@@ -56,6 +59,8 @@ steps:
         ```
         {% endif %}
         {% if steps.a2a_call_observability_agent.error %}
+        _**Connector note:** Kibana **http** has a **~60s** wall clock (Observability model + tools). `ECONNABORTED` / **timeout** means the peer did not finish in time; confirm Observability agent instructions forbid tools for `[A2A_WF]`, republish, and re-run **06**._
+
         **Peer HTTP step error**
         {% assign err_msg = steps.a2a_call_observability_agent.error.data.response.message %}
         {% if err_msg %}

@@ -21,9 +21,12 @@ steps:
       body: |
         {
           "agent_id": "a2a-lab-security-detection",
-          "input": "[A2A_WF] You are writing for a reader who understands security but is **not** an SRE — they do not know how to read raw Observability jargon. // Context — host {{ event.alerts[0].host.name }}; rule {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. // Output: (1) **Bottom line** — 2–3 sentences in everyday language: what is probably going on for users or systems, your confidence (low / medium / high), and whether this looks like normal ops noise vs worth escalating to SOC. (2) **What the data implies** — translate any workshop metrics/traces you touch into cause → effect (latency vs errors vs capacity vs dependency); explain terms when you use them. (3) **Conclusions** — at most 3 decisive bullets only; no raw JSON walls. (4) **One concrete next step** for a mixed Security/Ops audience. // Stay under ~45s wall clock; at most one optional ES|QL with LIMIT 50; skip long tool chains."
+          "input": "[A2A_WF] **NO ES|QL OR TOOLS** — Kibana workflow HTTP cancels at **~60s** including model time; tools cause timeouts. Use **only** host, rule name, and reason text below. // host {{ event.alerts[0].host.name }}; rule {{ event.alerts[0].kibana.alert.rule.name }}; reason: {{ event.alerts[0].kibana.alert.reason }}. // (1) **Bottom line** — 2–3 sentences, everyday language, confidence low/medium/high, benign ops vs SOC. (2) **What the wording implies** — infer likely signal *shape* (CPU vs errors vs dependency) from the rule/reason; label as hypothesis. (3) **≤3 bullets** conclusions. (4) **One next step**. **≤200 words.**"
         }
     on-failure:
+      retry:
+        max-attempts: 2
+        delay: "5s"
       continue: true
   - name: create_a_case
     type: kibana.createCaseDefaultSpace
@@ -42,7 +45,7 @@ steps:
         _Picked from the last hex digit of the alert UUID (stable for this alert); **traces** rules map to **Web / API** drills, **metrics** rules to **OS / host** drills._
 
         ## A2A — Security peer check (O11y → Security, HTTP)
-        **POST** to Security `api/agent_builder/converse` (defaults from **bootstrap.json** when **06** runs, or **SECURITY_AGENT_ENDPOINT** override). The Security agent answers with **plain-language conclusions** for readers who are not SREs—bottom line, optional single tight query, bullets—so you can judge SOC relevance without decoding metrics jargon yourself.
+        **POST** to Security `api/agent_builder/converse` (defaults from **bootstrap.json** when **06** runs, or **SECURITY_AGENT_ENDPOINT** override). The Security agent answers with **plain-language conclusions** for readers who are not SREs—bottom line, **wording-only** hypotheses (**~60s** HTTP cap, **no tools** for `[A2A_WF]`), bullets—so you can judge SOC relevance without decoding metrics jargon yourself.
 
         **Security peer — assistant reply** (HTTP `{{ steps.a2a_call_security_agent.output.status }}` · run `{{ steps.a2a_call_security_agent.output.data.status }}` · `time_to_last_token` {{ steps.a2a_call_security_agent.output.data.time_to_last_token }}ms)
 
@@ -56,6 +59,8 @@ steps:
         ```
         {% endif %}
         {% if steps.a2a_call_security_agent.error %}
+        _**Connector note:** Kibana **http** has a **~60s** wall clock (Security model + tools). `ECONNABORTED` / **timeout** means the peer did not finish in time; confirm Security agent instructions forbid tools for `[A2A_WF]`, republish, and re-run **06**._
+
         **Peer HTTP step error**
         {% assign err_msg = steps.a2a_call_security_agent.error.data.response.message %}
         {% if err_msg %}
