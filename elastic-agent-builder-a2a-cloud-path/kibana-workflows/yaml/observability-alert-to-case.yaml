@@ -44,26 +44,27 @@ steps:
         ## A2A — Security peer check (O11y → Security, HTTP)
         **POST** to Security `api/agent_builder/converse` (defaults from **bootstrap.json** when **06** runs, or **SECURITY_AGENT_ENDPOINT** override). The Security agent answers with **plain-language conclusions** for readers who are not SREs—bottom line, optional single tight query, bullets—so you can judge SOC relevance without decoding metrics jargon yourself.
 
-        **Security peer — converse response** — HTTP status `{{ steps.a2a_call_security_agent.output.status }}` (envelope headers omitted).
+        **Security peer — assistant reply** (HTTP `{{ steps.a2a_call_security_agent.output.status }}` · run `{{ steps.a2a_call_security_agent.output.data.status }}` · `time_to_last_token` {{ steps.a2a_call_security_agent.output.data.time_to_last_token }}ms)
 
-        ```json
-        {% assign peer_body = steps.a2a_call_security_agent.output.body %}
-        {% if peer_body %}
-        {{ peer_body | json:2 | slice: 0, 22000 }}
+        {% assign peer_msg = steps.a2a_call_security_agent.output.data.response.message %}
+        {% if peer_msg %}
+        {{ peer_msg | slice: 0, 26000 }}
         {% else %}
-        {{ steps.a2a_call_security_agent.output | json:2 | slice: 0, 12000 }}
-        {% endif %}
+        _No `data.response.message` — excerpt of `data` below._
+        ```json
+        {{ steps.a2a_call_security_agent.output.data | json:2 | slice: 0, 12000 }}
         ```
+        {% endif %}
         {% if steps.a2a_call_security_agent.error %}
-        **Peer HTTP step error** (case still opened):
-        ```json
-        {% assign err_body = steps.a2a_call_security_agent.error.body %}
-        {% if err_body %}
-        {{ err_body | json:2 | slice: 0, 4000 }}
+        **Peer HTTP step error**
+        {% assign err_msg = steps.a2a_call_security_agent.error.data.response.message %}
+        {% if err_msg %}
+        {{ err_msg | slice: 0, 4000 }}
         {% else %}
+        ```json
         {{ steps.a2a_call_security_agent.error | json:2 | slice: 0, 4000 }}
-        {% endif %}
         ```
+        {% endif %}
         {% endif %}
 
         __WF_SIMULATED_VENDOR_A2A_CASE_SECTION__
