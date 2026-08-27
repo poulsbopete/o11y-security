@@ -6,7 +6,7 @@ title: Lay the Foundation
 teaser: Confirm two Serverless projects (Observability + Security) and Elasticsearch
   API connectivity from the lab shell.
 tabs:
-- id: 0r0qfofl1a4j
+- id: za1cgaky9sat
   title: Story (while you wait)
   type: website
   url: https://o11y-security.vercel.app/wait
@@ -61,8 +61,8 @@ The **Serverless Observability** and **Serverless Security** tabs are both serve
 
 When the track secret **`ESS_CLOUD_API_KEY`** is bound (Sandbox → **2 secrets**), track setup creates:
 
-1. One **Observability** Serverless project  
-2. One **Security** Serverless project  
+1. One **Observability** Serverless project
+2. One **Security** Serverless project
 
 Then it writes **`/root/elastic-workshop/.env`**, renders the nginx proxy, and loads workshop sample data. That can take **several minutes** while Cloud initializes both projects — use the **Story (while you wait)** tab meanwhile.
 
