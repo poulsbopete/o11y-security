@@ -1,12 +1,12 @@
 ---
 slug: code-as-source
-id: p2sourcerer07a
+id: 3op5cinalhbo
 type: challenge
 title: 'Code as source: detect and fix issues'
 teaser: Index the claims portal with Sourcerer-style code search, generate live noise,
   then cite and remediate LAB_VULN findings.
 tabs:
-- id: p2o11y07kbana
+- id: gi2dkq2cevfz
   title: Serverless Observability
   type: service
   hostname: es3-api
@@ -22,7 +22,7 @@ tabs:
     value: 'script-src ''self'' https://kibana.estccdn.com; worker-src blob: ''self'';
       style-src ''unsafe-inline'' ''self'' https://kibana.estccdn.com; style-src-elem
       ''unsafe-inline'' ''self'' https://kibana.estccdn.com'
-- id: p2sec07kibana
+- id: a9b9stukrycr
   title: Serverless Security
   type: service
   hostname: es3-api
@@ -38,13 +38,13 @@ tabs:
     value: 'script-src ''self'' https://kibana.estccdn.com; worker-src blob: ''self'';
       style-src ''unsafe-inline'' ''self'' https://kibana.estccdn.com; style-src-elem
       ''unsafe-inline'' ''self'' https://kibana.estccdn.com'
-- id: p2chaos07ui
+- id: tf3ilnvatwwu
   title: Chaos Console
   type: service
   hostname: es3-api
   path: /
   port: 8082
-- id: p2term07shell
+- id: 9gwtbrentdw1
   title: Terminal
   type: terminal
   hostname: es3-api
