@@ -64,6 +64,8 @@ fi
 if [ -f "$ROOT/state/workshop.env" ]; then
   echo "Simulate traffic for lab rules (optional): bash ${ROOT}/scripts/10-lab-simulate-traffic.sh"
   echo "  (bulk workshop docs on both clusters so **07** rules match; different from **08** synthetic workflow test.)"
+  echo "Index claims-portal source (Sourcerer-like) + optional Sourcerer CLI: bash ${ROOT}/scripts/11-index-sourcecode.sh"
+  echo "Chaos Console (local): python3 ${WS}/lab-app/chaos_ui.py   # port 8082"
   echo ""
 fi
 

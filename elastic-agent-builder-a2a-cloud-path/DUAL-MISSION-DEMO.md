@@ -36,6 +36,7 @@ workshop.demo_stream = web | database | os
 | `web` | `workshop-synth-traces` | HTTP-style transactions (latency, status codes). |
 | `database` | `workshop-synth-endpoint-alerts` | Security-style events on the **database host** (`prod-db-01`): failed authentication, lateral-movement precursors. |
 | `os` | `workshop-synth-metrics` | Host saturation (CPU, memory, disk). |
+| `code` | `workshop-synth-sourcecode` | Claims-portal source with `LAB_VULN:` markers (Sourcerer-like). Chaos Console does **not** execute those bugs; it injects matching telemetry. |
 
 **Talk track:** “We did not stand up three different products—we labeled the same correlated spike so **Ops** and **Sec** can ask different questions of the **same** `host.name`.”
 
@@ -46,6 +47,7 @@ workshop.demo_stream = web | database | os
 3. **Security Kibana → Discover** — `workshop-synth-endpoint-alerts`, same host, `workshop.demo_stream: database`. Narrate **risk**: repeated auth failures, suspicious source IPs.
 4. **Tie together** — Run **`simulate-cross-domain-load.sh`** (or cloud-path **`scripts/10-lab-simulate-traffic.sh`**) so all three streams move in the same window; refresh Discover in both projects.
 5. **Optional** — Open **Agent Builder** on each side and ask for “last 15 minutes on `prod-db-01`” with an explicit **Ops** vs **Sec** prompt.
+6. **Code as source (optional)** — Run **`scripts/11-index-sourcecode.sh`** (or workshop **`index-lab-sourcecode.sh`**). Ask Observability **A2A Lab Observability Code** / Sourcerer: “Where is `LAB_VULN:sql_injection`?” Generate noise from **`lab-app/chaos_ui.py`** (port **8082**) or `SIMULATE_ATTACK_KIND=credential_stuffing`.
 
 ## ES|QL snippets (Dev Tools)
 

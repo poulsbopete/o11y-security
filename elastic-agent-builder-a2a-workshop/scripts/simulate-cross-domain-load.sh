@@ -13,6 +13,8 @@
 #   SIMULATE_HOST         — host.name / host.name (default: prod-db-01)
 #   SIMULATE_SERVICE      — APM service name in traces (default: inventory-api)
 #   SIMULATE_DRY_RUN      — if 1, print sizes only, no POST
+#   SIMULATE_ATTACK_KIND  — healthy | credential_stuffing | sqli | debug_leak (default: credential_stuffing)
+#                          Tags workshop.attack_kind + source file hints for the code-search challenge.
 #   WORKSHOP_SKIP_MIRROR_O11Y_INDICES_TO_SECURITY — if 1, do not copy metrics+traces bulk to Security ES (default: mirror)
 #
 # Example (from repo root, after workshop.env exists):
@@ -46,6 +48,14 @@ SLEEP="${SIMULATE_SLEEP_SEC:-1}"
 HOST="${SIMULATE_HOST:-prod-db-01}"
 SERVICE="${SIMULATE_SERVICE:-inventory-api}"
 DRY="${SIMULATE_DRY_RUN:-0}"
+KIND="${SIMULATE_ATTACK_KIND:-generic}"
+case "$KIND" in
+  generic|healthy|credential_stuffing|sqli|debug_leak) ;;
+  *)
+    echo "Unknown SIMULATE_ATTACK_KIND=${KIND} (use generic|healthy|credential_stuffing|sqli|debug_leak)." >&2
+    exit 1
+    ;;
+esac
 
 if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
   sed -n '1,35p' "$0"
@@ -87,7 +97,29 @@ write_security_burst() {
   local ts="$2"
   local n="$3"
   : >"$out"
-  local i oct
+  local i oct outcome category msg srcfile
+  outcome="failure"
+  category="authentication"
+  srcfile="lab-app/claims_portal.py"
+  msg="simulated auth failure burst"
+  case "$KIND" in
+    healthy)
+      outcome="success"
+      msg="simulated successful operator login"
+      ;;
+    sqli)
+      msg="simulated claim lookup with SQL metacharacters in claim_id"
+      srcfile="lab-app/claims_portal.py"
+      ;;
+    debug_leak)
+      category="process"
+      msg="simulated unauthenticated GET /internal/debug (LAB_VULN:unauthenticated_debug)"
+      srcfile="lab-app/claims_portal.py"
+      ;;
+    credential_stuffing)
+      msg="simulated credential stuffing against operator login (LAB_VULN:sql_injection)"
+      ;;
+  esac
   for i in $(seq 1 "$n"); do
     oct=$((20 + (i % 200)))
     printf '%s\n' '{"index":{"_index":"workshop-synth-endpoint-alerts"}}' >>"$out"
@@ -96,12 +128,21 @@ write_security_burst() {
       --arg host "$HOST" \
       --arg user "svc-loadtest" \
       --argjson ip_last "$oct" \
-      --arg msg "simulated auth failure burst $i" \
+      --arg msg "$msg $i" \
+      --arg oc "$outcome" \
+      --arg cat "$category" \
+      --arg kind "$KIND" \
+      --arg src "$srcfile" \
       '{
         "@timestamp": $ts,
         "host": {"name": $host},
-        "workshop": {"demo_stream": "database", "narrative": "dual_mission_lab"},
-        "event": {"category": ["authentication"], "outcome": "failure", "type": ["start"]},
+        "workshop": {
+          "demo_stream": "database",
+          "narrative": "dual_mission_lab",
+          "attack_kind": $kind,
+          "source_file": $src
+        },
+        "event": {"category": [$cat], "outcome": $oc, "type": ["start"]},
         "user": {"name": $user},
         "source": {"ip": ("198.51.100." + ($ip_last | tostring))},
         "message": $msg
@@ -122,19 +163,36 @@ write_o11y_burst() {
     jq -c -n \
       --arg ts "$ts" \
       --arg host "$HOST" \
+      --arg kind "$KIND" \
       --argjson cpu "$cpu" \
       --argjson mem "$mem" \
       --argjson disk "$((104857600 + i * 1024000))" \
       '{
         "@timestamp": $ts,
         "host.name": $host,
-        "workshop": {"demo_stream": "os", "narrative": "dual_mission_lab"},
+        "workshop": {"demo_stream": "os", "narrative": "dual_mission_lab", "attack_kind": $kind},
         "system.cpu.total.norm.pct": ($cpu | tonumber),
         "system.memory.actual.used.pct": ($mem | tonumber),
         "system.diskio.read.bytes": ($disk | tonumber)
       }' >>"$out"
 
-    if (( i % 3 == 0 )); then
+    if [ "$KIND" = "healthy" ]; then
+      outcome="success"
+      code=200
+      dur=$((250000 + i * 2000))
+    elif [ "$KIND" = "debug_leak" ]; then
+      outcome="success"
+      code=200
+      dur=$((80000 + i * 1000))
+    elif [ "$KIND" = "sqli" ]; then
+      outcome="failure"
+      code=500
+      dur=$((1800000 + i * 10000))
+    elif [ "$KIND" = "credential_stuffing" ]; then
+      outcome="failure"
+      code=401
+      dur=$((1800000 + i * 10000))
+    elif (( i % 3 == 0 )); then
       outcome="failure"
       code=500
       dur=$((1800000 + i * 10000))
@@ -149,13 +207,19 @@ write_o11y_burst() {
       --arg host "$HOST" \
       --arg svc "$SERVICE" \
       --arg oc "$outcome" \
+      --arg kind "$KIND" \
       --argjson code "$code" \
       --argjson dur "$dur" \
       '{
         "@timestamp": $ts,
         "service": {"name": $svc},
         "host": {"name": $host},
-        "workshop": {"demo_stream": "web", "narrative": "dual_mission_lab"},
+        "workshop": {
+          "demo_stream": "web",
+          "narrative": "dual_mission_lab",
+          "attack_kind": $kind,
+          "source_file": "lab-app/claims_portal.py"
+        },
         "transaction": {"duration": {"us": $dur}},
         "event": {"outcome": $oc},
         "http": {"response": {"status_code": $code}}
@@ -166,7 +230,7 @@ write_o11y_burst() {
 echo "Cross-domain load simulation"
 echo "  Security ES:    ${SECURITY_ES_URL}"
 echo "  Observability:  ${O11Y_ES_URL}"
-echo "  Rounds=${ROUNDS} burst=${BURST} sleep=${SLEEP}s host=${HOST} dry_run=${DRY}"
+echo "  Rounds=${ROUNDS} burst=${BURST} sleep=${SLEEP}s host=${HOST} kind=${KIND} dry_run=${DRY}"
 echo ""
 
 r=1

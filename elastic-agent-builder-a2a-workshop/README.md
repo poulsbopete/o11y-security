@@ -1,6 +1,6 @@
 # Agent Builder A2A — Workshop (Instruqt track source)
 
-This directory is the **source tree** for the **Instruqt** workshop *Agent Builder A2A: Serverless Observability + Security Communication*. It contains `track.yml` (**track slug:** `elastic-a2a-serverless-agent-builder`), challenges **`01-`…`06-`**, index templates, sample data, scripts, and **agent scaffolds** used in assignments.
+This directory is the **source tree** for the **Instruqt** workshop *Agent Builder A2A: Serverless Observability + Security Communication*. It contains `track.yml` (**track slug:** `elastic-a2a-serverless-agent-builder`), challenges **`01-`…`07-`**, index templates, sample data, **`lab-app/`** (Chaos Console + planted `LAB_VULN` source), scripts, and **agent scaffolds** used in assignments.
 
 **Lab UI:** each challenge exposes **Serverless Observability** and **Serverless Security** [service tabs](https://docs.instruqt.com/tracks/challenges/challenge-tabs) on the **`es3-api`** sandbox host (same **`elastic/es3-api-v2`** virtual machine image as **[elastic-autonomous-observability](https://play.instruqt.com/manage/elastic/tracks/elastic-autonomous-observability)**). Nginx listens on **8080** / **8081** and reverse-proxies to the Kibana URLs in `.env`; after editing `.env`, run `sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh` (challenge **01** explains the flow). Egress for the browser proxy is covered by **`allow_external_ingress`** on the VM in [`config.yml`](./config.yml). Service tabs use the same shape as autonomous observability: a **Dashboards** `path` plus **`custom_request_headers`** and **`custom_response_headers`** (each with `Content-Security-Policy` and the multiline `''` quoting Instruqt expects—**not** `custom_headers`, which the UI does not surface). **`scripts/render-kibana-proxy.sh`** mirrors that CSP on nginx (and strips upstream `Content-Security-Policy` / `X-Frame-Options`) so the lab stays usable if tab metadata is edited only in the UI.
 
@@ -29,6 +29,7 @@ To **demo or facilitate** the track (screen layout, challenge highlights, option
    | 04 | [`04-connect-agents-a2a`](./04-connect-agents-a2a/assignment.md) | **A2A**: HTTP to Observability, merge, enrich index |
    | 05 | [`05-unified-dashboard`](./05-unified-dashboard/assignment.md) | ES|QL / dashboard correlation (optional depth) |
    | 06 | [`06-response-agent-optional`](./06-response-agent-optional/assignment.md) | Optional response automation |
+   | 07 | [`07-code-as-source`](./07-code-as-source/assignment.md) | Sourcerer-like **code search** + Chaos Console noise + cite/fix `LAB_VULN` |
 
 5. **Click Check** after each challenge when the assignment says to — `check-es3-api` validates the lab state.
 6. **Stuck?** Use **Show solution** only if the event policy allows it; compare with `solve-es3-api` scripts.
@@ -59,8 +60,9 @@ Use this when you already have **two** Elasticsearch endpoints + API keys (e.g. 
 2. **Load templates and sample NDJSON**
 
    ```bash
-   bash "$ELASTIC_WORKSHOP_ROOT/scripts/apply-index-templates.sh"
-   bash "$ELASTIC_WORKSHOP_ROOT/scripts/load-sample-bulk.sh"
+bash "$ELASTIC_WORKSHOP_ROOT/scripts/apply-index-templates.sh"
+bash "$ELASTIC_WORKSHOP_ROOT/scripts/load-sample-bulk.sh"
+bash "$ELASTIC_WORKSHOP_ROOT/scripts/index-lab-sourcecode.sh"
    ```
 
 3. **Optional stress** — correlated Security + Observability bursts:
@@ -88,8 +90,9 @@ Use this section to **facilitate or record** a walkthrough. If you provisioned s
 4. **Challenges 02–03** — Security detection + Observability context agents (Agent Builder UI).
 5. **Challenge 04** — **Demo peak**: HTTP to Observability, merged enriched story; passing **Check** is your “A2A works” moment.
 6. **Challenge 05** (optional) — ES|QL / dashboard: “one narrative for execs.”
-7. **Optional live pressure** — if policy allows Elasticsearch egress from the sandbox, run **[`scripts/simulate-cross-domain-load.sh`](./scripts/simulate-cross-domain-load.sh)** with `ELASTIC_WORKSHOP_*` set (same env shape as cloud-path `workshop.env`), then re-show **Discover** or Dev Tools.
-8. **Same logs, two missions (optional)** — in Discover, filter **`workshop.demo_stream`** (`web`, `os`, `database`) on **`prod-db-01`** and narrate Observability vs Security questions; script: **[`../elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md`](../elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md)**.
+7. **Challenge 07** — Chaos Console + code search: cite `LAB_VULN` in **`workshop-synth-sourcecode`** (or Sourcerer).
+8. **Optional live pressure** — if policy allows Elasticsearch egress from the sandbox, run **[`scripts/simulate-cross-domain-load.sh`](./scripts/simulate-cross-domain-load.sh)** with `ELASTIC_WORKSHOP_*` set (same env shape as cloud-path `workshop.env`), then re-show **Discover** or Dev Tools.
+9. **Same logs, two missions (optional)** — in Discover, filter **`workshop.demo_stream`** (`web`, `os`, `database`, `code`) on **`prod-db-01`** and narrate Observability vs Security questions; script: **[`../elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md`](../elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md)**.
 
 ### Your own Elastic (no Instruqt)
 
@@ -103,5 +106,7 @@ Use the **same narrative** as **[cloud-path README → Demo the setup](../elasti
 | ------ | ------- |
 | [`scripts/apply-index-templates.sh`](./scripts/apply-index-templates.sh) | PUT index templates on Security cluster |
 | [`scripts/load-sample-bulk.sh`](./scripts/load-sample-bulk.sh) | `_bulk` sample data into `workshop-synth-*` (mirrors metrics + traces to **Security** ES too unless `WORKSHOP_SKIP_MIRROR_O11Y_INDICES_TO_SECURITY=1`) |
-| [`scripts/simulate-cross-domain-load.sh`](./scripts/simulate-cross-domain-load.sh) | Parallel load: auth failures (Security) + metrics/traces (Observability); adds **`workshop.demo_stream`** (`database` / `os` / `web`) |
+| [`scripts/simulate-cross-domain-load.sh`](./scripts/simulate-cross-domain-load.sh) | Parallel load: auth failures (Security) + metrics/traces (Observability); adds **`workshop.demo_stream`** (`database` / `os` / `web`); optional **`SIMULATE_ATTACK_KIND`** |
+| [`scripts/index-lab-sourcecode.sh`](./scripts/index-lab-sourcecode.sh) | Bulk-index **`lab-app/`** into **`workshop-synth-sourcecode`** (Sourcerer-like; no `uv`) |
+| [`scripts/start-chaos-ui.sh`](./scripts/start-chaos-ui.sh) | Serve the Chaos Console on port **8082** |
 | [`scripts/workshop-common.sh`](./scripts/workshop-common.sh) | Helpers for Instruqt lifecycle scripts |

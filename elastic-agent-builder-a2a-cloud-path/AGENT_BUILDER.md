@@ -7,7 +7,7 @@ After your environment is live (via **[Elastic Agent Skills](https://github.com/
 If **`scripts/05-agent-builder-lab-agents.sh`** ran (Node + `agent-builder.js` available; not skipped with `A2A_SKIP_AGENT_BUILDER=1`), starter agents may already exist on **both** Serverless Kibanas—see **`state/agent-builder-lab.json`**:
 
 - **`a2a-lab-security-detection`** and **`a2a-lab-security-a2a-enrichment`** (Security)
-- **`a2a-lab-observability-context`** (Observability)
+- **`a2a-lab-observability-context`** and **`a2a-lab-observability-code`** (Observability; code agent searches **`workshop-synth-sourcecode`**)
 
 Set **`O11Y_AGENT_ENDPOINT`** in **`state/workshop.env`** to your published Observability agent URL, then re-run **`05`** so enrichment instructions embed the live endpoint (or update the enrichment agent in Kibana). Refine agents with **kibana-agent-builder** as needed.
 
@@ -39,7 +39,7 @@ Synthetic endpoint-style rows are already in **`workshop-synth-endpoint-alerts`*
 3. Expose a URL the Security cluster can reach (public Agent Builder endpoint, approved proxy, etc.).
 4. Append `O11Y_AGENT_ENDPOINT=...` to `state/workshop.env` (same file used for `O11Y_ES_URL` / `O11Y_API_KEY`).
 
-Metrics/traces samples are in **`workshop-synth-metrics`** and **`workshop-synth-traces`** on the Observability cluster.
+Metrics/traces samples are in **`workshop-synth-metrics`** and **`workshop-synth-traces`** on the Observability cluster. Lab source (claims portal + `LAB_VULN` markers) is in **`workshop-synth-sourcecode`** after **`scripts/11-index-sourcecode.sh`** (or workshop **`index-lab-sourcecode.sh`**). Optional official indexer: **[elastic/sourcerer](https://github.com/elastic/sourcerer)** with **`sourcerer.yml`** in this folder.
 
 ## 3. Security project (A2A enrichment)
 

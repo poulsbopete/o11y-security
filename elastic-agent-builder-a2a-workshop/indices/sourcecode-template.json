@@ -1,0 +1,44 @@
+{
+  "index_patterns": ["workshop-synth-sourcecode"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "mappings": {
+      "dynamic": "true",
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "file": {
+          "properties": {
+            "path": { "type": "keyword" },
+            "extension": { "type": "keyword" },
+            "content": { "type": "text", "analyzer": "standard" }
+          }
+        },
+        "git": {
+          "properties": {
+            "host": { "type": "keyword" },
+            "org": { "type": "keyword" },
+            "repo": { "type": "keyword" },
+            "ref": { "type": "keyword" }
+          }
+        },
+        "lab": {
+          "properties": {
+            "vuln_tags": { "type": "keyword" },
+            "service": { "type": "keyword" },
+            "host": { "type": "keyword" }
+          }
+        },
+        "workshop": {
+          "properties": {
+            "demo_stream": { "type": "keyword" },
+            "narrative": { "type": "keyword" }
+          }
+        }
+      }
+    }
+  },
+  "priority": 500
+}

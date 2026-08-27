@@ -12,7 +12,7 @@ if ! command -v nginx >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1 || ! 
   apt-get install -y --no-install-recommends curl ca-certificates jq python3 nginx
 fi
 
-mkdir -p /root/elastic-workshop/{assets,agent-scaffolds,scripts,sample-data,indices}
+mkdir -p /root/elastic-workshop/{assets,agent-scaffolds,scripts,sample-data,indices,lab-app}
 
 _SENTINEL='ELASTIC_INSTRUQT_TRACK_SLUG:elastic-a2a-serverless-agent-builder'
 
@@ -210,6 +210,10 @@ printf '%s\n' "$TR" >/root/elastic-workshop/.instruqt-track-root
 cp -a "$TR/scripts/." /root/elastic-workshop/scripts/
 if [ -d "$TR/assets" ]; then
   cp -a "$TR/assets/." /root/elastic-workshop/assets/
+fi
+if [ -d "$TR/lab-app" ]; then
+  mkdir -p /root/elastic-workshop/lab-app
+  cp -a "$TR/lab-app/." /root/elastic-workshop/lab-app/
 fi
 
 rm -f /etc/nginx/sites-enabled/default

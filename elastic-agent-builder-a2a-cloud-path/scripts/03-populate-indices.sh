@@ -20,5 +20,6 @@ export ELASTIC_WORKSHOP_ENV_FILE="$ENVF"
 
 bash "$WS/scripts/apply-index-templates.sh"
 bash "$WS/scripts/load-sample-bulk.sh"
+bash "$WS/scripts/index-lab-sourcecode.sh"
 
-echo "Templates + synthetic bulk data loaded using workshop scripts."
+echo "Templates + synthetic bulk data + lab source index loaded using workshop scripts."

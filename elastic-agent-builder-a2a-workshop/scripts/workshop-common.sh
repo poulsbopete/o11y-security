@@ -34,12 +34,13 @@ sync_track_assets() {
     echo "[workshop] WARN: could not resolve track root; skipping asset sync"
     return 0
   fi
-  mkdir -p "$(workshop_root)"/{assets,agent-scaffolds,scripts,sample-data,indices}
+  mkdir -p "$(workshop_root)"/{assets,agent-scaffolds,scripts,sample-data,indices,lab-app}
   [ -d "$tr/assets" ] && cp -a "$tr/assets/." "$(workshop_root)/assets/"
   [ -d "$tr/sample-data" ] && cp -a "$tr/sample-data/." "$(workshop_root)/sample-data/"
   [ -d "$tr/indices" ] && cp -a "$tr/indices/." "$(workshop_root)/indices/"
   [ -d "$tr/agent-scaffolds" ] && cp -a "$tr/agent-scaffolds/." "$(workshop_root)/agent-scaffolds/"
   [ -d "$tr/scripts" ] && cp -a "$tr/scripts/." "$(workshop_root)/scripts/"
+  [ -d "$tr/lab-app" ] && cp -a "$tr/lab-app/." "$(workshop_root)/lab-app/"
   chmod +x "$(workshop_root)/scripts/"*.sh 2>/dev/null || true
   chmod +x "$(workshop_root)/scripts/"*.py 2>/dev/null || true
 }

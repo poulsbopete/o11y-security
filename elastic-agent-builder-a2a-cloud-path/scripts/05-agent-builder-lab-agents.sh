@@ -157,6 +157,10 @@ upsert_agent() {
   if agent_exists "$aid"; then
     echo "  Agent ${aid} already exists; syncing instructions from ${instr_file}…"
     instr="$(cat "$instr_file")"
+    tools_csv="$(tr -d '\n' <"$tools_file")"
+    if run_ab update-agent --id "$aid" --instructions "$instr" --tool-ids "$tools_csv" >/dev/null 2>&1; then
+      return 0
+    fi
     run_ab update-agent --id "$aid" --instructions "$instr"
     return 0
   fi
@@ -251,20 +255,32 @@ fi
 
 TOOL_MET="a2a-workshop-metrics"
 TOOL_TR="a2a-workshop-traces"
+TOOL_SRC="a2a-workshop-sourcecode"
 upsert_index_search_tool "$TOOL_MET" "workshop-synth-metrics" "Lab synthetic host metrics for A2A context."
 upsert_index_search_tool "$TOOL_TR" "workshop-synth-traces" "Lab synthetic traces for A2A context."
+upsert_index_search_tool "$TOOL_SRC" "workshop-synth-sourcecode" "Lab claims-portal source (LAB_VULN markers) for Sourcerer-like code search."
 
 {
-  echo -n "${TOOL_MET},${TOOL_TR},${o11y_platform}"
+  echo -n "${TOOL_MET},${TOOL_TR},${TOOL_SRC},${o11y_platform}"
 } >"$ROOT/state/.ab-tools-o11y.tmp"
 chmod 600 "$ROOT/state/.ab-tools-o11y.tmp"
 
 upsert_agent "a2a-lab-observability-context" "A2A Lab Observability Context" \
-  "Workshop context agent over workshop-synth-metrics and workshop-synth-traces" \
+  "Workshop context agent over workshop-synth-metrics, traces, and sourcecode" \
   "$ROOT/state/.ab-tools-o11y.tmp" \
   "$ROOT/agent-instructions/observability-context.txt"
 
-rm -f "$ROOT/state/.ab-tools-o11y.tmp"
+{
+  echo -n "${TOOL_SRC},${o11y_platform}"
+} >"$ROOT/state/.ab-tools-o11y-code.tmp"
+chmod 600 "$ROOT/state/.ab-tools-o11y-code.tmp"
+
+upsert_agent "a2a-lab-observability-code" "A2A Lab Observability Code (Sourcerer-like)" \
+  "Workshop code-research agent over workshop-synth-sourcecode (planted LAB_VULN findings)" \
+  "$ROOT/state/.ab-tools-o11y-code.tmp" \
+  "$ROOT/agent-instructions/observability-code-source.txt"
+
+rm -f "$ROOT/state/.ab-tools-o11y.tmp" "$ROOT/state/.ab-tools-o11y-code.tmp"
 
 # If Observability URL was added after the first run, patch enrichment instructions on Security Kibana.
 echo "== Optional: sync Security enrichment agent with O11Y_AGENT_ENDPOINT =="
@@ -289,14 +305,16 @@ jq -n \
   --arg sec_agent "a2a-lab-security-detection" \
   --arg sec_enrich "a2a-lab-security-a2a-enrichment" \
   --arg o11y_agent "a2a-lab-observability-context" \
+  --arg o11y_code "a2a-lab-observability-code" \
   --arg sec_tool "$TOOL_SEC_SEARCH" \
-  --arg o11y_tools "${TOOL_MET},${TOOL_TR}" \
+  --arg o11y_tools "${TOOL_MET},${TOOL_TR},${TOOL_SRC}" \
   --arg o11y_endpoint_set "$ep_set" \
   --arg o11y_endpoint "${O11Y_AGENT_ENDPOINT:-}" \
   '{
     security_detection_agent_id:$sec_agent,
     security_a2a_enrichment_agent_id:$sec_enrich,
     observability_context_agent_id:$o11y_agent,
+    observability_code_agent_id:$o11y_code,
     security_tool_id:$sec_tool,
     observability_tool_ids:$o11y_tools,
     o11y_agent_endpoint_configured: ($o11y_endpoint_set == "true"),
@@ -305,7 +323,7 @@ jq -n \
 chmod 600 "$ROOT/state/agent-builder-lab.json"
 
 echo "Wrote ${ROOT}/state/agent-builder-lab.json"
-echo "Agent Builder lab agents: Security (detection + A2A enrichment) + Observability (context)."
+echo "Agent Builder lab agents: Security (detection + A2A enrichment) + Observability (context + code/Sourcerer-like)."
 if [ -z "${O11Y_AGENT_ENDPOINT:-}" ]; then
   echo "Note: O11Y_AGENT_ENDPOINT is not set in workshop.env — enrichment agent instructions use a placeholder; set the URL and re-run this script to refresh wording (or edit the agent in Kibana)."
 fi

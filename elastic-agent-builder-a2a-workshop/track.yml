@@ -2,13 +2,14 @@ slug: elastic-a2a-serverless-agent-builder
 id: zq70yyfn826u
 title: 'Agent Builder A2A: Serverless Observability + Security Communication'
 teaser: Deploy Agent Builder agents across serverless Observability and Security,
-  then wire API-to-API enrichment.
+  then wire API-to-API enrichment — including Sourcerer-style code search.
 description: |
   Interactive workshop for Elastic sellers and solutions architects. Attendees deploy two Agent Builder
   agents in separate serverless projects (Observability and Security), configure cross-cluster API calls,
-  enrich security detections with observability context, and visualize correlated outcomes in Kibana.
+  enrich security detections with observability context, index a small claims-portal repo for code-level
+  findings (Sourcerer or workshop-synth-sourcecode), and generate live noise from a Chaos Console.
 
-  **Duration:** 30–45 minutes (six challenges, last optional)
+  **Duration:** 40–60 minutes (seven challenges, one optional)
 
   **Prerequisites:** Elastic Cloud organization access, ability to create Serverless Observability and
   Serverless Security projects, and familiarity with Kibana Agent Builder at an intermediate level.
@@ -22,6 +23,7 @@ tags:
 - a2a
 - observability
 - agent-builder
+- sourcerer
 owner: elastic
 developers:
 - peter.simkins@elastic.co

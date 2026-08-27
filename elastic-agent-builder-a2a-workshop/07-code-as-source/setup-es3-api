@@ -1,0 +1,27 @@
+#!/bin/bash
+set -euo pipefail
+
+WC="/root/elastic-workshop/scripts/workshop-common.sh"
+if [ ! -f "$WC" ]; then
+  echo "[workshop] FATAL: expected $WC (track bootstrap copy). Re-provision the sandbox." >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$WC"
+
+sync_track_assets "${BASH_SOURCE[0]}"
+mkdir -p "$(workshop_root)/artifacts"
+
+ROOT="$(workshop_root)"
+ENV_FILE="$ROOT/.env"
+if [ -f "$ENV_FILE" ]; then
+  export ELASTIC_WORKSHOP_ROOT="$ROOT"
+  export ELASTIC_WORKSHOP_ENV_FILE="$ENV_FILE"
+  if bash "$ROOT/scripts/index-lab-sourcecode.sh"; then
+    echo "[workshop] lab-app source indexed to workshop-synth-sourcecode"
+  else
+    echo "[workshop] WARN: index-lab-sourcecode.sh failed (check .env / API keys); continue and retry from Terminal."
+  fi
+fi
+
+bash "$ROOT/scripts/start-chaos-ui.sh" || echo "[workshop] WARN: Chaos Console did not start; run start-chaos-ui.sh from Terminal."

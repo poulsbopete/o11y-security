@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acme Claims — Chaos Console</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #151d2e;
+      --text: #e8eef8;
+      --muted: #9aa8bc;
+      --accent: #36c5f0;
+      --warn: #f5a524;
+      --danger: #f04e98;
+      --ok: #3dd68c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, #1a2a4a 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header { padding: 1.5rem 1.75rem 0.5rem; }
+    h1 { margin: 0 0 0.35rem; font-size: 1.45rem; }
+    p.lead { margin: 0; color: var(--muted); max-width: 52rem; line-height: 1.45; }
+    main {
+      display: grid;
+      gap: 1rem;
+      padding: 1.25rem 1.75rem 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    article {
+      background: var(--card);
+      border: 1px solid #2a3650;
+      border-radius: 12px;
+      padding: 1.1rem 1.15rem 1.2rem;
+    }
+    article h2 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+    article p { margin: 0 0 0.9rem; color: var(--muted); font-size: 0.92rem; line-height: 1.4; }
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #0b1220;
+    }
+    button.ok { background: var(--ok); }
+    button.warn { background: var(--warn); }
+    button.danger { background: var(--danger); color: #fff; }
+    button.accent { background: var(--accent); }
+    button:disabled { opacity: 0.55; cursor: wait; }
+    #status {
+      margin: 0 1.75rem 2rem;
+      padding: 0.9rem 1rem;
+      background: #0e1728;
+      border-radius: 8px;
+      border: 1px solid #2a3650;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.82rem;
+      white-space: pre-wrap;
+      min-height: 4.5rem;
+      color: #c5d4e8;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Acme Claims Portal — Chaos Console</h1>
+    <p class="lead">
+      Lab UI only. Buttons inject synthetic <strong>Security</strong> auth events and
+      <strong>Observability</strong> metrics/traces for host <code>prod-db-01</code>.
+      They do not run the planted SQL or secret-dump bugs — those live in source for Sourcerer / code search.
+    </p>
+  </header>
+  <main>
+    <article>
+      <h2>Healthy checkout</h2>
+      <p>Baseline web traffic: mostly 200s, modest latency. Use this before you generate noise.</p>
+      <button class="ok" data-kind="healthy">Send healthy traffic</button>
+    </article>
+    <article>
+      <h2>Credential stuffing</h2>
+      <p>Burst of failed logins plus slow failed transactions — the joint signal Security and Ops both care about.</p>
+      <button class="warn" data-kind="credential_stuffing">Generate stuffing noise</button>
+    </article>
+    <article>
+      <h2>SQLi-shaped probe</h2>
+      <p>Suspicious claim lookups: auth failures tagged to <code>claims_portal.py</code> plus 5xx / high latency.</p>
+      <button class="danger" data-kind="sqli">Generate SQLi-shaped noise</button>
+    </article>
+    <article>
+      <h2>Debug dump</h2>
+      <p>Simulated unauthenticated <code>/internal/debug</code> hits — secret-exposure narrative, not a real leak.</p>
+      <button class="accent" data-kind="debug_leak">Generate debug-leak noise</button>
+    </article>
+  </main>
+  <pre id="status">Ready. Click a scenario. Requires /root/elastic-workshop/.env (or workshop.env) with both cluster API keys.</pre>
+  <script>
+    const status = document.getElementById("status");
+    document.querySelectorAll("button[data-kind]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const kind = btn.getAttribute("data-kind");
+        btn.disabled = true;
+        status.textContent = "Running " + kind + " …";
+        try {
+          const res = await fetch("/chaos/" + kind, { method: "POST" });
+          const text = await res.text();
+          status.textContent = text;
+        } catch (err) {
+          status.textContent = String(err);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

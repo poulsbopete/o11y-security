@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="/root/elastic-workshop"
+FILE="$ROOT/artifacts/code-findings.md"
+if [ ! -s "$FILE" ]; then
+  fail-message "Create /root/elastic-workshop/artifacts/code-findings.md citing the planted issues and how you would fix them."
+fi
+
+body="$(tr '[:upper:]' '[:lower:]' <"$FILE")"
+
+if ! echo "$body" | grep -Eq 'sql_injection|parameterized'; then
+  fail-message "Findings must mention sql_injection and/or a parameterized query fix."
+fi
+if ! echo "$body" | grep -Eq 'hardcoded|secret'; then
+  fail-message "Findings must mention the hardcoded secret (LAB_VULN:hardcoded_secret)."
+fi
+if ! echo "$body" | grep -Fq 'claims_portal.py'; then
+  fail-message "Cite lab-app/claims_portal.py (or claims_portal.py) as the source file."
+fi
+
+echo "Code-as-source findings recorded."

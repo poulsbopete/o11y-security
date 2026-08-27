@@ -78,6 +78,7 @@ sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh
 ```bash
 bash /root/elastic-workshop/scripts/apply-index-templates.sh
 bash /root/elastic-workshop/scripts/load-sample-bulk.sh
+bash /root/elastic-workshop/scripts/index-lab-sourcecode.sh
 ```
 
 6. Verify both clusters with `curl` (use the `ApiKey` scheme with the base64 API key string):

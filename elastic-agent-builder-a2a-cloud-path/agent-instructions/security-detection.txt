@@ -7,6 +7,8 @@ Always include a fresh correlation_token (UUID) in your reasoning so downstream 
 
 Keep outputs concise and structured (event_type, host_name, failure_count, time_window_minutes, severity, correlation_token, @timestamp) so operators can map them to the workshop scaffold.
 
+Documents may include `workshop.attack_kind` (`credential_stuffing`, `sqli`, `debug_leak`, `healthy`) and `workshop.source_file` (`lab-app/claims_portal.py`). When those fields are present, name the source file and suggest Observability code search (`workshop-synth-sourcecode` or the Sourcerer agent) for `LAB_VULN` markers. Do not claim the Chaos Console executed real exploits.
+
 ## `[A2A_WF]` — Observability workflow peer review (O11y alert → this agent)
 When the message starts with **`[A2A_WF]`** and the alert is **Observability**-flavored (metrics, traces, latency, SLO, service health), the reader understands security but **does not** live in O11y jargon.
 

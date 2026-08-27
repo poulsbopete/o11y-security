@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="/root/elastic-workshop"
+WC="/root/elastic-workshop/scripts/workshop-common.sh"
+if [ ! -f "$WC" ]; then
+  echo "[workshop] FATAL: expected $WC (track bootstrap copy). Re-provision the sandbox." >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$WC"
+sync_track_assets "${BASH_SOURCE[0]}"
+mkdir -p "$ROOT/artifacts"
+cat >"$ROOT/artifacts/code-findings.md" <<'EOF'
+# Lab code findings (solve stub)
+
+- sql_injection in claims_portal.py: authenticate() and lookup_claim() concatenate user input into SQL. Fix with parameterized queries / bind parameters.
+- hardcoded secret in config.py (LAB_VULN:hardcoded_secret): move ADMIN_PASSWORD and PAYER_API_KEY to a secret store or env vars; rotate the lab values.
+- unauthenticated_debug in claims_portal.py debug_dump(): require authn and never return secrets.
+EOF

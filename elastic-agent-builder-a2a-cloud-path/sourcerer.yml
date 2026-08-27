@@ -1,0 +1,15 @@
+# Sourcerer config for the A2A lab Observability project.
+# Spec: https://github.com/elastic/sourcerer/blob/main/specs/sourcerer-yml.md
+#
+# Indexes this workshop repo (small) so Agent Builder can grep planted LAB_VULN markers
+# the same way https://github.com/elastic/sourcerer searches Elastic source.
+#
+# Usage (from elastic-agent-builder-a2a-cloud-path after workshop.env exists):
+#   bash scripts/11-index-sourcecode.sh
+#
+# Requires Elasticsearch + Kibana 9.5+ (Serverless is fine), uv, and git.
+
+sources:
+  - git: { host: "github", org: "poulsbopete", repo: "o11y-security", ref_type: "branch" }
+    match: "main"
+    retain.count: 1
