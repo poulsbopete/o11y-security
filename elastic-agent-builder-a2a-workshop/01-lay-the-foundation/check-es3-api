@@ -27,7 +27,7 @@ proxy_ok() {
   code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 "http://127.0.0.1:${port}/" || echo "000")
   case "$code" in
     503|000)
-      fail-message "${name} Kibana proxy (:${port}) is still the lab placeholder (HTTP ${code}). Set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in .env, then run: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh"
+      fail-message "${name} Kibana proxy (:${port}) is still the lab placeholder (HTTP ${code}). Wait for track setup to finish provisioning, or run: bash /root/elastic-workshop/scripts/provision-dual-serverless.sh"
       ;;
   esac
 }

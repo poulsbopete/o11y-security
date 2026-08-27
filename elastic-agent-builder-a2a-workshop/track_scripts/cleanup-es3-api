@@ -1,3 +1,65 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Delete Observability + Security Serverless projects created for this sandbox.
 set -euo pipefail
-rm -f /root/elastic-workshop/.env 2>/dev/null || true
+
+ROOT="/root/elastic-workshop"
+STATE="$ROOT/state"
+BOOT="$STATE/bootstrap.json"
+EC_BASE_URL="${EC_BASE_URL:-https://api.elastic-cloud.com}"
+
+resolve_cloud_api_key() {
+  if [ -n "${PME_CLOUD_INSTRUQT_API_KEY:-}" ]; then
+    printf '%s' "$PME_CLOUD_INSTRUQT_API_KEY"
+    return 0
+  fi
+  if [ -n "${ESS_CLOUD_API_KEY:-}" ]; then
+    printf '%s' "$ESS_CLOUD_API_KEY"
+    return 0
+  fi
+  if [ -n "${EC_API_KEY:-}" ]; then
+    printf '%s' "$EC_API_KEY"
+    return 0
+  fi
+  if command -v agent >/dev/null 2>&1; then
+    local v
+    v="$(agent variable get ESS_CLOUD_API_KEY 2>/dev/null || true)"
+    if [ -n "$v" ]; then
+      printf '%s' "$v"
+      return 0
+    fi
+  fi
+  return 1
+}
+
+if [ ! -f "$BOOT" ]; then
+  echo "[cleanup] No ${BOOT} — nothing to delete (BYO session or provision never ran)."
+  rm -f "$ROOT/.env" "$ROOT/kibana-login.txt" 2>/dev/null || true
+  exit 0
+fi
+
+if ! EC_API_KEY="$(resolve_cloud_api_key)"; then
+  echo "[cleanup] WARN: no Cloud API key; cannot delete projects listed in bootstrap.json." >&2
+  rm -f "$ROOT/.env" "$ROOT/kibana-login.txt" 2>/dev/null || true
+  exit 0
+fi
+
+ec_delete() {
+  local kind="$1"
+  local id="$2"
+  if [ -z "$id" ] || [ "$id" = "null" ]; then
+    return 0
+  fi
+  echo "[cleanup] DELETE serverless/${kind}/${id}"
+  curl -sS -X DELETE "${EC_BASE_URL}/api/v1/serverless/projects/${kind}/${id}" \
+    -H "Authorization: ApiKey ${EC_API_KEY}" \
+    -o /tmp/a2a-cleanup-${kind}.json -w "HTTP %{http_code}\n" || true
+}
+
+o11y_id="$(jq -r '.observability.id // empty' "$BOOT")"
+sec_id="$(jq -r '.security.id // empty' "$BOOT")"
+ec_delete "observability" "$o11y_id"
+ec_delete "security" "$sec_id"
+
+rm -f "$ROOT/.env" "$ROOT/kibana-login.txt" 2>/dev/null || true
+rm -rf "$STATE" 2>/dev/null || true
+echo "[cleanup] Done."

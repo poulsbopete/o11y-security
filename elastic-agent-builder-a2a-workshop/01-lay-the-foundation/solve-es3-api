@@ -15,16 +15,18 @@ source "$WC"
 sync_track_assets "${BASH_SOURCE[0]}"
 cp -f "$(workshop_root)/assets/env.template" "$ROOT/env.template"
 
-if [ -n "${O11Y_ES_URL:-}" ] && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_ES_URL:-}" ] && [ -n "${SECURITY_API_KEY:-}" ]; then
-  umask 077
-  {
-    echo "O11Y_ES_URL=${O11Y_ES_URL}"
-    echo "O11Y_API_KEY=${O11Y_API_KEY}"
-    echo "SECURITY_ES_URL=${SECURITY_ES_URL}"
-    echo "SECURITY_API_KEY=${SECURITY_API_KEY}"
-    [ -n "${O11Y_KIBANA_URL:-}" ] && echo "O11Y_KIBANA_URL=${O11Y_KIBANA_URL}"
-    [ -n "${SECURITY_KIBANA_URL:-}" ] && echo "SECURITY_KIBANA_URL=${SECURITY_KIBANA_URL}"
-  } >"$ROOT/.env"
+if [ ! -f "$ROOT/.env" ] || ! grep -q '^O11Y_KIBANA_URL=' "$ROOT/.env" 2>/dev/null; then
+  if [ -x "$ROOT/scripts/provision-dual-serverless.sh" ]; then
+    bash "$ROOT/scripts/provision-dual-serverless.sh" || true
+  fi
+fi
+
+if [ -f "$ROOT/.env" ]; then
+  # shellcheck disable=SC1090
+  set -a
+  # shellcheck disable=SC1090
+  source "$ROOT/.env"
+  set +a
   if [ -n "${O11Y_KIBANA_URL:-}" ] && [ -n "${SECURITY_KIBANA_URL:-}" ]; then
     bash "$ROOT/scripts/render-kibana-proxy.sh" "$ROOT/.env" || true
   fi

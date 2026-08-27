@@ -224,14 +224,14 @@ server {
     listen [::]:8080 default_server;
     server_name _;
     default_type text/plain;
-    return 503 "Set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in /root/elastic-workshop/.env, then: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh\n";
+    return 503 "Provisioning Observability + Security Serverless (or set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in /root/elastic-workshop/.env, then: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh). Open the Story tab while you wait.\n";
 }
 server {
     listen 8081 default_server;
     listen [::]:8081 default_server;
     server_name _;
     default_type text/plain;
-    return 503 "Set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in /root/elastic-workshop/.env, then: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh\n";
+    return 503 "Provisioning Observability + Security Serverless (or set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in /root/elastic-workshop/.env, then: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh). Open the Story tab while you wait.\n";
 }
 STUB
 ln -sf /etc/nginx/sites-available/elastic-lab-kibana-proxy.conf /etc/nginx/sites-enabled/elastic-lab-kibana-proxy.conf
@@ -242,7 +242,7 @@ else
   nginx
 fi
 
-# Optional: pre-seed .env when Instruqt/org secrets are injected as host env vars (organizer-only).
+# Prefer organizer-injected env (rare); otherwise create two Serverless projects via ESS_CLOUD_API_KEY.
 if [ -n "${O11Y_ES_URL:-}" ] && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_ES_URL:-}" ] && [ -n "${SECURITY_API_KEY:-}" ]; then
   umask 077
   {
@@ -253,11 +253,18 @@ if [ -n "${O11Y_ES_URL:-}" ] && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_E
     [ -n "${O11Y_KIBANA_URL:-}" ] && echo "O11Y_KIBANA_URL=${O11Y_KIBANA_URL}"
     [ -n "${SECURITY_KIBANA_URL:-}" ] && echo "SECURITY_KIBANA_URL=${SECURITY_KIBANA_URL}"
   } >/root/elastic-workshop/.env
-  # Same outcome as elastic-autonomous-observability (Kibana tabs work without learner manual step)
-  # when both HTTPS Kibana base URLs are present in the injected environment.
   if [ -n "${O11Y_KIBANA_URL:-}" ] && [ -n "${SECURITY_KIBANA_URL:-}" ]; then
     bash /root/elastic-workshop/scripts/render-kibana-proxy.sh /root/elastic-workshop/.env
   fi
+elif [ -x /root/elastic-workshop/scripts/provision-dual-serverless.sh ]; then
+  # Creates Observability + Security, writes .env, renders nginx :8080/:8081 (like autonomous, but two projects).
+  # Takes several minutes while Cloud initializes both projects — keep Story tab open meanwhile.
+  echo "[elastic-workshop] Provisioning Observability + Security Serverless projects…"
+  if ! bash /root/elastic-workshop/scripts/provision-dual-serverless.sh; then
+    echo "[elastic-workshop] WARN: dual provision failed — BYO .env still works (see challenge 01)." >&2
+  fi
+else
+  echo "[elastic-workshop] No provision script yet; use BYO .env path in challenge 01."
 fi
 
 touch /root/elastic-workshop/.workshop-bootstrap-complete

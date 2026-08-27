@@ -3,10 +3,10 @@ slug: lay-the-foundation
 id: 8ocnhl0wsjmo
 type: challenge
 title: Lay the Foundation
-teaser: Create two Serverless projects and prove Elasticsearch API connectivity from
-  the lab shell.
+teaser: Confirm two Serverless projects (Observability + Security) and Elasticsearch
+  API connectivity from the lab shell.
 tabs:
-- id: wvvpdcwiaetv
+- id: 0r0qfofl1a4j
   title: Story (while you wait)
   type: website
   url: https://o11y-security.vercel.app/wait
@@ -55,47 +55,57 @@ enhanced_loading: null
 
 In production, Security and Observability often run on separate clusters. This workshop keeps that split while teaching agents to cooperate over HTTPS APIs.
 
-The **Serverless Observability** and **Serverless Security** tabs are both served through the same **es3-api** lab host: nginx listens on **8080** (Observability Kibana) and **8081** (Security Kibana) and reverse-proxies to the real Cloud URLs you put in `.env`. Each tab opens the **Dashboards** list with **Content-Security-Policy** headers on the Instruqt proxy (request + response) so Kibana can load **inside the lab** (including `kibana.estccdn.com`).
+The **Serverless Observability** and **Serverless Security** tabs are both served through the same **es3-api** lab host: nginx listens on **8080** (Observability Kibana) and **8081** (Security Kibana) and reverse-proxies to the real Cloud URLs. There is still **one** sandbox VM — two **Cloud Serverless projects** behind it.
 
-> **Before steps 3–4:** both Kibana tabs show only the lab **setup line** (nginx is still a placeholder). That is expected—unlike tracks that **create** a Serverless project for you during bootstrap, this lab is **BYO Elastic Cloud**. Open the **Story (while you wait)** tab for the same deck as [poulsbopete.github.io/o11y-security](https://poulsbopete.github.io/o11y-security/) (hosted on Vercel at `/wait`). Use **Terminal** to fill **`.env`** and run **`render-kibana-proxy.sh`**; then reload a Kibana tab.
+## Auto-provision (default)
 
-## What you will do
+When the track secret **`ESS_CLOUD_API_KEY`** is bound (Sandbox → **2 secrets**), track setup creates:
 
-1. In **Elastic Cloud**, create a **Serverless Observability** project and a **Serverless Security** project (separate Elasticsearch + Kibana per project).
-2. Create an **Elasticsearch API key** in each project with privileges sufficient for `_cluster/health`, `_index_template`, `_bulk`, and `_search` on workshop indices used in later challenges (your SA can provide a least-privilege role matrix).
-3. On the **Terminal** tab, copy the template and save credentials (include **both** Elasticsearch and **HTTPS Kibana base URLs** — from each project’s **Endpoints** page, same region as the `.es.` hostname):
+1. One **Observability** Serverless project  
+2. One **Security** Serverless project  
+
+Then it writes **`/root/elastic-workshop/.env`**, renders the nginx proxy, and loads workshop sample data. That can take **several minutes** while Cloud initializes both projects — use the **Story (while you wait)** tab meanwhile.
+
+When setup finishes:
 
 ```bash
-cp /root/elastic-workshop/env.template /root/elastic-workshop/.env
-chmod 600 /root/elastic-workshop/.env
-${EDITOR:-vi} /root/elastic-workshop/.env
+# Credentials + endpoints (chmod 600)
+ls -la /root/elastic-workshop/.env /root/elastic-workshop/kibana-login.txt
+
+# Reload the Kibana tabs (or click the refresh icon). Sign in with the users
+# listed in kibana-login.txt if prompted.
+source /root/elastic-workshop/.env
+curl -sS -H "Authorization: ApiKey $O11Y_API_KEY" "$O11Y_ES_URL/_cluster/health" | jq .
+curl -sS -H "Authorization: ApiKey $SECURITY_API_KEY" "$SECURITY_ES_URL/_cluster/health" | jq .
 ```
 
-4. **Enable the Kibana tabs** — still on Terminal, render nginx from `.env` (requires `sudo` once per sandbox after Kibana URLs are set):
+If the Kibana tabs still show the placeholder line, run:
 
 ```bash
 sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh
 ```
 
-5. (Recommended) Install index templates on the **Security** cluster and load synthetic workshop data:
+Or re-run provision (idempotent when `.env` is already complete):
 
 ```bash
+bash /root/elastic-workshop/scripts/provision-dual-serverless.sh
+```
+
+## BYO fallback
+
+If Cloud provision was skipped or the API key is missing, create **two** Serverless projects yourself, copy `env.template` → `.env`, then:
+
+```bash
+sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh
 bash /root/elastic-workshop/scripts/apply-index-templates.sh
 bash /root/elastic-workshop/scripts/load-sample-bulk.sh
 bash /root/elastic-workshop/scripts/index-lab-sourcecode.sh
 ```
 
-6. Verify both clusters with `curl` (use the `ApiKey` scheme with the base64 API key string):
-
-```bash
-curl -sS -H "Authorization: ApiKey $O11Y_API_KEY" "$O11Y_ES_URL/_cluster/health" | jq .
-curl -sS -H "Authorization: ApiKey $SECURITY_API_KEY" "$SECURITY_ES_URL/_cluster/health" | jq .
-```
-
 === Context
 
-This track mirrors real field architecture: independent control planes, one-way API enrichment, and a unified narrative in Kibana for sellers to articulate value.
+This track mirrors real field architecture: independent control planes, one-way API enrichment, and a unified narrative in Kibana for sellers to articulate value. Ending the Instruqt session deletes both Cloud projects when bootstrap state exists.
 
 ===
 
-When both health calls return `"status": "green"` or `"yellow"`, and the **Serverless** tabs show Kibana **Dashboards** (sign in with the same credentials you use in Elastic Cloud if prompted), click **Check**.
+When both health calls return `"status": "green"` or `"yellow"`, and the **Serverless** tabs show Kibana **Dashboards**, click **Check**.
