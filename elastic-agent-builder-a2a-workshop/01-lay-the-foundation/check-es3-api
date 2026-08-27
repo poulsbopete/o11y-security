@@ -23,13 +23,17 @@ done
 proxy_ok() {
   local port="$1"
   local name="$2"
-  local code
+  local code body
+  body="$(curl -sS --max-time 20 "http://127.0.0.1:${port}/" 2>/dev/null || true)"
   code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 "http://127.0.0.1:${port}/" || echo "000")
   case "$code" in
     503|000)
-      fail-message "${name} Kibana proxy (:${port}) is still the lab placeholder (HTTP ${code}). Wait for track setup to finish provisioning, or run: bash /root/elastic-workshop/scripts/provision-dual-serverless.sh"
+      fail-message "${name} Kibana proxy (:${port}) is still provision status text (HTTP ${code}). Check: cat /root/elastic-workshop/provision-status.txt — then: bash /root/elastic-workshop/scripts/provision-dual-serverless.sh"
       ;;
   esac
+  if printf '%s' "$body" | grep -qiE 'provision-status|O11Y_KIBANA_URL|dual Serverless provision|ONE lab VM'; then
+    fail-message "${name} Kibana proxy (:${port}) is still showing provision status text. Run: bash /root/elastic-workshop/scripts/provision-dual-serverless.sh"
+  fi
 }
 
 proxy_ok 8080 "Observability"

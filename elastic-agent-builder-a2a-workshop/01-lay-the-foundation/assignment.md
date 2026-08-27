@@ -62,12 +62,21 @@ The **Serverless Observability** and **Serverless Security** tabs are both serve
 
 ## Auto-provision (default)
 
-When the track secret **`ESS_CLOUD_API_KEY`** is bound (Sandbox → **2 secrets**), track setup creates:
+**You do not need two VMs.** One **`es3-api`** host is enough: nginx on **8080** / **8081** reverse-proxies to two Cloud Serverless Kibanas.
+
+When the track secret **`ESS_CLOUD_API_KEY`** is bound (Sandbox → Secrets), setup creates:
 
 1. One **Observability** Serverless project
 2. One **Security** Serverless project
 
-Then it writes **`/root/elastic-workshop/.env`**, renders the nginx proxy, and loads workshop sample data. That can take **several minutes** while Cloud initializes both projects — browse the story deck in the assignment **Notes** (same slides as [o11y-security.vercel.app/wait](https://o11y-security.vercel.app/wait)) while you wait.
+Then it writes **`/root/elastic-workshop/.env`**, renders the nginx proxy, and loads workshop sample data. That can take **several minutes** — browse the story deck in assignment **Notes** (same slides as [o11y-security.vercel.app/wait](https://o11y-security.vercel.app/wait)) while you wait.
+
+While tabs show plain text, they are serving the live status file (auto-refresh ~15s):
+
+```bash
+cat /root/elastic-workshop/provision-status.txt
+tail -50 /root/elastic-workshop/provision.log
+```
 
 When setup finishes:
 
@@ -82,13 +91,7 @@ curl -sS -H "Authorization: ApiKey $O11Y_API_KEY" "$O11Y_ES_URL/_cluster/health"
 curl -sS -H "Authorization: ApiKey $SECURITY_API_KEY" "$SECURITY_ES_URL/_cluster/health" | jq .
 ```
 
-If the Kibana tabs still show the placeholder line, run:
-
-```bash
-sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh
-```
-
-Or re-run provision (idempotent when `.env` is already complete):
+If the tabs still show status text after setup finished, re-run provision (idempotent when `.env` is complete):
 
 ```bash
 bash /root/elastic-workshop/scripts/provision-dual-serverless.sh

@@ -12,15 +12,28 @@ source "$WC"
 sync_track_assets "${BASH_SOURCE[0]}"
 mkdir -p "$(workshop_root)/artifacts"
 cp -f "$(workshop_root)/assets/env.template" "$(workshop_root)/env.template"
+chmod +x "$(workshop_root)/scripts/"*.sh 2>/dev/null || true
 
-ENV_FILE="$(workshop_root)/.env"
+ROOT="$(workshop_root)"
+ENV_FILE="$ROOT/.env"
+
+need_provision=1
 if [ -f "$ENV_FILE" ]; then
   # shellcheck disable=SC1090
   set -a
   # shellcheck disable=SC1090
   source "$ENV_FILE"
   set +a
-  if [ -n "${O11Y_KIBANA_URL:-}" ] && [ -n "${SECURITY_KIBANA_URL:-}" ]; then
-    bash "$(workshop_root)/scripts/render-kibana-proxy.sh" "$ENV_FILE"
+  if [ -n "${O11Y_KIBANA_URL:-}" ] && [ -n "${SECURITY_KIBANA_URL:-}" ] \
+    && [ -n "${O11Y_ES_URL:-}" ] && [ -n "${SECURITY_ES_URL:-}" ] \
+    && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_API_KEY:-}" ]; then
+    need_provision=0
+    bash "$ROOT/scripts/render-kibana-proxy.sh" "$ENV_FILE"
   fi
+fi
+
+# Track setup may have timed out or failed before .env was written — finish here.
+if [ "$need_provision" = "1" ] && [ -x "$ROOT/scripts/provision-dual-serverless.sh" ]; then
+  echo "[workshop] .env incomplete — running dual Serverless provision (one VM, two Cloud projects)…"
+  bash "$ROOT/scripts/provision-dual-serverless.sh"
 fi

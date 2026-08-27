@@ -208,6 +208,7 @@ fi
 
 printf '%s\n' "$TR" >/root/elastic-workshop/.instruqt-track-root
 cp -a "$TR/scripts/." /root/elastic-workshop/scripts/
+chmod +x /root/elastic-workshop/scripts/*.sh 2>/dev/null || true
 if [ -d "$TR/assets" ]; then
   cp -a "$TR/assets/." /root/elastic-workshop/assets/
 fi
@@ -216,22 +217,48 @@ if [ -d "$TR/lab-app" ]; then
   cp -a "$TR/lab-app/." /root/elastic-workshop/lab-app/
 fi
 
+# Live status for the Kibana tabs until provision finishes (one VM, two Cloud projects — not two VMs).
+cat >/root/elastic-workshop/provision-status.txt <<'EOF'
+ONE lab VM (es3-api) proxies BOTH Kibanas — you do NOT need two VMs.
+
+Status: starting dual Serverless provision (Observability + Security)…
+Watch: cat /root/elastic-workshop/provision-status.txt
+Log:   tail -f /root/elastic-workshop/provision.log
+Notes: story deck while you wait.
+
+If this never finishes: bash /root/elastic-workshop/scripts/provision-dual-serverless.sh
+BYO: set O11Y_KIBANA_URL + SECURITY_KIBANA_URL in .env, then:
+  sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh
+EOF
+
 rm -f /etc/nginx/sites-enabled/default
 cat >/etc/nginx/sites-available/elastic-lab-kibana-proxy.conf <<'STUB'
-# Placeholder until learners run scripts/render-kibana-proxy.sh with Kibana URLs in .env
+# Placeholder: serve provision-status.txt until render-kibana-proxy.sh replaces this.
 server {
     listen 8080 default_server;
     listen [::]:8080 default_server;
     server_name _;
     default_type text/plain;
-    return 503 "Provisioning Observability + Security Serverless (or set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in /root/elastic-workshop/.env, then: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh). Check assignment Notes for the story deck while you wait.\n";
+    charset utf-8;
+    root /root/elastic-workshop;
+    location / {
+        try_files /provision-status.txt =503;
+        add_header Cache-Control "no-store" always;
+        add_header Refresh "15" always;
+    }
 }
 server {
     listen 8081 default_server;
     listen [::]:8081 default_server;
     server_name _;
     default_type text/plain;
-    return 503 "Provisioning Observability + Security Serverless (or set O11Y_KIBANA_URL and SECURITY_KIBANA_URL in /root/elastic-workshop/.env, then: sudo bash /root/elastic-workshop/scripts/render-kibana-proxy.sh). Check assignment Notes for the story deck while you wait.\n";
+    charset utf-8;
+    root /root/elastic-workshop;
+    location / {
+        try_files /provision-status.txt =503;
+        add_header Cache-Control "no-store" always;
+        add_header Refresh "15" always;
+    }
 }
 STUB
 ln -sf /etc/nginx/sites-available/elastic-lab-kibana-proxy.conf /etc/nginx/sites-enabled/elastic-lab-kibana-proxy.conf
@@ -241,6 +268,11 @@ if pgrep -x nginx >/dev/null 2>&1; then
 else
   nginx
 fi
+
+echo "=== Dual Serverless provision (same pattern as elastic-autonomous-observability) ==="
+echo "ESS_CLOUD_API_KEY: ${ESS_CLOUD_API_KEY:+set}${ESS_CLOUD_API_KEY:-<not set>}"
+echo "PME_CLOUD_INSTRUQT_API_KEY: ${PME_CLOUD_INSTRUQT_API_KEY:+set}${PME_CLOUD_INSTRUQT_API_KEY:-<not set>}"
+echo "REGIONS=${REGIONS:-} PROJECT_TYPE=${PROJECT_TYPE:-} PRODUCT_TIER=${PRODUCT_TIER:-}"
 
 # Prefer organizer-injected env (rare); otherwise create two Serverless projects via ESS_CLOUD_API_KEY.
 if [ -n "${O11Y_ES_URL:-}" ] && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_ES_URL:-}" ] && [ -n "${SECURITY_API_KEY:-}" ]; then
@@ -257,14 +289,21 @@ if [ -n "${O11Y_ES_URL:-}" ] && [ -n "${O11Y_API_KEY:-}" ] && [ -n "${SECURITY_E
     bash /root/elastic-workshop/scripts/render-kibana-proxy.sh /root/elastic-workshop/.env
   fi
 elif [ -x /root/elastic-workshop/scripts/provision-dual-serverless.sh ]; then
-  # Creates Observability + Security, writes .env, renders nginx :8080/:8081 (like autonomous, but two projects).
-  # Takes several minutes while Cloud initializes both projects — assignment Notes has the story deck.
+  # Two Cloud projects on one VM — several minutes. Fail hard (like autonomous) so setup logs show the error.
   echo "[elastic-workshop] Provisioning Observability + Security Serverless projects…"
   if ! bash /root/elastic-workshop/scripts/provision-dual-serverless.sh; then
-    echo "[elastic-workshop] WARN: dual provision failed — BYO .env still works (see challenge 01)." >&2
+    echo "[elastic-workshop] FATAL: dual provision failed. See /root/elastic-workshop/provision.log" >&2
+    echo "[elastic-workshop] Tabs will keep showing provision-status.txt until you fix and re-run:" >&2
+    echo "  bash /root/elastic-workshop/scripts/provision-dual-serverless.sh" >&2
+    if [ "${A2A_ALLOW_BYO_ON_PROVISION_FAIL:-0}" = "1" ]; then
+      echo "[elastic-workshop] Continuing (A2A_ALLOW_BYO_ON_PROVISION_FAIL=1) — use BYO .env." >&2
+    else
+      exit 1
+    fi
   fi
 else
-  echo "[elastic-workshop] No provision script yet; use BYO .env path in challenge 01."
+  echo "[elastic-workshop] FATAL: provision-dual-serverless.sh missing after script copy." >&2
+  exit 1
 fi
 
 touch /root/elastic-workshop/.workshop-bootstrap-complete

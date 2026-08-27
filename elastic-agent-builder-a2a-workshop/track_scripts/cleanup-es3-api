@@ -6,6 +6,8 @@ ROOT="/root/elastic-workshop"
 STATE="$ROOT/state"
 BOOT="$STATE/bootstrap.json"
 EC_BASE_URL="${EC_BASE_URL:-https://api.elastic-cloud.com}"
+REGION="${EC_REGION:-${REGIONS:-aws-us-east-1}}"
+REGION="${REGION//_/-}"
 
 resolve_cloud_api_key() {
   if [ -n "${PME_CLOUD_INSTRUQT_API_KEY:-}" ]; then
@@ -23,6 +25,7 @@ resolve_cloud_api_key() {
   if command -v agent >/dev/null 2>&1; then
     local v
     v="$(agent variable get ESS_CLOUD_API_KEY 2>/dev/null || true)"
+    [ -z "$v" ] && v="$(agent variable get PME_CLOUD_INSTRUQT_API_KEY 2>/dev/null || true)"
     if [ -n "$v" ]; then
       printf '%s' "$v"
       return 0
@@ -31,34 +34,81 @@ resolve_cloud_api_key() {
   return 1
 }
 
-if [ ! -f "$BOOT" ]; then
-  echo "[cleanup] No ${BOOT} — nothing to delete (BYO session or provision never ran)."
+find_es3_api() {
+  local c
+  for c in \
+    "${PWD}/bin/es3-api.py" \
+    "/root/bin/es3-api.py" \
+    "/opt/es3-api/bin/es3-api.py" \
+    "/home/ubuntu/bin/es3-api.py"; do
+    if [ -f "$c" ]; then
+      printf '%s' "$c"
+      return 0
+    fi
+  done
+  c="$(find /root /opt /home -maxdepth 4 -type f -name es3-api.py 2>/dev/null | head -1 || true)"
+  [ -n "$c" ] && printf '%s' "$c" && return 0
+  return 1
+}
+
+o11y_id=""
+sec_id=""
+if [ -f "$BOOT" ]; then
+  o11y_id="$(jq -r '.observability.id // empty' "$BOOT")"
+  sec_id="$(jq -r '.security.id // empty' "$BOOT")"
+fi
+if [ -z "$o11y_id" ] && [ -f "$STATE/o11y.project_results.json" ]; then
+  o11y_id="$(jq -r --arg r "$REGION" '.[$r].id // empty' "$STATE/o11y.project_results.json")"
+fi
+if [ -z "$sec_id" ] && [ -f "$STATE/security.project_results.json" ]; then
+  sec_id="$(jq -r --arg r "$REGION" '.[$r].id // empty' "$STATE/security.project_results.json")"
+fi
+
+if [ -z "$o11y_id" ] && [ -z "$sec_id" ]; then
+  echo "[cleanup] No project ids — nothing to delete (BYO session or provision never ran)."
   rm -f "$ROOT/.env" "$ROOT/kibana-login.txt" 2>/dev/null || true
   exit 0
 fi
 
 if ! EC_API_KEY="$(resolve_cloud_api_key)"; then
-  echo "[cleanup] WARN: no Cloud API key; cannot delete projects listed in bootstrap.json." >&2
+  echo "[cleanup] WARN: no Cloud API key; cannot delete projects." >&2
   rm -f "$ROOT/.env" "$ROOT/kibana-login.txt" 2>/dev/null || true
   exit 0
 fi
+export PME_CLOUD_INSTRUQT_API_KEY="$EC_API_KEY"
 
-ec_delete() {
-  local kind="$1"
-  local id="$2"
-  if [ -z "$id" ] || [ "$id" = "null" ]; then
-    return 0
+ES3_API=""
+if ES3_API="$(find_es3_api)"; then
+  if [ -n "$o11y_id" ]; then
+    echo "[cleanup] es3-api delete observability ${o11y_id}"
+    python3 "$ES3_API" \
+      --operation delete \
+      --project-type observability \
+      --regions "$REGION" \
+      --project-id "$o11y_id" \
+      --api-key "$EC_API_KEY" || true
   fi
-  echo "[cleanup] DELETE serverless/${kind}/${id}"
-  curl -sS -X DELETE "${EC_BASE_URL}/api/v1/serverless/projects/${kind}/${id}" \
-    -H "Authorization: ApiKey ${EC_API_KEY}" \
-    -o /tmp/a2a-cleanup-${kind}.json -w "HTTP %{http_code}\n" || true
-}
-
-o11y_id="$(jq -r '.observability.id // empty' "$BOOT")"
-sec_id="$(jq -r '.security.id // empty' "$BOOT")"
-ec_delete "observability" "$o11y_id"
-ec_delete "security" "$sec_id"
+  if [ -n "$sec_id" ]; then
+    echo "[cleanup] es3-api delete security ${sec_id}"
+    python3 "$ES3_API" \
+      --operation delete \
+      --project-type security \
+      --regions "$REGION" \
+      --project-id "$sec_id" \
+      --api-key "$EC_API_KEY" || true
+  fi
+else
+  ec_delete() {
+    local kind="$1" id="$2"
+    [ -z "$id" ] || [ "$id" = "null" ] && return 0
+    echo "[cleanup] DELETE serverless/${kind}/${id}"
+    curl -sS -X DELETE "${EC_BASE_URL}/api/v1/serverless/projects/${kind}/${id}" \
+      -H "Authorization: ApiKey ${EC_API_KEY}" \
+      -o "/tmp/a2a-cleanup-${kind}.json" -w "HTTP %{http_code}\n" || true
+  }
+  ec_delete "observability" "$o11y_id"
+  ec_delete "security" "$sec_id"
+fi
 
 rm -f "$ROOT/.env" "$ROOT/kibana-login.txt" 2>/dev/null || true
 rm -rf "$STATE" 2>/dev/null || true
