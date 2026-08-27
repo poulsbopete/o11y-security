@@ -381,34 +381,31 @@
             <p class="kicker">Code as source</p>
             <h2>Ask the repo the same way you ask metrics</h2>
             <p class="lead">
-              Live telemetry tells you <em>that</em> <code style="font-size:0.92em;">prod-db-01</code> is hurting. Indexed source tells you <em>why</em>.
-              We use <strong style="color: var(--accent);">Sourcerer</strong> (Elastic’s code-research agent) when <code style="font-size:0.88em;">uv</code> is available, and a Sourcerer-like index
-              <code style="font-size:0.88em;">workshop-synth-sourcecode</code> in every Instruqt sandbox so Agent Builder can grep planted <code style="font-size:0.88em;">LAB_VULN:</code> markers.
+              Live telemetry tells you <em>that</em> a critical service is hurting. Indexed source tells you <em>why</em>.
+              With Elastic’s code-aware agents, your teams can move from “the database is slow” to the exact line that invited the abuse—
+              without leaving the same conversation where Security and Observability already share context.
             </p>
             <ul>
-              <li><strong>Observability practitioner</strong> — the git tree is another signal plane: SQL concatenation explains slow 401s better than another CPU chart.</li>
-              <li><strong>Security practitioner</strong> — cite <code style="font-size:0.88em;">lab-app/claims_portal.py</code> instead of arguing from logs alone.</li>
-              <li><strong>Joint detector</strong> — failed logins <em>plus</em> elevated latency/5xx in the same window is stuffing or enumeration, not “the app is just slow.”</li>
+              <li><strong>For Observability</strong> — source is another signal plane: a risky query pattern explains latency better than another CPU chart.</li>
+              <li><strong>For Security</strong> — cite the vulnerable function instead of arguing from logs alone.</li>
+              <li><strong>Together</strong> — failed logins <em>plus</em> elevated errors in the same window is an attack narrative, not “the app is just slow.”</li>
             </ul>
-            <p class="hint" style="margin-top:1rem;">
-              Lab: <a class="prompt-lib" href="https://github.com/elastic/sourcerer">elastic/sourcerer</a>
-              · challenge <strong>07</strong> · <code style="font-size:0.88em;">scripts/11-index-sourcecode.sh</code>
-            </p>
           </div>
         </section>
 
         <section class="slide" id="s8" aria-label="Slide 8 of 9">
           <div class="inner">
-            <p class="kicker">Make noise, then fix it</p>
-            <h2>Chaos Console is a simulator, not an exploit kit</h2>
+            <p class="kicker">See the incident. Find the cause. Ship the fix.</p>
+            <h2>When the same attack lights up both teams</h2>
             <p class="lead">
-              Learners click healthy traffic, credential stuffing, SQLi-shaped probes, or a debug-dump narrative.
-              The UI <strong>does not execute</strong> the planted bugs. It injects synthetic Security + Observability documents that look like those bugs firing—so both Kibanas light up while the code agent names the file.
+              Imagine a claims portal under pressure: a burst of failed logins, then slow responses and errors in the same window.
+              Security sees credential stuffing. Observability sees the app struggling. Alone, each team debates a different root cause—
+              together, they follow one story from signal to source file.
             </p>
             <ul>
-              <li><strong>While the lab boots</strong> — Kibana tabs may show 503 until <code style="font-size:0.88em;">.env</code> + nginx proxy. Stay on this deck (or the Instruqt <strong>Story</strong> tab).</li>
-              <li><strong>Then break stuff on purpose</strong> — port <strong>8082</strong> Chaos Console in challenge 07.</li>
-              <li><strong>Then write the fix</strong> — parameterized SQL, secrets out of git, debug behind auth. Artifact: <code style="font-size:0.88em;">artifacts/code-findings.md</code>.</li>
+              <li><strong>Generate the story</strong> — recreate healthy traffic or a realistic attack narrative so both Kibanas show the same moment in time.</li>
+              <li><strong>Correlate without swivel-chair</strong> — Security and Observability share one timeline; agents help name the weak spot in the code, not just the symptom in the logs.</li>
+              <li><strong>Close the loop</strong> — parameterize the query, keep secrets out of source control, put debug behind auth—and leave with a finding your teams can act on.</li>
             </ul>
           </div>
         </section>
