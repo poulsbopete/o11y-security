@@ -6,7 +6,7 @@ title: Lay the Foundation
 teaser: Create two Serverless projects and prove Elasticsearch API connectivity from
   the lab shell.
 tabs:
-- id: waitstory01iframe
+- id: wvvpdcwiaetv
   title: Story (while you wait)
   type: website
   url: https://o11y-security.vercel.app/wait
