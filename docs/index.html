@@ -241,6 +241,7 @@
       line-height: 1.4;
     }
     .inner.wide { max-width: 48rem; }
+    html.embedded #o11y-ab-assistant-root { display: none !important; }
     .slide--lab-shots .slide-figure img {
       max-width: min(100%, 44rem);
     }
@@ -251,6 +252,13 @@
       margin-top: 0.85rem;
     }
   </style>
+  <script>
+    (function () {
+      if (/(?:^|[?&])embed=1(?:&|$)/.test(String(location.search || "")) || window.self !== window.top) {
+        document.documentElement.classList.add("embedded");
+      }
+    })();
+  </script>
 </head>
 <body>
   <!-- Static CSS port of FallingPattern (React/framer-motion); see docs/README.md -->
@@ -261,7 +269,7 @@
   <div class="deck" id="deck">
     <div class="viewport" id="viewport">
       <div class="strip" id="strip" role="region" aria-roledescription="carousel" aria-label="Value proposition slides">
-        <section class="slide" id="s1" aria-label="Slide 1 of 7">
+        <section class="slide" id="s1" aria-label="Slide 1 of 9">
           <div class="inner">
             <p class="kicker">Why this matters</p>
             <h1>Security sees an alert. Observability holds the truth about impact.</h1>
@@ -273,7 +281,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s2" aria-label="Slide 2 of 7">
+        <section class="slide" id="s2" aria-label="Slide 2 of 9">
           <div class="inner">
             <p class="kicker">Same telemetry, different purpose</p>
             <h1>Do you see a vase or a face?</h1>
@@ -291,7 +299,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s3" aria-label="Slide 3 of 7">
+        <section class="slide" id="s3" aria-label="Slide 3 of 9">
           <div class="inner">
             <p class="kicker">The pattern</p>
             <h2>Agent Builder: let each domain keep its expertise</h2>
@@ -306,7 +314,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s4" aria-label="Slide 4 of 7">
+        <section class="slide" id="s4" aria-label="Slide 4 of 9">
           <div class="inner wide">
             <p class="kicker">Reference workflow</p>
             <h2>Two data planes, one place to decide</h2>
@@ -329,7 +337,7 @@
           </div>
         </section>
 
-        <section class="slide slide--lab-shots" id="s5" aria-label="Slide 5 of 7">
+        <section class="slide slide--lab-shots" id="s5" aria-label="Slide 5 of 9">
           <div class="inner wide">
             <p class="kicker">From the cloud-path lab</p>
             <h2>Kibana Workflows and Cases</h2>
@@ -349,7 +357,7 @@
           </div>
         </section>
 
-        <section class="slide" id="s6" aria-label="Slide 6 of 7">
+        <section class="slide" id="s6" aria-label="Slide 6 of 9">
           <div class="inner">
             <p class="kicker">Value for sellers &amp; customers</p>
             <h2>Faster decisions, clearer ROI, a path to response</h2>
@@ -368,7 +376,44 @@
           </div>
         </section>
 
-        <section class="slide" id="s7" aria-label="Slide 7 of 7">
+        <section class="slide" id="s7" aria-label="Slide 7 of 9">
+          <div class="inner">
+            <p class="kicker">Code as source</p>
+            <h2>Ask the repo the same way you ask metrics</h2>
+            <p class="lead">
+              Live telemetry tells you <em>that</em> <code style="font-size:0.92em;">prod-db-01</code> is hurting. Indexed source tells you <em>why</em>.
+              We use <strong style="color: var(--accent);">Sourcerer</strong> (Elastic’s code-research agent) when <code style="font-size:0.88em;">uv</code> is available, and a Sourcerer-like index
+              <code style="font-size:0.88em;">workshop-synth-sourcecode</code> in every Instruqt sandbox so Agent Builder can grep planted <code style="font-size:0.88em;">LAB_VULN:</code> markers.
+            </p>
+            <ul>
+              <li><strong>Observability practitioner</strong> — the git tree is another signal plane: SQL concatenation explains slow 401s better than another CPU chart.</li>
+              <li><strong>Security practitioner</strong> — cite <code style="font-size:0.88em;">lab-app/claims_portal.py</code> instead of arguing from logs alone.</li>
+              <li><strong>Joint detector</strong> — failed logins <em>plus</em> elevated latency/5xx in the same window is stuffing or enumeration, not “the app is just slow.”</li>
+            </ul>
+            <p class="hint" style="margin-top:1rem;">
+              Lab: <a class="prompt-lib" href="https://github.com/elastic/sourcerer">elastic/sourcerer</a>
+              · challenge <strong>07</strong> · <code style="font-size:0.88em;">scripts/11-index-sourcecode.sh</code>
+            </p>
+          </div>
+        </section>
+
+        <section class="slide" id="s8" aria-label="Slide 8 of 9">
+          <div class="inner">
+            <p class="kicker">Make noise, then fix it</p>
+            <h2>Chaos Console is a simulator, not an exploit kit</h2>
+            <p class="lead">
+              Learners click healthy traffic, credential stuffing, SQLi-shaped probes, or a debug-dump narrative.
+              The UI <strong>does not execute</strong> the planted bugs. It injects synthetic Security + Observability documents that look like those bugs firing—so both Kibanas light up while the code agent names the file.
+            </p>
+            <ul>
+              <li><strong>While the lab boots</strong> — Kibana tabs may show 503 until <code style="font-size:0.88em;">.env</code> + nginx proxy. Stay on this deck (or the Instruqt <strong>Story</strong> tab).</li>
+              <li><strong>Then break stuff on purpose</strong> — port <strong>8082</strong> Chaos Console in challenge 07.</li>
+              <li><strong>Then write the fix</strong> — parameterized SQL, secrets out of git, debug behind auth. Artifact: <code style="font-size:0.88em;">artifacts/code-findings.md</code>.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="slide" id="s9" aria-label="Slide 9 of 9">
           <div class="inner">
             <p class="kicker">Hands-on</p>
             <h2>Workshop: two serverless projects, one correlation story</h2>
@@ -403,7 +448,7 @@
       <div class="controls-left">
         <button type="button" class="btn" id="prev" aria-label="Previous slide">← Prev</button>
         <button type="button" class="btn" id="next" aria-label="Next slide">Next →</button>
-        <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 7</span>
+        <span class="counter" id="counter" aria-live="polite"><strong>1</strong> / 9</span>
       </div>
       <div class="dots" id="dots" aria-label="Jump to slide"></div>
       <span class="brand"><a class="prompt-lib" href="./prompts/">AE prompts</a> · Observability ↔ Security</span>
@@ -452,6 +497,9 @@
 
       function apply() {
         layout();
+        for (var s = 0; s < slides.length; s++) {
+          slides[s].setAttribute("aria-label", "Slide " + (s + 1) + " of " + total);
+        }
         counter.innerHTML = "<strong>" + (i + 1) + "</strong> / " + total;
         prev.disabled = i <= 0;
         next.disabled = i >= total - 1;

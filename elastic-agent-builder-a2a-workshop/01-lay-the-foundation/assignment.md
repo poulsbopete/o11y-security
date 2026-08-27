@@ -6,6 +6,10 @@ title: Lay the Foundation
 teaser: Create two Serverless projects and prove Elasticsearch API connectivity from
   the lab shell.
 tabs:
+- id: waitstory01iframe
+  title: Story (while you wait)
+  type: website
+  url: https://o11y-security.vercel.app/wait
 - id: hruyzar9dqsn
   title: Serverless Observability
   type: service
@@ -53,7 +57,7 @@ In production, Security and Observability often run on separate clusters. This w
 
 The **Serverless Observability** and **Serverless Security** tabs are both served through the same **es3-api** lab host: nginx listens on **8080** (Observability Kibana) and **8081** (Security Kibana) and reverse-proxies to the real Cloud URLs you put in `.env`. Each tab opens the **Dashboards** list with **Content-Security-Policy** headers on the Instruqt proxy (request + response) so Kibana can load **inside the lab** (including `kibana.estccdn.com`).
 
-> **Before steps 3–4:** both Kibana tabs show only the lab **setup line** (nginx is still a placeholder). That is expected—unlike tracks that **create** a Serverless project for you during bootstrap, this lab is **BYO Elastic Cloud**. Use **Terminal** first to fill **`.env`** and run **`render-kibana-proxy.sh`**; then reload the tab or switch tabs once so Kibana loads.
+> **Before steps 3–4:** both Kibana tabs show only the lab **setup line** (nginx is still a placeholder). That is expected—unlike tracks that **create** a Serverless project for you during bootstrap, this lab is **BYO Elastic Cloud**. Open the **Story (while you wait)** tab for the same deck as [poulsbopete.github.io/o11y-security](https://poulsbopete.github.io/o11y-security/) (hosted on Vercel at `/wait`). Use **Terminal** to fill **`.env`** and run **`render-kibana-proxy.sh`**; then reload a Kibana tab.
 
 ## What you will do
 

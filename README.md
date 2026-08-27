@@ -101,9 +101,11 @@ Target indices (examples used in the workshop):
 
 ## Slides (GitHub Pages)
 
-A **7-slide** value deck lives in [`docs/index.html`](docs/index.html), with an animated **CSS “FallingPattern”** background ([`docs/pattern.css`](docs/pattern.css))—static Pages, no React build. After enabling **Pages** from the **`/docs`** folder on `main`, it is served at:
+A **9-slide** value deck lives in [`docs/index.html`](docs/index.html), with an animated **CSS “FallingPattern”** background ([`docs/pattern.css`](docs/pattern.css))—static Pages, no React build. After enabling **Pages** from the **`/docs`** folder on `main`, it is served at:
 
 **https://poulsbopete.github.io/o11y-security/**
+
+**Waiting room (Vercel):** the same deck is iframed at **[https://o11y-security.vercel.app/wait](https://o11y-security.vercel.app/wait)** so Instruqt **Story** tabs have something to show while Kibana still 503s. Root Directory for that project is **`web`**.
 
 **AE enablement:** copy-ready **AI prompts** for seller coaching (personas, discovery, objections) live under [`docs/prompts/`](docs/prompts/) and are linked from the value slides and the footer. Slide 2 introduces **Web / Database / OS** “same telemetry, two missions” (aligned with **`workshop.demo_stream`** in lab data); slide 5 shows the **`elastic-agent-builder-a2a-cloud-path`** lab screenshots (bidirectional alert workflows, scheduled inject off by default, ~60s HTTP caveat). Facilitator copy: [`elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md`](elastic-agent-builder-a2a-cloud-path/DUAL-MISSION-DEMO.md).
 

@@ -15,6 +15,13 @@
   var CONVERSE_URL = converseMeta.length ? converseMeta : KIBANA_BASE + "/api/agent_builder/converse";
   /** Leading / means same-origin proxy (no browser API key). */
   var SERVER_PROXY = converseMeta.length > 0 && converseMeta.charAt(0) === "/";
+  if (
+    document.documentElement.classList.contains("embedded") ||
+    /(?:^|[?&])embed=1(?:&|$)/.test(String(location.search || "")) ||
+    window.self !== window.top
+  ) {
+    return;
+  }
 
   var SK = "o11y_pages_ab_api_key";
   var SK_CONV = "o11y_pages_ab_conversation_id";

@@ -64,7 +64,9 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000` (redirects to `/index.html`). On the hosted build the launcher reads **Live · chat** and the panel shows a **Hosted** pill plus a one-line hint for `KIBANA_AGENT_ID`. The slide deck itself matches GitHub Pages by design.
+Open `http://localhost:3000/wait` (waiting room). **`/`** still redirects to `/index.html`. **`/wait`** is the waiting room: it iframes `/index.html?embed=1` so facilitators have the deck while Instruqt or Kibana is still coming up. On the hosted build the launcher reads **Live · chat** and the panel shows a **Hosted** pill plus a one-line hint for `KIBANA_AGENT_ID`. The slide deck itself matches GitHub Pages by design.
+
+**Production waiting room:** [https://o11y-security.vercel.app/wait](https://o11y-security.vercel.app/wait) (same origin iframe of the deck). CSP `frame-ancestors` allows Instruqt to embed that page as a **website** tab.
 
 ## GitHub Pages
 
