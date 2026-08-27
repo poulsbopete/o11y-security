@@ -5,11 +5,14 @@ type: challenge
 title: Lay the Foundation
 teaser: Confirm two Serverless projects (Observability + Security) and Elasticsearch
   API connectivity from the lab shell.
+notes:
+- type: text
+  contents: |
+    <iframe src="https://o11y-security.vercel.app/wait"
+      width="100%" height="1400" frameborder="0"
+      style="border-radius:8px;display:block;width:100%;min-height:900px;aspect-ratio:16/9;border:0"
+      title="Observability and Security story deck"></iframe>
 tabs:
-- id: za1cgaky9sat
-  title: Story (while you wait)
-  type: website
-  url: https://o11y-security.vercel.app/wait
 - id: hruyzar9dqsn
   title: Serverless Observability
   type: service
@@ -64,7 +67,7 @@ When the track secret **`ESS_CLOUD_API_KEY`** is bound (Sandbox → **2 secrets*
 1. One **Observability** Serverless project
 2. One **Security** Serverless project
 
-Then it writes **`/root/elastic-workshop/.env`**, renders the nginx proxy, and loads workshop sample data. That can take **several minutes** while Cloud initializes both projects — use the **Story (while you wait)** tab meanwhile.
+Then it writes **`/root/elastic-workshop/.env`**, renders the nginx proxy, and loads workshop sample data. That can take **several minutes** while Cloud initializes both projects — browse the story deck in the assignment **Notes** (same slides as [o11y-security.vercel.app/wait](https://o11y-security.vercel.app/wait)) while you wait.
 
 When setup finishes:
 

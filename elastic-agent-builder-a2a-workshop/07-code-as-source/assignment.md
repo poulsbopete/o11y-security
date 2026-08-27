@@ -6,10 +6,6 @@ title: 'Code as source: detect and fix issues'
 teaser: Index the claims portal with Sourcerer-style code search, generate live noise,
   then cite and remediate LAB_VULN findings.
 tabs:
-- id: l1qdvt3m5upf
-  title: Story (while you wait)
-  type: website
-  url: https://o11y-security.vercel.app/wait
 - id: gi2dkq2cevfz
   title: Serverless Observability
   type: service

@@ -41,7 +41,5 @@ lab_config:
     name: modern-dark
   override_challenge_layout: false
   hideStopButton: false
-  default_layout: AssignmentRight
-  default_layout_sidebar_size: 35
 checksum: "4082732526286160834"
 enhanced_loading: false
